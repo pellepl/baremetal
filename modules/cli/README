@@ -1,0 +1,17 @@
+Define cli functions anywhere in your linked code in following manner:
+ 
+    static int cli_hello_world(int argc, const char **argv) {
+       printf("hello world\n");
+       return 0;
+    }
+    CLI_FUNCTION(cli_hello_world, "helloworld");
+ 
+Expects a pointer aligned section in linker called .cli_func_entries,
+with __cli_func_entries_start and __cli_func_entries_end symbols wrapping
+the section. Can be placed either in RAM or in FLASH.
+Like so:
+ 
+    . = ALIGN(4);
+    __cli_func_entries_start = .;
+    KEEP(*(.cli_func_entries*))
+    __cli_func_entries_end = .;

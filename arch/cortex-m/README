@@ -1,0 +1,12 @@
+cmsis folder contains curated content from
+https://github.com/ARM-software/CMSIS_5 master
+
+Makeflags:
+  NO_LD_GC_SECTIONS
+    By default, functions are compiled in separated section, giving the linker
+    possibility to discard functions that are not used, to save space.
+    Defining this flag disables this.
+
+  NO_NEWLIB_NANO
+    By default, nano newlib is selected.
+    Defining this flag disables this.

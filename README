@@ -1,0 +1,97 @@
+Bare Metal Minimalist Embedded Apps
+===================================
+
+Contains code for building bare metal, os-less, minimalist apps for MCUs.
+
+Main objective is to make everything as easy and small as possible. Used as a
+trampoline, e.g. for trying out processor features or getting up and running
+quickly.
+
+Compiling an application
+------------------------
+
+$ make BOARD=<board> APP=<app>
+
+where <board> is any of the boards in board/ directory, and <app> is any of the
+apps in source/ directory.
+
+Make sure TOOLCHAIN_DIR and CROSS_COMPILE is set, e.g.
+  TOOLCHAIN_DIR = /home/human_entity/toolchain/arm-none-eabi-gcc
+  CROSS_COMPILE=arm-none-eabi-
+
+
+Adding a new application
+------------------------
+
+Create a new folder, source/<newapp>. Add the C files and header files needed 
+to source/<newapp>. Assuming you need modules gpio and uart, create 
+source/<newapp>/<newapp>.mk:
+  TARGETNAME := $(APP)
+  CONFIG_GPIO := 1
+  CONFIG_UART := 1
+  CFILES += $(wildcard source/$(APP)/*.c)
+  INCLUDE += source/$(APP) 
+
+In main, the first thing to do is to call
+  cpu_init();
+  board_init();
+
+Create a text file source/<newapp>/README describing your new fancy application.
+
+
+Adding a new module
+-------------------
+
+Create a new folder, modules/<newmod>. Add the C files and header files needed 
+to modules/<newmod>. Create modules/<newmod>/<newmod>.mk:
+  CFILES += $(wildcard $(modules_dir)/<newmod>/*.c)
+  INCLUDE += $(modules_dir)/<newmod>
+
+If the module needs a family or processor specific implementation, add
+
+  $(eval $(call include_hal_implementation,<newmod>))
+
+to <newmod>.mk. This will cause compile dependency to hal_<newmod>_<PROC>.c or
+hal_<newmod>_<FAMILY>.c, whichever is found first.
+
+Create a text file modules/<newmod>/README describing your new fancy module.
+
+For example, see modules/gpio and find files "hal_gpio_*".
+
+
+Adding a new board
+-------------------
+
+Create a new folder, boards/<newboard>. Two files are mandatory in this folder:
+  board_<newboard>.mk
+  board.h
+
+The mk file must at least describe the architecture, family, and processor.
+The board.h file defines pins, leds, buttons, etc in the sense of processor
+pins. Best way is to copy a board.h file from another board and work with that.
+
+If necessary, a board specific c file can be added, boards/<newboard>/
+board_<newboard>.c. This will then be compiled automatically. It should
+include board.h and implement board_init().
+
+
+Adding a new processor, family, or architecture
+-----------------------------------------------
+
+The startup file, the crt0 file, can either be put in the processor directory,
+the family directory or the arch directory. For an arch-family-proc triplet, it
+must be found in one of these. The processor directory is searched first. If
+not found there, the family directory is checked, and finally the arch
+directory. This means there can be a generic startup for the family, being
+overridden by some processors or families. It may either be a c file or an S
+file.
+
+The cpu file must also be implemented. It can exist under processor/family/arch
+directories. Different from the startup file, all cpu files in an arch-family-
+triplet are included. This allows for having weak functions in an arch-cpu
+file, being overridden for some families or processors.
+
+Finally, there must exist an arch/<arch>/arch_<ARCH>.mk file. This is
+responsible for including the family make file, setting correct toolchain
+flags, calling correct processor make file, etc. See existing arch_*.mk files
+for examples.

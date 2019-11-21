@@ -1,0 +1,6 @@
+helloworld
+==========
+
+Initializes UART to 115200, no parity, 8 databits, 1 stopbit, no flow control.
+Outputs "Hello world <x>!" every second where <x> increases for each output.
+Initializes LED GPIOs to outputs, and lights them up for 500ms at each output.

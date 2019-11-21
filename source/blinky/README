@@ -1,0 +1,4 @@
+blinky
+======
+
+Initializes LED GPIOs to outputs, and blinks them forever - 500ms on and 500ms off.

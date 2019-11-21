@@ -1,0 +1,13 @@
+Makeflags:
+  EXECUTE_IN_RAM
+    Place the app in RAM instead of in flash.
+
+  CONFIG_NRF52_TEST_RADIO
+    Enables a processor specific module for testing the radio.
+    See test-radio/.
+
+  CONFIG_NRF52_TEST_BLE_DTM
+    Enables a processor specific module for testing the radio in a BLE manner.
+    See test-ble-dtm/.
+
+See nrf-flash.mk for convenience targets for flashing, debugging etc.

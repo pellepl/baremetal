@@ -1,0 +1,10 @@
+Makeflags:
+  NO_STM32_LL_DRIVER
+    By default, the STM32 LL driver is compiled and included. Define this not
+    to include the LL driver files.
+
+  NO_STM32_LL_DRIVER_FULL
+    By defult, the above LL driver is compiled with flag USE_FULL_LL_DRIVER.
+    Define this not to do this.
+
+See stm-flash.mk for convenience targets for flashing, debugging etc.
