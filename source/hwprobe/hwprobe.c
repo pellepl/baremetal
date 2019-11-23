@@ -45,6 +45,7 @@ int main(void) {
     cpu_init();
     board_init();
     gpio_init();
+    flash_init();
     uart_config_t cfg = {
         .baudrate = UART_BAUDRATE_115200,
         .parity = UART_PARITY_NONE,
