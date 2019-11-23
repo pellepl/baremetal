@@ -52,8 +52,7 @@ int flash_get_sector_size(uint32_t sector) {
 
 int flash_get_sector_alignment(uint32_t sector, flash_op_t operation) {
     (void)sector;
-    (void)operation;
-    return 4;
+    return operation == FLASH_OP_WRITE ? 4 : 1;
 }
 
 int flash_protect(uint32_t sector) {
@@ -152,10 +151,6 @@ int flash_read(uint32_t sector, uint32_t offset, uint8_t *data, uint32_t length)
     if (res) {
         return res;
     }
-    if ((offset % flash_get_sector_alignment(sector, FLASH_OP_WRITE)) ||
-        (length % flash_get_sector_alignment(sector, FLASH_OP_WRITE))) {
-        return ERR_FLASH_ALIGN;
-    }
 
     uint32_t sector_size = (uint32_t)flash_get_sector_size(sector);
     if (offset >= sector_size) {
@@ -168,26 +163,18 @@ int flash_read(uint32_t sector, uint32_t offset, uint8_t *data, uint32_t length)
         length = sector_size;
     }
 
-    uint32_t address;
+    uint8_t *address;
     if (/*sector >= NRF_FLASH_SECTOR_CODE || */ sector < NRF_FLASH_SECTOR_CODE + NRF_FICR->CODESIZE) {
-        address = (sector - NRF_FLASH_SECTOR_CODE) * NRF_FICR->CODEPAGESIZE;
+        address = (uint8_t *)((sector - NRF_FLASH_SECTOR_CODE) * NRF_FICR->CODEPAGESIZE);
     } else {
-        address = FLASH_UICR_ADDR_START;
+        address = (uint8_t *)(FLASH_UICR_ADDR_START);
     }
 
     address += offset;
 
     res = (int)length;
-    while (length) {
-        uint32_t word = *((uint32_t *)address);
-        data[0] = (word >>  0) & 0xff;
-        data[1] = (word >>  8) & 0xff;
-        data[2] = (word >>  16) & 0xff;
-        data[3] = (word >>  24) & 0xff;
-        *((uint32_t *)address) = word;
-        address += 4;
-        data += 4;
-        length -= 4;
+    while (length--) {
+        *data++ = *address++;
     }
 
     return res;
