@@ -731,7 +731,7 @@ void __attribute__((naked, noreturn)) Reset_Handler()
 	for (;;) ;
 }
 
-void __attribute__((naked, noreturn)) Default_Handler()
+void __attribute__((naked)) Default_Handler()
 {
 	for (;;) ;
 }

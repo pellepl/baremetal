@@ -53,7 +53,7 @@ int main(void) {
     };
     uart_init(0, &cfg);
 
-    printf("\niprober cli\n");
+    printf("\nhwprobe cli\n");
     cli_init(cli_cb, "\r\n;", " ,", "", "");
 
     while(1) {
