@@ -12,10 +12,14 @@ else
 ECHO:=echo
 exe:=
 endif
+
+-include ../toolchain.mk
+
 TARGET_DIR ?= build/$(TARGETNAME)-$(BOARD)-$(PROC)
 XCC ?= $(toolchain)gcc$(exe)
 XAS ?= $(XCC)
 XLD ?= $(toolchain)ld$(exe)
+#XLD ?= $(toolchain)gcc$(exe)
 XOBJCOPY ?= $(toolchain)objcopy$(exe)
 MKDIR ?= mkdir -p
 RM ?= rm -f
@@ -156,7 +160,6 @@ CFLAGS += -Wall -Wno-format-y2k -W -Wstrict-prototypes -Wmissing-prototypes \
 -Wredundant-decls -Wno-unused-parameter
 endif
 CFLAGS += -O$(CC_OPTIMISATION)
-
 ifeq (,$(findstring $(MAKECMDGOALS),clean info))
 -include $(depfiles)
 endif
@@ -165,9 +168,17 @@ $(target).hex: $(target).elf
 	$(v)$(XOBJCOPY) -O ihex $< $@
 	$(v)$(XOBJCOPY) -O binary $< $(target).bin
 
+LDFLAGS += -Map=$(target).map
+ifeq "$(XLD)" "$(XCC)"
+_ldflags:=$(LDFLAGS:-%=-Wl,-%)
+else
+_ldflags:=$(LDFLAGS)
+endif
+_ldflags += -T $(LINKER_FILE)
+
 $(target).elf: $(objfiles) $(asobjfiles)
 	@$(ECHO) "LD\t$@"
-	$(v)$(XLD) $(LDFLAGS) -T $(LINKER_FILE) -Map $(target).map -o $@ $(objfiles) $(asobjfiles) $(LIBS)
+	$(v)$(XLD) $(_ldflags) -o $@ $(objfiles) $(asobjfiles) $(LIBS)
 ifneq ($(OS),Windows_NT)
 	$(v)size $@
 endif

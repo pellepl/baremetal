@@ -3,11 +3,7 @@ mdk_dir := $(family_dir)/mdk
 cc-flags-nofpu = -mfloat-abi=soft
 cc-flags-fpu = -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
-ifeq "$(PROC)" "nrf52805"
-CFLAGS += -DNRF52805_XXAA
-CFILES += $(mdk_dir)/system_nrf52805.c
-nrf52-cc-flags += $(cc-flags-nofpu)
-else ifeq "$(PROC)" "nrf52810"
+ifeq "$(PROC)" "nrf52810"
 CFLAGS += -DNRF52810_XXAA
 CFILES += $(mdk_dir)/system_nrf52810.c
 nrf52-cc-flags += $(cc-flags-nofpu)
