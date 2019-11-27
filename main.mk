@@ -19,7 +19,6 @@ TARGET_DIR ?= build/$(TARGETNAME)-$(BOARD)-$(PROC)
 XCC ?= $(toolchain)gcc$(exe)
 XAS ?= $(XCC)
 XLD ?= $(toolchain)ld$(exe)
-#XLD ?= $(toolchain)gcc$(exe)
 XOBJCOPY ?= $(toolchain)objcopy$(exe)
 MKDIR ?= mkdir -p
 RM ?= rm -f
@@ -86,15 +85,27 @@ include arch/arch.mk
 modules_dir := modules
 include modules/modules.mk
 
-# see if we find libc and libgcc
-libgcc_dir := $(dir $(shell find $(TOOLCHAIN_DIR) -name "libgcc.a" | head -n 1))
-libc_dir := $(dir $(shell find $(TOOLCHAIN_DIR) -name "libc.a" | head -n 1))
-
-ifneq "$(libgcc_dir)" ""
-LIBS += -L $(libgcc_dir)
+ifeq "$(GCC_AS_LD)" "1"
+  XLD := $(XCC)
+else
+  ifeq "$(XLD)" "$(XCC)"
+    GCC_AS_LD := 1
+  else
+    GCC_AS_LD := 0
+  endif
 endif
-ifneq "$(libc_dir)" ""
-LIBS += -L $(libc_dir)
+
+ifeq "$(GCC_AS_LD)" "0"
+  # see if we find libc and libgcc
+  libgcc_dir := $(dir $(shell find $(TOOLCHAIN_DIR) -name "libgcc.a" | head -n 1))
+  libc_dir := $(dir $(shell find $(TOOLCHAIN_DIR) -name "libc.a" | head -n 1))
+
+  ifneq "$(libgcc_dir)" ""
+    LIBS += -L $(libgcc_dir)
+  endif
+  ifneq "$(libc_dir)" ""
+    LIBS += -L $(libc_dir)
+  endif
 endif
 
 # set default linker file
@@ -160,7 +171,7 @@ CFLAGS += -Wall -Wno-format-y2k -W -Wstrict-prototypes -Wmissing-prototypes \
 -Wredundant-decls -Wno-unused-parameter
 endif
 CFLAGS += -O$(CC_OPTIMISATION)
-ifeq (,$(findstring $(MAKECMDGOALS),clean info))
+ifeq (,$(findstring $(MAKECMDGOALS),clean info makeinfo))
 -include $(depfiles)
 endif
 
@@ -169,12 +180,16 @@ $(target).hex: $(target).elf
 	$(v)$(XOBJCOPY) -O binary $< $(target).bin
 
 LDFLAGS += -Map=$(target).map
-ifeq "$(XLD)" "$(XCC)"
-_ldflags:=$(LDFLAGS:-%=-Wl,-%)
+
+ifneq "$(LINKER_FILE)" ""
+LDFLAGS += --script=$(LINKER_FILE)
+endif
+
+ifeq "$(GCC_AS_LD)" "1"
+_ldflags:=$(CFLAGS) $(LDFLAGS:-%=-Wl,-%)
 else
 _ldflags:=$(LDFLAGS)
 endif
-_ldflags += -T $(LINKER_FILE)
 
 $(target).elf: $(objfiles) $(asobjfiles)
 	@$(ECHO) "LD\t$@"
@@ -203,6 +218,26 @@ $(depfiles): $(TARGET_DIR)/%.d:%.c
 
 clean:
 	$(v)$(RM) -r $(TARGET_DIR)
+
+define var_set
+$(if $1,✓,)
+endef
+
+ifeq "$(GCC_AS_LD)" "1"
+_gcc_as_ld := 1
+endif
+
+makeinfo:
+	$(info NO_SANITY_CHECK        $(call var_set,$(NO_SANITY_CHECK)))
+	$(info NO_BUILD_INFO_GIT      $(call var_set,$(NO_BUILD_INFO_GIT)))
+	$(info NO_BUILD_INFO_HOST     $(call var_set,$(NO_BUILD_INFO_HOST)))
+	$(info NO_BUILD_INFO_TARGET   $(call var_set,$(NO_BUILD_INFO_TARGET)))
+	$(info NO_BUILD_INFO_COMPILER $(call var_set,$(NO_BUILD_INFO_COMPILER)))
+	$(info NO_DEBUG_SYMBOLS       $(call var_set,$(NO_DEBUG_SYMBOLS)))
+	$(info NO_WARNINGS            $(call var_set,$(NO_WARNINGS)))
+	$(info NO_CRT0                $(call var_set,$(NO_CRT0)))
+	$(info CC_OPTIMISATION        $(CC_OPTIMISATION))
+	$(info GCC_AS_LD              $(call var_set,$(_gcc_as_ld)))
 
 info:
 	$(info TARGET      $(TARGETNAME))

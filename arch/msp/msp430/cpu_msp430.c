@@ -6,13 +6,13 @@ void cpu_init(void) {
 }
 
 void cpu_reset(void) {
- // TODO PETER
- // start watchdog and timeout?
+    FCTL1 = 0; // https://www.ti.com/lit/ug/slau144j/slau144j.pdf 7.4.1 p 324
 }
 
 void cpu_halt(uint32_t milliseconds) {
-    volatile uint32_t t = 0x1 * milliseconds;
-    while (--t);
+    // ~ severily roughly
+    volatile uint32_t cycles = 3 * milliseconds * (cpu_core_clock_freq() >> 16);
+    while (cycles--);
 }
 
 void cpu_interrupt_enable(void) {
@@ -26,5 +26,5 @@ void cpu_interrupt_disable(void) {
 }
 
 uint32_t cpu_core_clock_freq(void) {
-    return 10000000ul; // TODO PETER
+    return 1100000ul; // https://www.ti.com/lit/ug/slau144j/slau144j.pdf 5.2 p 275
 }

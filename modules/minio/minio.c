@@ -279,7 +279,7 @@ void fprint_mem(uint32_t hdl, uint8_t *data, uint32_t len) {
 void *memset(void *p, int v, uint32_t num) {
     uint8_t *pp = (uint8_t *)p;
     while (num--) {
-        *pp++ = 0;
+        *pp++ = v;
     }
     return p;
 }
