@@ -1,6 +1,7 @@
 #include "board.h"
 #include "gpio_driver.h"
 #include "uart_driver.h"
+#include "flash_driver.h"
 #include "minio.h"
 #include "cli.h"
 

@@ -340,7 +340,47 @@ int uart_hal_rxpoll(uint32_t hdl) {
 }
 
 int uart_hal_deinit(uint32_t hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
-    // TODO PETER
+    if (log_hdl[hdl] == 0) return ERR_UART_NOINIT;
+    
+    USART_TypeDef *u = phy_hdl[log_hdl[hdl]];
+
+    LL_USART_Disable(u);
+
+    switch (log_hdl[hdl]) {
+        #ifdef USART1
+        case HDL_U1:
+            LL_APB2_GRP1_DisableClock(LL_APB2_GRP1_PERIPH_USART1);
+            LL_GPIO_AF_DisableRemap_USART1();
+            break;
+        #endif
+        #ifdef USART2
+        case HDL_U2:
+            LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_USART2);
+            LL_GPIO_AF_DisableRemap_USART2();
+            break;
+        #endif
+        #ifdef USART3
+        case HDL_U3:
+            LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_USART3);
+            LL_GPIO_AF_DisableRemap_USART3();
+            break;
+        #endif
+        #ifdef UART4
+        case HDL_U4:
+            LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_UART4);
+            break;
+        #endif
+        #ifdef UART5
+        case HDL_U5:
+            LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_UART5);
+            break;
+        #endif
+    }
+    if (rx_pin != BOARD_PIN_UNDEF) (void)gpio_config(rx_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+    if (tx_pin != BOARD_PIN_UNDEF) (void)gpio_config(tx_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+    if (rts_pin != BOARD_PIN_UNDEF) (void)gpio_config(rts_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+    if (cts_pin != BOARD_PIN_UNDEF) (void)gpio_config(cts_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+
     log_hdl[hdl] = 0;
     return 0;
 }

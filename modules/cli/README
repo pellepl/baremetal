@@ -6,7 +6,10 @@ Define cli functions anywhere in your linked code in following manner:
     }
     CLI_FUNCTION(cli_hello_world, "helloworld");
  
-Expects a pointer aligned section in linker called .cli_func_entries,
+Linkwise, includes a section after .rodata with the cli function entries.
+If there is no .rodata in your link file, you will need to include these
+entries by yourself in your specific link file.
+This section is a pointer aligned section in linker called .cli_func_entries,
 with __cli_func_entries_start and __cli_func_entries_end symbols wrapping
 the section. Can be placed either in RAM or in FLASH.
 Like so:

@@ -1,4 +1,4 @@
-#if 1//CONFIG_FLASH==1
+#if CONFIG_FLASH==1
 
 #include "flash_driver.h"
 #include "cli.h"

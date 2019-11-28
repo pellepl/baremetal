@@ -1,6 +1,8 @@
 #include "msp430.h"
 #include "cpu.h"
 
+uint32_t _clockspeed = 1100000ul; // https://www.ti.com/lit/ug/slau144j/slau144j.pdf 5.2 p 275
+
 void cpu_init(void) {
     WDTCTL = WDTPW | WDTHOLD;		// Stop watchdog timer
 }
@@ -26,5 +28,5 @@ void cpu_interrupt_disable(void) {
 }
 
 uint32_t cpu_core_clock_freq(void) {
-    return 1100000ul; // https://www.ti.com/lit/ug/slau144j/slau144j.pdf 5.2 p 275
+    return _clockspeed;
 }

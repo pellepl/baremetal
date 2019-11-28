@@ -38,15 +38,6 @@ SECTIONS
     . = ALIGN(4);
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
-    . = ALIGN(4);
-  } >FLASH
-
-  .cli_func_entries :
-  {
-    . = ALIGN(4);
-    __cli_func_entries_start = .;
-    KEEP(*(.cli_func_entries*))
-    __cli_func_entries_end = .;
   } >FLASH
 
   .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH

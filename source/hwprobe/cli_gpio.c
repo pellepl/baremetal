@@ -61,16 +61,17 @@ static int cli_gpio_freq(int argc, const char **argv) {
     int time = strtol(argv[2], 0, 0);
     int period_half = 1000 / freq / 2;
     if (period_half <= 0) return -1;
-    int err = (((0x10000 * 1000) / freq) - (0x10000 * (2*period_half))) / 1000;
+    int accuracy = (sizeof(void*) == 2) ? 0x100 : 0x10000;
+    int err = (((accuracy * 1000) / freq) - (accuracy * (2*period_half))) / 1000;
     int err_accum = 0;
     int state = 1;
     res = gpio_config(pin, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
     for (int i = 0; !res && i < time / period_half; i++) {
         gpio_set(pin, state);
         err_accum += err;
-        if (err_accum >= 0x10000) {
+        if (err_accum >= accuracy) {
             cpu_halt(period_half + 1);
-            err_accum -= 0x10000;
+            err_accum -= accuracy;
         } else {
             cpu_halt(period_half);
         }
@@ -83,7 +84,7 @@ CLI_FUNCTION(cli_gpio_freq, "gpio_freq");
 static int cli_gpio_list(int argc, const char **argv) {
     const board_uart_pindef_t uart_pindefs[BOARD_UART_COUNT] = BOARD_UART_GPIO_PINS;
 
-    uint32_t i;
+    int i;
     printf("pin count: %d\n", BOARD_PIN_MAX);
     printf("led count: %d\n", BOARD_LED_COUNT);
     for (i = 0; i < BOARD_LED_COUNT; i++) {
@@ -95,7 +96,7 @@ static int cli_gpio_list(int argc, const char **argv) {
     }
     printf("uart count: %d\n", BOARD_UART_COUNT);
     for (i = 0; i < BOARD_UART_COUNT; i++) {
-        printf("  uart%d rx:%d tx:%d rtc:%d cts:%d\n", i,
+        printf("  uart%d rx:%d tx:%d rts:%d cts:%d\n", i,
           uart_pindefs[i].rx_pin, uart_pindefs[i].tx_pin, uart_pindefs[i].rts_pin, uart_pindefs[i].cts_pin);
     }
     return 0;

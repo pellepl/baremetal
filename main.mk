@@ -187,13 +187,15 @@ endif
 
 ifeq "$(GCC_AS_LD)" "1"
 _ldflags:=$(CFLAGS) $(LDFLAGS:-%=-Wl,-%)
+_ldflags_late:=$(LDFLAGS_LATE:-%=-Wl,-%)
 else
 _ldflags:=$(LDFLAGS)
+_ldflags_late:=$(LDFLAGS_LATE)
 endif
 
 $(target).elf: $(objfiles) $(asobjfiles)
 	@$(ECHO) "LD\t$@"
-	$(v)$(XLD) $(_ldflags) -o $@ $(objfiles) $(asobjfiles) $(LIBS)
+	$(v)$(XLD) $(_ldflags) -o $@ $(objfiles) $(asobjfiles) $(LIBS) $(_ldflags_late)
 ifneq ($(OS),Windows_NT)
 	$(v)size $@
 endif

@@ -74,11 +74,6 @@ SECTIONS
 
         *(.rodata*)
 
-        . = ALIGN(4);
-        __cli_func_entries_start = .;
-        KEEP(*(.cli_func_entries*))
-        __cli_func_entries_end = .;
-        
         KEEP(*(.eh_frame*))
     } > FLASH
 
