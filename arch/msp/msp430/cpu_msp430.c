@@ -30,3 +30,18 @@ void cpu_interrupt_disable(void) {
 uint32_t cpu_core_clock_freq(void) {
     return _clockspeed;
 }
+
+// needed by crt0.o
+void *memmove (void *dst, const void *src, unsigned int num);
+void *memmove (void *dst, const void *src, unsigned int num) {
+    uint8_t *d = (uint8_t *)dst;
+    const uint8_t *s = (const uint8_t *)src;
+    if (d < s) {
+        while (num--) *d++ = *s++;
+    } else {
+      const uint8_t *ls = s + (num-1);
+      uint8_t *ld = d + (num-1);
+      while (num--) *ld-- = *ls--;
+    }
+    return dst;
+}

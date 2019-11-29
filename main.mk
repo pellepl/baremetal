@@ -195,7 +195,7 @@ endif
 
 $(target).elf: $(objfiles) $(asobjfiles)
 	@$(ECHO) "LD\t$@"
-	$(v)$(XLD) $(_ldflags) -o $@ $(objfiles) $(asobjfiles) $(LIBS) $(_ldflags_late)
+	$(v)$(XLD) $(_ldflags) -o $@ $(OBJFILES_EXTRA_FIRST) $(objfiles) $(asobjfiles) $(OBJFILES_EXTRA_LAST) $(LIBS) $(_ldflags_late)
 ifneq ($(OS),Windows_NT)
 	$(v)size $@
 endif

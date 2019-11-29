@@ -4,20 +4,28 @@ mdk_dir := $(family_dir)/mdk/include
 ifeq "$(PROC)" "msp430g2553"
 CFLAGS += -D__MSP430G2553__
 CFLAGS += -mmcu=$(PROC)
+msp_link_type := 430
 else
 $(error PROC is not defined correctly for arch $(ARCH), family $(FAMILY))
 endif
 
+ifneq "$(GCC_AS_LD)" "1"
+NO_CRT0 := 1
+msp_crt0_o := $(realpath $(shell find $(TOOLCHAIN_DIR) -name "crt0.o" | grep "$(msp_link_type)/crt0.o" | head -n 1))
+ifeq "$(strip $(msp_crt0_o))" ""
+$(error Could not find crt0.o for msp link type "$(msp_link_type)". Make sure msp_link_type is valid for $(PROC) in family_$(family).mk)
+endif
 INCLUDE += $(mdk_dir)
 LDFLAGS += --library-path=$(mdk_dir)
 
-# default to using gcc as linker, otherwise you're on your own with TIs toolchain
-GCC_AS_LD ?= 1
+msp_lib_path := $(dir $(shell find $(TOOLCHAIN_DIR)/lib -name "libgcc.a" | grep "$(msp_link_type)/libgcc.a" | head -n 1))
+OBJFILES_EXTRA_FIRST += $(msp_crt0_o)
 
-ifeq "$(GCC_AS_LD)" "1"
-  NO_CRT0 := 1
-  LINKER_FILE :=
-else
-  LINKER_FILE = $(mdk)/$(PROC).ld
+LIBS += $(foreach path,$(dir $(msp_crt0_o)) $(msp_lib_path),-L$(path))
+LIBS += -lmul_none
+LIBS += -lc
+LIBS += -lgcc
+LIBS += -lcrt
+LIBS += -lnosys
+LINKER_FILE = $(mdk)/$(PROC).ld
 endif
-
