@@ -1,3 +1,6 @@
+/* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
+/* MIT License (see ./LICENSE) */
+
 #if CONFIG_GPIO==1
 
 #include "gpio_driver.h"

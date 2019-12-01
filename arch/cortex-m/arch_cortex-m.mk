@@ -1,3 +1,6 @@
+# Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com)
+# MIT License (see ./LICENSE)
+
 # For arch cortex-m, C-flag _CORTEX_CORE_HEADER must be defined and define
 # path to the a header including proper CMSIS header, core_cmX.h, thus defining
 # cortex-m variant.

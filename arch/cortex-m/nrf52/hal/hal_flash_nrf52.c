@@ -1,3 +1,6 @@
+/* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
+/* MIT License (see ./LICENSE) */
+
 #include "flash_driver.h"
 #include "flash_nrf52.h"
 #include "nrf52.h"

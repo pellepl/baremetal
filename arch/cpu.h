@@ -1,3 +1,6 @@
+/* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
+/* MIT License (see ./LICENSE) */
+
 #ifndef _CPU_H_
 #define _CPU_H_
 

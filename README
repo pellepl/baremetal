@@ -95,3 +95,9 @@ Finally, there must exist an arch/<arch>/arch_<ARCH>.mk file. This is
 responsible for including the family make file, setting correct toolchain
 flags, calling correct processor make file, etc. See existing arch_*.mk files
 for examples.
+
+
+Legal
+-----
+Everything is under MIT license, except from the vendor specific files provided
+for free. See license.

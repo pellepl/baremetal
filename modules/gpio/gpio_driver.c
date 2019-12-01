@@ -1,3 +1,6 @@
+/* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
+/* MIT License (see ./LICENSE) */
+
 #include "gpio_driver.h"
 #include "gpio_hal.h"
 #include "board.h"

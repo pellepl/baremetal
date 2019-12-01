@@ -1,3 +1,6 @@
+/* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
+/* MIT License (see ./LICENSE) */
+
 #include "types.h"
 #include "flash_driver.h"
 #include "flash_stm32f1.h"

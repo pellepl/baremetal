@@ -1,3 +1,6 @@
+/* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
+/* MIT License (see ./LICENSE) */
+
 #if FAMILY==nrf52 && CONFIG_NRF52_TEST_RADIO==1
 
 #include "cli.h"

@@ -1,4 +1,7 @@
-// BluePill STM32F103 board
+/* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
+/* MIT License (see ./LICENSE) */
+
+// Launchpad MSP-EXP430G2ET eval kit
 
 #ifndef _BOARD_H_
 #define _BOARD_H_

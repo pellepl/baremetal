@@ -1,3 +1,6 @@
+# Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com)
+# MIT License (see ./LICENSE)
+
 ## MSP device utilities
 # If DEVICE is defined, there must be only one device whose id has a substring match.
 # If DEVICE_FILTER is defined, only devices whose id has a substring match are operated on.

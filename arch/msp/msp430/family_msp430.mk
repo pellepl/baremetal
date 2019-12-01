@@ -1,3 +1,6 @@
+# Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com)
+# MIT License (see ./LICENSE)
+
 proc_dir := $(family_dir)/$(PROC)
 mdk_dir := $(family_dir)/mdk/include
 

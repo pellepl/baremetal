@@ -1,3 +1,6 @@
+/* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
+/* MIT License (see ./LICENSE) */
+
 // Nordic NRF52 PCA10040 board
 
 #ifndef _BOARD_H_

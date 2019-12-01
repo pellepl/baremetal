@@ -1,3 +1,6 @@
+/* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
+/* MIT License (see ./LICENSE) */
+
 #include "minio.h"
 
 static const char *I_BASE_ARR_L = "0123456789abcdefghijklmnopqrstuvwxyz";
