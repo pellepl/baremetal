@@ -122,16 +122,16 @@ stm-connect: .prereq-devs
 
 # Starts a debug session - stm-connect must have been issued first.
 stm-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
-	$(TOOLCHAIN_DIR)/bin/arm-none-eabi-gdb \
+	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb \
 		-ex "file ${TARGET_DIR}/$(TARGETNAME).elf" \
 		-ex "target remote localhost:$(GDB_PORT)" \
 		-ex "mon speed 10000" \
 		-ex "mon flash download=1" \
 		-ex "break HardFault_Handler" \
 
-# Starts a bare debug session - nrf-connect must have been issued first.
+# Starts a bare debug session - stm-connect must have been issued first.
 stm-debug-bare: .prereq-devs
-	$(TOOLCHAIN_DIR)/bin/arm-none-eabi-gdb \
+	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb \
 		-ex "target remote localhost:$(GDB_PORT)" \
 		-ex "mon speed 10000" \
 		-ex "mon flash download=1" \

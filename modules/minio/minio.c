@@ -154,7 +154,7 @@ int strtol(const char *s, const char **endptr, int base) {
     return u_atoin(s, endptr, base);
 }
 
-void v_printf(uint32_t hdl, const char *format, va_list arg_p) {
+void v_printf(unsigned int hdl, const char *format, va_list arg_p) {
     char c;
     char buf[32*2 + 4];
     int esc = 0;
@@ -247,14 +247,14 @@ void v_printf(uint32_t hdl, const char *format, va_list arg_p) {
     }
 }
 
-void fprintf(uint32_t hdl, const char *format, ...) {
+void fprintf(unsigned int hdl, const char *format, ...) {
     va_list arg_p;
     va_start(arg_p, format);
     v_printf(hdl, format, arg_p);
     va_end(arg_p);
 }
 
-void fprint_mem(uint32_t hdl, uint8_t *data, uint32_t len) {
+void fprint_mem(unsigned int hdl, uint8_t *data, unsigned int len) {
     while (len) {
         uint32_t rem = len >= 16 ? 16 : len;
         uint32_t fill = 16-rem;
@@ -276,7 +276,7 @@ void fprint_mem(uint32_t hdl, uint8_t *data, uint32_t len) {
     }
 }
 
-void *memset(void *p, int v, uint32_t num) {
+void *memset(void *p, int v, unsigned int num) {
     uint8_t *pp = (uint8_t *)p;
     while (num--) {
         *pp++ = v;
@@ -284,7 +284,7 @@ void *memset(void *p, int v, uint32_t num) {
     return p;
 }
 
-void *memcpy(const void *src, void *dst, uint32_t num)
+void *memcpy(const void *src, void *dst, unsigned int num)
 {
     const uint8_t *psrc = (const uint8_t *)src;
     uint8_t *pdst = (uint8_t *)dst;
@@ -312,7 +312,7 @@ int strcmp(const char* s1, const char* s2) {
     return (*p1 > *p2) - (*p2  > *p1);
 }
 
-int memcmp(const void *str1, const void *str2, uint32_t count) {
+int memcmp(const void *str1, const void *str2, unsigned int count) {
     const unsigned char *s1 = (const unsigned char*)str1;
     const unsigned char *s2 = (const unsigned char*)str2;
 
@@ -322,4 +322,17 @@ int memcmp(const void *str1, const void *str2, uint32_t count) {
         }
     }
     return 0;
+}
+
+void *memmove(void *dst, const void *src, unsigned int num) {
+    uint8_t *d = (uint8_t *)dst;
+    const uint8_t *s = (const uint8_t *)src;
+    if (d < s) {
+        while (num--) *d++ = *s++;
+    } else {
+      const uint8_t *ls = s + (num-1);
+      uint8_t *ld = d + (num-1);
+      while (num--) *ld-- = *ls--;
+    }
+    return dst;
 }

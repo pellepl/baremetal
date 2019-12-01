@@ -13,3 +13,5 @@ CFLAGS += -ffunction-sections -fdata-sections
 # let linker dump unused sections
 LDFLAGS += --gc-sections
 endif
+
+-include $(arch_dir)/msp-flash.mk
