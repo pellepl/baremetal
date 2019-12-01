@@ -9,7 +9,7 @@
 TI_VID_PID := "2047:0013"
 
 MSPDEBUG ?= mspdebug
-MSPDEBUG_DRIVER = tilib
+MSPDEBUG_DRIVER ?= tilib
 
 define unique_number
 $(shell printf "%d" 0x$$(echo "$(1)" | md5sum | cut -c 1-4) | cut -c 1-4)
