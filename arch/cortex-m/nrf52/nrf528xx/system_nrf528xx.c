@@ -60,9 +60,11 @@ void SystemCoreClockUpdate(void)
     SystemCoreClock = __SYSTEM_CLOCK_64M;
 }
 
+volatile uint32_t g_chip;
+
 void SystemInit(void) {
-    uint32_t proc = *((uint32_t *)0x10000100); // FICR->INFO.PART
-    switch (proc) {
+    g_chip = *((uint32_t *)0x10000100); // FICR->INFO.PART
+    switch (g_chip) {
         case 0x52810: SystemInit_10(); break;
         case 0x52811: SystemInit_11(); break;
         case 0x52832: SystemInit_32(); break;

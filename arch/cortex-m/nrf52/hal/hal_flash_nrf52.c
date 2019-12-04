@@ -170,7 +170,7 @@ int flash_read(uint32_t sector, uint32_t offset, uint8_t *data, uint32_t length)
     if (/*sector >= NRF_FLASH_SECTOR_CODE || */ sector < NRF_FLASH_SECTOR_CODE + NRF_FICR->CODESIZE) {
         address = (uint8_t *)((sector - NRF_FLASH_SECTOR_CODE) * NRF_FICR->CODEPAGESIZE);
     } else {
-        address = (uint8_t *)(FLASH_UICR_ADDR_START);
+        address = (uint8_t *)FLASH_UICR_ADDR_START;
     }
 
     address += offset;

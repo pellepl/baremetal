@@ -58,5 +58,7 @@ CFILES += $(wildcard $(family_dir)/test-ble-dtm/*.c)
 INCLUDE += $(family_dir)/test-ble-dtm
 endif
 
+INCLUDE += $(family_dir)/hal
+
 -include $(family_dir)/nrf-flash.mk
 

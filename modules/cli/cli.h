@@ -43,6 +43,7 @@
 #define ERR_CLI_ARGUMENT_OVERFLOW   -(ERR_CLI_BASE+1)
 #define ERR_CLI_NO_ENTRY            -(ERR_CLI_BASE+2)
 #define ERR_CLI_EINVAL              -(ERR_CLI_BASE+3)
+#define ERR_CLI_SILENT              -(ERR_CLI_BASE+4)
 
 typedef struct cli_entry {
     const char *name;
