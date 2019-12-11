@@ -20,7 +20,7 @@ int atoi(const char *s);
 int strtol(const char *s, const char **endptr, int base);
 int strlen(const char *str);
 void *memset(void *p, int v, unsigned int num);
-void *memcpy(const void *src, void *dst, unsigned int num);
+void *memcpy(void *dst, const void *src, unsigned int num);
 int memcmp(const void *str1, const void *str2, unsigned int count);
 int strcmp(const char *s1, const char *s2);
 void *memmove(void *dst, const void *src, unsigned int num);
