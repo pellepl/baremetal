@@ -287,7 +287,7 @@ void *memset(void *p, int v, unsigned int num) {
     return p;
 }
 
-void *memcpy(const void *dst, void *src, unsigned int num)
+void *memcpy(void *dst, const void *src, unsigned int num)
 {
     const uint8_t *psrc = (const uint8_t *)src;
     uint8_t *pdst = (uint8_t *)dst;
