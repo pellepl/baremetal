@@ -22,8 +22,8 @@ _filter = $(foreach v,$(2),$(if $(findstring $(1),$(v)),$(v),))
 
 # Lists all connected ST-LINK devices
 stm-list: .prereq-devs
-	@echo
-	@echo Devices: $(STM_DEVICES)
+	@echo ""
+	@echo "Devices: $(STM_DEVICES)"
 
 # Execute $(1) with each entry of $(2) as variable "arg" in parallel, $(3) seconds timeout
 # ex $(call _parallel,some_parallel_task $$arg,apple pear orange,10)
@@ -35,9 +35,9 @@ stm-list: .prereq-devs
 define _parallel
 	@rm -rf .parallel.pids
 	@$(foreach arg,$(2), \
-          arg=$(arg); \
+          arg="$(arg)"; \
           timeout $(3)s $(1) & \
-          echo $$! >> .parallel.pids; \
+          echo "$$!" >> .parallel.pids; \
         ) \
         while read pid; do \
           wait $$pid; \
@@ -197,6 +197,6 @@ endif
 .prereq-prog: has_openocd=$(shell which $(OPENOCD) > /dev/null 2>&1; echo $$?)
 .prereq-prog:
 	@if [ $(has_openocd) -ne 0 ]; then \
-		echo "ERROR: Could not find $(OPENOCD). Make sure OPENOCD variable is set correctly."; \
+		echo "*** ERROR: Could not find $(OPENOCD). Make sure OPENOCD variable is set correctly."; \
 		exit 1; \
 	fi; \

@@ -43,14 +43,14 @@ typedef struct {
 } uart_config_t;
 
 /** Initializes given uart block with given config */
-int uart_init(uint32_t hdl, const uart_config_t *config);
+int uart_init(unsigned int hdl, const uart_config_t *config);
 /** Sends a character over given uart block - blocking */
-int uart_putchar(uint32_t hdl, char x);
+int uart_putchar(unsigned int hdl, char x);
 /** Receives a character over given uart block - blocking */
-int uart_getchar(uint32_t hdl);
+int uart_getchar(unsigned int hdl);
 /** Receives a character over given uart block if there is one available, else returns -1 */
-int uart_pollchar(uint32_t hdl);
+int uart_pollchar(unsigned int hdl);
 /** Frees and decouples any resources used by given uart block */
-int uart_deinit(uint32_t hdl);
+int uart_deinit(unsigned int hdl);
 
 #endif // _UART_DRIVER_H_

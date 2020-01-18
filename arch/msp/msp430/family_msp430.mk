@@ -13,6 +13,10 @@ $(error PROC is not defined correctly for arch $(ARCH), family $(FAMILY))
 endif
 
 ifneq "$(GCC_AS_LD)" "1"
+
+# following sequence was derived by linking the MSP with GCC instead of ld, 
+# along with the -v flag, a stroke of luck, and a load of angst
+
 NO_CRT0 := 1
 msp_crt0_o := $(realpath $(shell find $(TOOLCHAIN_DIR) -name "crt0.o" | grep "$(msp_link_type)/crt0.o" | head -n 1))
 ifeq "$(strip $(msp_crt0_o))" ""

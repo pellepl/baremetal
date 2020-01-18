@@ -6,7 +6,7 @@
 #include "gpio_driver.h"
 #include "board_common.h"
 
-int uart_hal_init(uint32_t hdl, const uart_config_t *config, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
+int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
     gpio_config(rx_pin, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_UP);
     gpio_config(tx_pin, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_UP);
     UCA0CTL0 = 0 |
@@ -23,25 +23,25 @@ int uart_hal_init(uint32_t hdl, const uart_config_t *config, uint16_t rx_pin, ui
     return 0;
 }
 
-int uart_hal_tx(uint32_t hdl, char x) {
+int uart_hal_tx(unsigned int hdl, char x) {
     while ((IFG2 & UCA0TXIFG) == 0);
     UCA0TXBUF = x;
     return 0;
 }
 
-int uart_hal_rx(uint32_t hdl) {
+int uart_hal_rx(unsigned int hdl) {
     while ((IFG2 & UCA0RXIFG) == 0);
     return UCA0RXBUF;
 }
 
-int uart_hal_rxpoll(uint32_t hdl) {
+int uart_hal_rxpoll(unsigned int hdl) {
     if ((IFG2 & UCA0RXIFG) == 0)
         return -1;
     else
         return UCA0RXBUF;
 }
 
-int uart_hal_deinit(uint32_t hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
+int uart_hal_deinit(unsigned int hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
     UCA0CTL1 |= UCSWRST; // place USCI in reset
     return 0;
 }

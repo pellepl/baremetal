@@ -16,7 +16,7 @@ static NRF_UART_Type *hw[1] = {
 };
 #endif
 
-int uart_hal_init(uint32_t hdl, const uart_config_t *config, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
+int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
     NRF_UART_Type *u = hw[hdl];
     if (rx_pin != BOARD_PIN_UNDEF) {
         gpio_config(rx_pin, GPIO_DIRECTION_INPUT, GPIO_PULL_NONE);
@@ -73,7 +73,7 @@ int uart_hal_init(uint32_t hdl, const uart_config_t *config, uint16_t rx_pin, ui
     return 0;
 }
 
-int uart_hal_tx(uint32_t hdl, char x) {
+int uart_hal_tx(unsigned int hdl, char x) {
     NRF_UART_Type *u = hw[hdl];
     while (u->EVENTS_TXDRDY == 0);
     u->EVENTS_TXDRDY = 0;
@@ -81,7 +81,7 @@ int uart_hal_tx(uint32_t hdl, char x) {
     return 0;
 }
 
-int uart_hal_rx(uint32_t hdl) {
+int uart_hal_rx(unsigned int hdl) {
     NRF_UART_Type *u = hw[hdl];
     int rxrdy, error;
     do {
@@ -98,7 +98,7 @@ int uart_hal_rx(uint32_t hdl) {
     return (int)x;
 }
 
-int uart_hal_rxpoll(uint32_t hdl) {
+int uart_hal_rxpoll(unsigned int hdl) {
     NRF_UART_Type *u = hw[hdl];
     int rxrdy, error;
     rxrdy = u->EVENTS_RXDRDY;
@@ -116,7 +116,7 @@ int uart_hal_rxpoll(uint32_t hdl) {
     return (int)x;
 }
 
-int uart_hal_deinit(uint32_t hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
+int uart_hal_deinit(unsigned int hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
     NRF_UART_Type *u = hw[hdl];
     u->TASKS_STOPTX = 1;
     u->TASKS_STOPRX = 1;

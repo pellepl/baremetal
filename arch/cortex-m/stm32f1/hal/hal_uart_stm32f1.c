@@ -162,7 +162,7 @@ static int pins_to_phy_hdl(uart_phy_pin_cfg_t *cfg) {
     return 0;
 }
 
-int uart_hal_init(uint32_t hdl, const uart_config_t *config, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
+int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
     if (log_hdl[hdl] != 0) return ERR_UART_BUSY;
 
     uart_phy_pin_cfg_t phy_cfg = {
@@ -308,7 +308,7 @@ int uart_hal_init(uint32_t hdl, const uart_config_t *config, uint16_t rx_pin, ui
     return res;
 }
 
-int uart_hal_tx(uint32_t hdl, char x) {
+int uart_hal_tx(unsigned int hdl, char x) {
     if (log_hdl[hdl]) {
         USART_TypeDef *u = phy_hdl[log_hdl[hdl]];
         while (LL_USART_IsActiveFlag_TXE(u) == 0);
@@ -319,7 +319,7 @@ int uart_hal_tx(uint32_t hdl, char x) {
     }
 }
 
-int uart_hal_rx(uint32_t hdl) {
+int uart_hal_rx(unsigned int hdl) {
     if (log_hdl[hdl]) {
         USART_TypeDef *u = phy_hdl[log_hdl[hdl]];
         while (LL_USART_IsActiveFlag_RXNE(u) == 0);
@@ -329,7 +329,7 @@ int uart_hal_rx(uint32_t hdl) {
     }
 }
 
-int uart_hal_rxpoll(uint32_t hdl) {
+int uart_hal_rxpoll(unsigned int hdl) {
     if (log_hdl[hdl]) {
         USART_TypeDef *u = phy_hdl[log_hdl[hdl]];
         if (LL_USART_IsActiveFlag_RXNE(u) == 0) {
@@ -342,7 +342,7 @@ int uart_hal_rxpoll(uint32_t hdl) {
     }
 }
 
-int uart_hal_deinit(uint32_t hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
+int uart_hal_deinit(unsigned int hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
     if (log_hdl[hdl] == 0) return ERR_UART_NOINIT;
     
     USART_TypeDef *u = phy_hdl[log_hdl[hdl]];
