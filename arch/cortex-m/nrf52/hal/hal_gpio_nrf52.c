@@ -61,6 +61,7 @@ int gpio_hal_set(uint16_t pin, uint8_t state) {
 
 int gpio_hal_read(uint16_t pin) {
     NRF_GPIO_Type *port = port_for_pin(pin);
+    pin &= (P0_PIN_NUM-1);
     return ((port->IN >> pin) & 1) != 0;
 }
 
