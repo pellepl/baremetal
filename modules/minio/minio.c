@@ -137,7 +137,7 @@ static void u_itoan(uint32_t v, char *dst, int base, int num, int flags) {
     }
 }
 
-void itoa(int v, char *dst, int base) {
+char *itoa(int v, char *dst, int base) {
     if (base == 10) {
         if (v < 0) {
             u_itoan(-v, dst, base, 0, NUM_FLAG_NEGATE);
@@ -147,14 +147,18 @@ void itoa(int v, char *dst, int base) {
     } else {
         u_itoan((unsigned int)v, dst, base, 0, 0);
     }
+    return dst;
 }
 
 int atoi(const char *s) {
     return u_atoin(s, 0, 0);
 }
 
-int strtol(const char *s, const char **endptr, int base) {
-    return u_atoin(s, endptr, base);
+long strtol(const char *s, char **endptr, int base) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
+    return u_atoin(s, (char **)endptr, base);
+#pragma GCC diagnostic pop
 }
 
 void v_printf(unsigned int hdl, const char *format, va_list arg_p) {
@@ -287,7 +291,7 @@ void *memset(void *p, int v, unsigned int num) {
     return p;
 }
 
-void *memcpy(const void *src, void *dst, unsigned int num)
+void *memcpy(void *dst, const void *src, unsigned int num)
 {
     const uint8_t *psrc = (const uint8_t *)src;
     uint8_t *pdst = (uint8_t *)dst;
@@ -297,7 +301,7 @@ void *memcpy(const void *src, void *dst, unsigned int num)
     return dst;
 }
 
-int strlen(const char *str) {
+unsigned int strlen(const char *str) {
     const char *s;
     for (s = str; *s; ++s);
     return (s - str);
