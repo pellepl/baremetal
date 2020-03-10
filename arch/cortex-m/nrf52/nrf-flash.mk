@@ -107,7 +107,7 @@ nrf-rtt: .prereq-devs
 
 # Starts a debug session - nrf-connect must have been issued first.
 nrf-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
-	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)-gdb \
+	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb \
 		-ex "file ${TARGET_DIR}/$(TARGETNAME).elf" \
 		-ex "target remote localhost:$(GDB_PORT)" \
 		-ex "mon speed 10000" \
@@ -116,7 +116,7 @@ nrf-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
 
 # Starts a bare debug session - nrf-connect must have been issued first.
 nrf-debug-bare: .prereq-devs
-	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)-gdb \
+	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb \
 		-ex "target remote localhost:$(GDB_PORT)" \
 		-ex "mon speed 10000" \
 		-ex "mon flash download=1" \
