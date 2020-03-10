@@ -2,7 +2,6 @@
 /* MIT License (see ./LICENSE) */
 
 #include "spi_sw.h"
-#define CONFIG_SPI_SW_BUSES 1 // TODO PETER
 #ifndef CONFIG_SPI_SW_BUSES
 #error Number of spi software buses must be defined in CONFIG_SPI_SW_BUSES
 #endif
