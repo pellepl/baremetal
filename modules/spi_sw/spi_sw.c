@@ -36,6 +36,7 @@ void spi_sw_init(unsigned int port, spi_sw_mode_t mode,  spi_sw_transmission_t e
     hdl->mosi_pin = mosi_pin;
     hdl->miso_pin = miso_pin;
     hdl->clk_pin = clk_pin;
+    hdl->delay = delay;
     spi_sw_gpio_set(clk_pin, hdl->mode == SPI_MODE_2 || hdl->mode == SPI_MODE_3);
 }
 
