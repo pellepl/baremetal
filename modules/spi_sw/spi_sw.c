@@ -2,6 +2,7 @@
 /* MIT License (see ./LICENSE) */
 
 #include "spi_sw.h"
+
 #ifndef CONFIG_SPI_SW_BUSES
 #error Number of spi software buses must be defined in CONFIG_SPI_SW_BUSES
 #endif
@@ -50,16 +51,26 @@ int spi_sw_txrx(unsigned int port, const uint8_t *tx_data, uint8_t *rx_data, uin
     while (len--) {
         uint8_t tx = tx_data ? (*tx_data++) : 0;
         uint8_t rx = 0;
-        for (uint8_t b = 0; b < 8; b++) {
-            uint8_t tx_bitmask = hdl->endianess_tx == SPI_TRANSMISSION_LSB_FIRST ? (1<<b) : (1<<(7-b));
-            uint8_t rx_bitmask = hdl->endianess_rx == SPI_TRANSMISSION_LSB_FIRST ? (1<<b) : (1<<(7-b));
+        register uint8_t tx_bitmask_lsb = hdl->endianess_tx == SPI_TRANSMISSION_LSB_FIRST;
+        register uint8_t rx_bitmask_lsb = hdl->endianess_rx == SPI_TRANSMISSION_LSB_FIRST;
+        register uint8_t tx_bitmask = tx_bitmask_lsb ? 0x01 : 0x80;
+        register uint8_t rx_bitmask = rx_bitmask_lsb ? 0x01 : 0x80;
+        for (register uint8_t b = 0; b < 8; b++) {
             if (cpha) spi_sw_gpio_set(clk_pin, !cpol);
             if (tx_data) spi_sw_gpio_set(mosi_pin, tx & tx_bitmask);
+            if (tx_bitmask_lsb)
+                tx_bitmask <<= 1;
+            else
+                tx_bitmask >>= 1;
             spi_sw_delay(hdl);
             if (!cpha) spi_sw_gpio_set(clk_pin, !cpol);
 
-            if (cpha) spi_sw_gpio_set(clk_pin, cpol);
             if (rx_data) rx |= spi_sw_gpio_get(miso_pin) ? rx_bitmask : 0;
+            if (rx_bitmask_lsb)
+                rx_bitmask <<= 1;
+            else
+                rx_bitmask >>= 1;
+            if (cpha) spi_sw_gpio_set(clk_pin, cpol);
             spi_sw_delay(hdl);
             if (!cpha) spi_sw_gpio_set(clk_pin, cpol);
         }
