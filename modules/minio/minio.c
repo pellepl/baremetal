@@ -19,14 +19,14 @@ static const char *I_BASE_ARR_U = "0123456789ABCDEFGHIJKLMNOPQRTSUVWXYZ";
 // generates string ascii as captials
 #define NUM_FLAG_CAPITALS           (1<<5)
 
-#ifndef MINIO_PUTCHAR
-#define MINIO_PUTCHAR(hdl, c) uart_putchar((hdl), (c));
-#endif
+void minio_putchar(unsigned int hdl, char c) {
+    uart_putchar(hdl, c);
+}
 
 static void print_string(uint32_t hdl, const char *str) {
     char cc;
     while ((cc = *str++) != 0) {
-        MINIO_PUTCHAR(hdl, cc);
+        minio_putchar(hdl, cc);
     }
 }
 
@@ -210,8 +210,8 @@ void v_printf(unsigned int hdl, const char *format, va_list arg_p) {
                 flen = c - '0';
                 numerator = 1;
                 continue; // jump to next char, expect numerator
-            case '%': MINIO_PUTCHAR(hdl, '%'); break;
-            case 'c': MINIO_PUTCHAR(hdl, (char)va_arg(arg_p, int)); break;
+            case '%': minio_putchar(hdl, '%'); break;
+            case 'c': minio_putchar(hdl, (char)va_arg(arg_p, int)); break;
             case 's': print_string(hdl, va_arg(arg_p, char *)); break;
 
             case 'd':
@@ -241,7 +241,7 @@ void v_printf(unsigned int hdl, const char *format, va_list arg_p) {
                 print_string(hdl, buf);
                 break;
             }
-            default: MINIO_PUTCHAR(hdl, '?'); break;
+            default: minio_putchar(hdl, '?'); break;
             }
             // turn off escape mode
             esc = 0;
@@ -253,7 +253,7 @@ void v_printf(unsigned int hdl, const char *format, va_list arg_p) {
                 esc = 1;
                 continue;
             }
-            MINIO_PUTCHAR(hdl, c);
+            minio_putchar(hdl, c);
         }
     }
 }

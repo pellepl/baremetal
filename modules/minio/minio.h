@@ -24,5 +24,8 @@ void *memcpy(void *dst, const void *src, unsigned int num);
 int memcmp(const void *str1, const void *str2, unsigned int count);
 int strcmp(const char *s1, const char *s2);
 void *memmove(void *dst, const void *src, unsigned int num);
+// override this if wanted, defaults to uart_putchar
+void minio_putchar(unsigned int hdl, char c) __attribute__ ((weak));
 
 #endif // _MINIO_H_
+
