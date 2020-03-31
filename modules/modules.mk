@@ -47,7 +47,7 @@ $(foreach module_name, $(modules_list_lc), \
 
 # debug
 ifdef dump-module-info
-$(info MODULES:: $(modules_list_uc))
+$(info MODULES:: $(modules_list_lc))
 $(foreach module_name, $(modules_list_lc), \
   $(eval module_name_uc := $(shell echo $(module_name) | tr a-z A-Z)  ) \
   $(eval $(info CONFIG_$(module_name_uc))  ) \
