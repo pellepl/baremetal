@@ -66,7 +66,7 @@ int gpio_hal_config(uint16_t pin, gpio_direction_t dir, gpio_pull_t pull) {
     uint32_t mode = (uint32_t[5]){LL_GPIO_MODE_INPUT, LL_GPIO_MODE_OUTPUT, LL_GPIO_MODE_ANALOG, LL_GPIO_MODE_INPUT, LL_GPIO_MODE_ALTERNATE}[dir];
     uint32_t output = 
         (dir == GPIO_DIRECTION_OUTPUT || dir == GPIO_DIRECTION_FUNCTION_OUT) ?
-          (pull == GPIO_PULL_NONE ? LL_GPIO_OUTPUT_OPENDRAIN : LL_GPIO_OUTPUT_PUSHPULL) :
+          (pull == GPIO_PULL_DOWN ? LL_GPIO_OUTPUT_OPENDRAIN : LL_GPIO_OUTPUT_PUSHPULL) :
           LL_GPIO_OUTPUT_OPENDRAIN;
     LL_GPIO_InitTypeDef cfg = {
         .Pin = hw_pin,

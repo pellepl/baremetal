@@ -82,6 +82,13 @@ $(error Cannot find makefile for arch $(ARCH))
 endif
 endif
 
+ifndef NO_WARNINGS
+CFLAGS += -Wall -Wno-format-y2k -W -Wstrict-prototypes -Wmissing-prototypes \
+-Wpointer-arith -Wreturn-type -Wcast-qual -Wwrite-strings -Wswitch \
+-Wshadow -Wcast-align -Wchar-subscripts -Winline -Wnested-externs \
+-Wredundant-decls -Wno-unused-parameter
+endif
+
 # include arch and modules
 include $(arch_dir)/arch_$(ARCH).mk
 include arch/arch.mk
@@ -166,12 +173,6 @@ iflags := $(foreach dir,$(INCLUDE),-I$(dir))
 ifndef NO_DEBUG_SYMBOLS
 CFLAGS += -g
 LDFLAGS += -g
-endif
-ifndef NO_WARNINGS
-CFLAGS += -Wall -Wno-format-y2k -W -Wstrict-prototypes -Wmissing-prototypes \
--Wpointer-arith -Wreturn-type -Wcast-qual -Wwrite-strings -Wswitch \
--Wshadow -Wcast-align -Wchar-subscripts -Winline -Wnested-externs \
--Wredundant-decls -Wno-unused-parameter
 endif
 CFLAGS += -O$(CC_OPTIMISATION)
 ifeq (,$(findstring $(MAKECMDGOALS),clean info makeinfo))

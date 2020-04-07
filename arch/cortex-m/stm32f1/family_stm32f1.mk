@@ -6,10 +6,35 @@ mdk_dir := $(family_dir)/mdk
 cc-flags-nofpu = -mfloat-abi=soft
 cc-flags-fpu = -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
-ifeq "$(PROC)" "stm32f103x6"
-CFLAGS += -DSTM32F103x6
 CFILES += $(mdk_dir)/STM32F1xx/Source/Templates/system_stm32f1xx.c
 INCLUDE += $(mdk_dir)/STM32F1xx/Include
+
+ifeq "$(PROC)" "stm32f103x4"
+CFLAGS += -DSTM32F103x4
+proc-cc-flags += $(cc-flags-nofpu)
+else ifeq "$(PROC)" "stm32f103x6"
+CFLAGS += -DSTM32F103x6
+proc-cc-flags += $(cc-flags-nofpu)
+else ifeq "$(PROC)" "stm32f103x8"
+CFLAGS += -DSTM32F103x8
+proc-cc-flags += $(cc-flags-nofpu)
+else ifeq "$(PROC)" "stm32f103xB"
+CFLAGS += -DSTM32F103xB
+proc-cc-flags += $(cc-flags-nofpu)
+else ifeq "$(PROC)" "stm32f103xC"
+CFLAGS += -DSTM32F103xC
+proc-cc-flags += $(cc-flags-nofpu)
+else ifeq "$(PROC)" "stm32f103xD"
+CFLAGS += -DSTM32F103xD
+proc-cc-flags += $(cc-flags-nofpu)
+else ifeq "$(PROC)" "stm32f103xE"
+CFLAGS += -DSTM32F103xE
+proc-cc-flags += $(cc-flags-nofpu) -Wno-inline
+else ifeq "$(PROC)" "stm32f103xF"
+CFLAGS += -DSTM32F103xF
+proc-cc-flags += $(cc-flags-nofpu)
+else ifeq "$(PROC)" "stm32f103xG"
+CFLAGS += -DSTM32F103xG
 proc-cc-flags += $(cc-flags-nofpu)
 else
 $(error PROC is not defined correctly for arch $(ARCH), family $(FAMILY))

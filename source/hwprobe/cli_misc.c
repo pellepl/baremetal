@@ -28,7 +28,8 @@ static int cli_info_app(int argc, const char **argv) {
 }
 CLI_FUNCTION(cli_info_app, "info_app");
 
-#if FAMILY==nrf52
+#if 0 // BUILD_INFO_TARGET_FAMILY == nrf52
+// TODO this should be halified someway
 #include "nrf52.h"
 static int cli_info_arch(int argc, const char **argv) {
    printf("part:\t%x\n", NRF_FICR->INFO.PART);
