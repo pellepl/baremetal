@@ -54,12 +54,16 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-//#include "stm32f1xx_hal.h"
+#include "stm32f1xx_ll_fsmc.h"
+
+#define assert_param(x) do { \
+  if (!(x)) while(1); \
+} while(0);
 
 /** @addtogroup STM32F1xx_HAL_Driver
   * @{
   */
-#if (((defined HAL_NOR_MODULE_ENABLED || defined HAL_SRAM_MODULE_ENABLED)) || defined HAL_NAND_MODULE_ENABLED || defined HAL_PCCARD_MODULE_ENABLED )
+#if 1 //(((defined HAL_NOR_MODULE_ENABLED || defined HAL_SRAM_MODULE_ENABLED)) || defined HAL_NAND_MODULE_ENABLED || defined HAL_PCCARD_MODULE_ENABLED )
 
 /** @defgroup FSMC_LL  FSMC Low Layer
   * @brief FSMC driver modules

@@ -333,9 +333,9 @@ int uart_hal_rxpoll(unsigned int hdl) {
     if (log_hdl[hdl]) {
         USART_TypeDef *u = phy_hdl[log_hdl[hdl]];
         if (LL_USART_IsActiveFlag_RXNE(u) == 0) {
-            return LL_USART_ReceiveData8(u);
-        } else {
             return -1;
+        } else {
+            return LL_USART_ReceiveData8(u);
         }
     } else {
         return ERR_UART_NOINIT;
