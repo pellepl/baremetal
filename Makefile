@@ -1,4 +1,4 @@
-APP ?= hwprobe
-BOARD ?= pca10100
-include apps/$(APP)/$(APP).mk
+APP ?= kiln
+BOARD ?= hy-stm32
+include source/$(APP)/$(APP).mk
 include main.mk
