@@ -16,6 +16,7 @@
 #define ERR_FLASH_PROTECTED -(ERR_FLASH_BASE + 3)
 #define ERR_FLASH_ALIGN     -(ERR_FLASH_BASE + 4)
 #define ERR_FLASH_NOSUPPORT -(ERR_FLASH_BASE + 5)
+#define ERR_FLASH_OTHER     -(ERR_FLASH_BASE + 6)
 
 typedef enum {
     // typically internal flash where code normally is executed from
