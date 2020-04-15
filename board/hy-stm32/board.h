@@ -27,4 +27,6 @@
         (board_uart_pindef_t){.rx_pin=0*16+10,.tx_pin=0*16+9,.cts_pin=BOARD_PIN_UNDEF,.rts_pin=BOARD_PIN_UNDEF}, \
     }
 
+#define BOARD_BUZZER_PIN                (16*4 + 0)
+#define BOARD_BUZZER_ACTIVE             (1)
 #endif // _BOARD_H_

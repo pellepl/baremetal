@@ -19,15 +19,31 @@ static const char *I_BASE_ARR_U = "0123456789ABCDEFGHIJKLMNOPQRTSUVWXYZ";
 // generates string ascii as captials
 #define NUM_FLAG_CAPITALS           (1<<5)
 
-void minio_putchar(unsigned int hdl, char c) {
-    uart_putchar(hdl, c);
+#ifndef MINIO_MAX_HDL_B4_MEM
+#define MINIO_MAX_HDL_B4_MEM        (0x100)
+#endif // MINIO_MAX_HDL_B4_MEM
+
+unsigned int minio_putchar(unsigned int hdl, char c) {
+    if (hdl >= MINIO_MAX_HDL_B4_MEM)
+        *(((char *)hdl++)) = c;
+    else 
+        uart_putchar(hdl, c);
+    return hdl;
 }
 
-static void print_string(uint32_t hdl, const char *str) {
+static unsigned int print_string(unsigned int hdl, const char *str, unsigned int end) {
     char cc;
-    while ((cc = *str++) != 0) {
-        minio_putchar(hdl, cc);
+    if (end == 0) {
+        while ((cc = *str++) != 0) {
+            hdl = minio_putchar(hdl, cc);
+        }
+    } else {
+        while ((cc = *str++) != 0) {
+            hdl = minio_putchar(hdl, cc);
+            if (hdl >= MINIO_MAX_HDL_B4_MEM && hdl >= end) break;
+        }
     }
+    return hdl;
 }
 
 static int isspace(char c) {
@@ -165,13 +181,15 @@ long strtol(const char *s, char **endptr, int base) {
 #pragma GCC diagnostic pop
 }
 
-void v_printf(unsigned int hdl, const char *format, va_list arg_p) {
+int vn_printf(unsigned int hdl, const char *format, unsigned int count, va_list arg_p) {
     char c;
     char buf[32*2 + 4];
     int esc = 0;
     int numerator = 0;
     int flen = 0;
     uint8_t flags = 0;
+    unsigned int ohdl = hdl;
+    if (hdl >= MINIO_MAX_HDL_B4_MEM && count) count += hdl;
     while ((c = *format++) != 0) {
         if (esc) {
             if (numerator) {
@@ -210,9 +228,9 @@ void v_printf(unsigned int hdl, const char *format, va_list arg_p) {
                 flen = c - '0';
                 numerator = 1;
                 continue; // jump to next char, expect numerator
-            case '%': minio_putchar(hdl, '%'); break;
-            case 'c': minio_putchar(hdl, (char)va_arg(arg_p, int)); break;
-            case 's': print_string(hdl, va_arg(arg_p, char *)); break;
+            case '%': hdl = minio_putchar(hdl, '%'); break;
+            case 'c': hdl = minio_putchar(hdl, (char)va_arg(arg_p, int)); break;
+            case 's': hdl = print_string(hdl, va_arg(arg_p, char *), count); break;
 
             case 'd':
             case 'i': {
@@ -222,13 +240,13 @@ void v_printf(unsigned int hdl, const char *format, va_list arg_p) {
                     flags |= NUM_FLAG_NEGATE;
                 }
                 u_itoan(v, &buf[0], 10, flen, flags);
-                print_string(hdl, buf);
+                hdl = print_string(hdl, buf, count);
                 break;
             }
             case 'u': {
                 uint32_t v = va_arg(arg_p, uint32_t);
                 u_itoan(v, &buf[0], 10, flen, flags);
-                print_string(hdl, buf);
+                hdl = print_string(hdl, buf, count);
                 break;
             }
             case 'X':
@@ -238,10 +256,10 @@ void v_printf(unsigned int hdl, const char *format, va_list arg_p) {
             case 'x': {
                 uint32_t v = va_arg(arg_p, uint32_t);
                 u_itoan(v, &buf[0], 16, flen, flags);
-                print_string(hdl, buf);
+                hdl = print_string(hdl, buf, count);
                 break;
             }
-            default: minio_putchar(hdl, '?'); break;
+            default: hdl = minio_putchar(hdl, '?'); break;
             }
             // turn off escape mode
             esc = 0;
@@ -253,16 +271,42 @@ void v_printf(unsigned int hdl, const char *format, va_list arg_p) {
                 esc = 1;
                 continue;
             }
-            minio_putchar(hdl, c);
+            hdl = minio_putchar(hdl, c);
         }
+        if (count && hdl >= MINIO_MAX_HDL_B4_MEM && hdl >= count) {
+            break;
+        }  
     }
+    if (hdl >= MINIO_MAX_HDL_B4_MEM){
+        hdl = minio_putchar(hdl, 0);
+    }
+    return hdl - ohdl;
 }
 
 void fprintf(unsigned int hdl, const char *format, ...) {
     va_list arg_p;
     va_start(arg_p, format);
-    v_printf(hdl, format, arg_p);
+    vn_printf(hdl, format, 0, arg_p);
     va_end(arg_p);
+}
+
+int sprintf(char *s, const char *format, ...) {
+    unsigned int hdl = (intptr_t)s;
+    va_list arg_p;
+    va_start(arg_p, format);
+    unsigned int ret = vn_printf(hdl, format, 0, arg_p);
+    va_end(arg_p);
+    return ret;
+}
+
+int snprintf(char *s, unsigned int n, const char *format, ...) {
+    if (n == 0) return 0;
+    unsigned int hdl = (intptr_t)s;
+    va_list arg_p;
+    va_start(arg_p, format);
+    int ret = vn_printf(hdl, format, n-1, arg_p);
+    va_end(arg_p);
+    return ret;
 }
 
 void fprint_mem(unsigned int hdl, uint8_t *data, unsigned int len) {
