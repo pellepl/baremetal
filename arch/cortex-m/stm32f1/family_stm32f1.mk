@@ -4,7 +4,7 @@
 proc_dir := $(family_dir)/$(PROC)
 mdk_dir := $(family_dir)/mdk
 cc-flags-nofpu = -mfloat-abi=soft
-cc-flags-fpu = -mfloat-abi=hard -mfpu=fpv4-sp-d16
+cc-flags-fpu = -mfloat-abi=hard
 
 CFILES += $(mdk_dir)/STM32F1xx/Source/Templates/system_stm32f1xx.c
 INCLUDE += $(mdk_dir)/STM32F1xx/Include
@@ -40,7 +40,7 @@ else
 $(error PROC is not defined correctly for arch $(ARCH), family $(FAMILY))
 endif
 
-proc-cc-flags += -mcpu=cortex-m4 -mthumb -mabi=aapcs
+proc-cc-flags += -mcpu=cortex-m3 -mthumb -mabi=aapcs
 
 CFLAGS += $(proc-cc-flags)
 ASMFLAGS += $(proc-cc-flags)
