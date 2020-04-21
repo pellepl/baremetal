@@ -15,12 +15,12 @@ static inline void tick_timer_decide_next_period(tick_timer_t *t) {
 }
 
 static inline void tick_timer_await_splice(tick_timer_t *t) {
-    #if TICK_TIMER_LEAST_VALUE_BEFORE_OP > 0
-    while (TICK_TIMER_CALC_CURRENT_TICK(tick_timer_hal_get_current(t)) >= t->hal_max_ticks - TICK_TIMER_LEAST_VALUE_BEFORE_OP) {
+#   if TICK_TIMER_LEAST_VALUE_BEFORE_OP > 0
+    while (TICK_TIMER_CALC_CURRENT_TICK(tick_timer_hal_get_current(t)) >= t->timer_period - TICK_TIMER_LEAST_VALUE_BEFORE_OP) {
         // something is very soon to happen, do not meddle with state now
         TICK_TIMER_AWAIT_SPLICE_INSTR;
     }
-    #endif
+#   endif
 }
 
 void tick_timer_set_alarm(tick_timer_t *t, tick_t ticks) {
@@ -72,6 +72,7 @@ __attribute__(( weak )) void tick_timer_on_alarm(tick_timer_t *tim) {
 }
 
 void tick_timer_init(tick_timer_t *tim) {
-    tim->cur_tick = tim->next_wakeup_tick = tim->timer_period = tim->wakeup_ticks_left = 0;
+    tim->cur_tick = tim->next_wakeup_tick = tim->wakeup_ticks_left = 0;
     tick_timer_hal_init(tim);
+    tim->timer_period = tim->hal_max_ticks;
 }

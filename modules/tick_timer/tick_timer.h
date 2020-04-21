@@ -26,7 +26,7 @@ typedef TICK_TIMER_TYPE tick_t;
 
 #ifndef TICK_TIMER_ASSERT
 #define TICK_TIMER_ASSERT(x)
-#endif //  TICK_TIMER_ASSERT
+#endif // TICK_TIMER_ASSERT
 
 typedef struct {
     tick_t wakeup_ticks_left;
@@ -37,11 +37,48 @@ typedef struct {
     void *user;
 } tick_timer_t;
 
+/**
+ * Initiate the tick timer framework.
+ * @param tim the tick timer struct
+ */
 void tick_timer_init(tick_timer_t *tim);
+
+/**
+ * Sets the an alarm at the given absolute tick.
+ * The alarm will only be set if there is no untriggered alarm set previously,
+ * or if the new alarm is earlier than the current alarm. In the latter case,
+ * the later alarm will be aborted.
+ * @param tick the alarm time
+ */
 void tick_timer_set_alarm(tick_timer_t *tim, tick_t tick);
+
+/** 
+ * Aborts current untriggered alarm. If there is no such alarm,
+ * nothing happens.
+ * @param tim the tick timer struct
+ */
 void tick_timer_abort_alarm(tick_timer_t *tim);
+
+/** 
+ * Returns current tick.
+ * @param tim the tick timer struct
+ * @return the current tick value
+ */
 tick_t tick_timer_get_current(tick_timer_t *tim);
+
+/**
+ * Returns the current untriggered alarm.
+ * @param tim the tick timer struct
+ * @return the current untriggered alarm value, or 0
+ *         if there is no active alarm set
+ */
 tick_t tick_timer_get_alarm(tick_timer_t *tim);
+
+/**
+ * This is called when an alarm triggers. Override at pleasure.
+ * Original implementation does nothing.
+ * @param tim the tick timer struct
+ */
 __attribute__(( weak )) void tick_timer_on_alarm(tick_timer_t *tim);
 
 #endif

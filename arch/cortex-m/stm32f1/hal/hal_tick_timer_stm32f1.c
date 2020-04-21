@@ -3,6 +3,7 @@
 #include "stm32f1xx_ll_tim.h"
 
 static tick_timer_t *__tick_timer;
+static volatile uint16_t __tick_timer_period;
 #ifndef CONFIG_TICK_TIMER_STM32_PRESCALER
 #error please define stm32 timer prescaler CONFIG_TICK_TIMER_STM32_PRESCALER (0-65535)
 #endif
@@ -32,15 +33,17 @@ void tick_timer_hal_init(tick_timer_t *tim) {
 
     NVIC_EnableIRQ(CAT(TIM, CAT(CONFIG_TICK_TIMER_STM32_HW_TIM, _IRQn)));
     LL_TIM_SetCounter(TIMx, 0xffff);
+    __tick_timer_period = 0xffff;
     LL_TIM_EnableCounter(TIMx);
 }
 
 uint32_t tick_timer_hal_get_current(tick_timer_t *tim) {
-    return 0xffff - LL_TIM_GetCounter(TIMx);
+    return __tick_timer_period - LL_TIM_GetCounter(TIMx);
 }
 
 void tick_timer_hal_set_period(tick_timer_t *tim, uint32_t ticks) {
     LL_TIM_SetCounter(TIMx, ticks);
+    __tick_timer_period = ticks;
 }
 
 void CAT(TIM, CAT(CONFIG_TICK_TIMER_STM32_HW_TIM, _IRQHandler))(void);
