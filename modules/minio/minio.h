@@ -12,6 +12,7 @@
 
 #define printf(f, ...) do { fprintf(UART_STD, f, ## __VA_ARGS__); } while (0);
 
+
 char *itoa(int v, char *dst, int base);
 void v_printf(unsigned int hdl, const char *format, va_list arg_p);
 void fprintf(unsigned int hdl, const char *format, ...);
@@ -23,6 +24,7 @@ void *memset(void *p, int v, unsigned int num);
 void *memcpy(void *dst, const void *src, unsigned int num);
 int memcmp(const void *str1, const void *str2, unsigned int count);
 int strcmp(const char *s1, const char *s2);
+char *strncpy(char *dst, const char *src, unsigned int num);
 void *memmove(void *dst, const void *src, unsigned int num);
 // override this if wanted, defaults to uart_putchar
 void minio_putchar(unsigned int hdl, char c) __attribute__ ((weak));
