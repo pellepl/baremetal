@@ -12,10 +12,13 @@ static uint16_t _sector_size;
 #define OPT_BASE    ((uint32_t)0x1ffff800)
 
 int flash_init(void) {
-    volatile uint32_t *DBGMCU_IDCODE = (volatile uint32_t *)0xe0042000;
     volatile uint16_t *FLASH_SIZE = (volatile uint16_t *)0x1ffff7e0; // in kB
-    uint32_t code = *DBGMCU_IDCODE;
     uint32_t size = *FLASH_SIZE;
+    _sector_size = size >= 128 ? 2048 : 1024;
+    _sectors = size * 1024 / _sector_size;
+    #if 0 // won't work without debugger
+    volatile uint32_t *DBGMCU_IDCODE = (volatile uint32_t *)0xe0042000;
+    uint32_t code = *DBGMCU_IDCODE;
     uint32_t dev = (code & 0x0fff);
     _sector_size = 0;
     // see https://github.com/blacksphere/blackmagic/blob/master/src/target/stm32f1.c
@@ -63,6 +66,7 @@ int flash_init(void) {
     }
 
     _sectors = size * 1024 / _sector_size;
+    #endif
 
     return _sector_size != 0 ? 0 : ERR_FLASH_NOSUPPORT;
 }
