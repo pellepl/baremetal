@@ -45,7 +45,8 @@ void tick_timer_abort_alarm(tick_timer_t *t) {
 }
 
 tick_t tick_timer_get_current(tick_timer_t *t) {
-    return TICK_TIMER_CALC_CURRENT_TICK(tick_timer_hal_get_current(t)) + t->cur_tick;
+    uint32_t subtick = TICK_TIMER_CALC_CURRENT_TICK(tick_timer_hal_get_current(t));
+    return subtick + t->cur_tick;
 }
 
 tick_t tick_timer_get_alarm(tick_timer_t *t) {

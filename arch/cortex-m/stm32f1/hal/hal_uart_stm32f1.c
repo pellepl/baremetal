@@ -56,6 +56,27 @@ static USART_TypeDef * const phy_hdl[1+UART_COUNT] = {
 #endif
 };
 
+#ifdef CONFIG_UART_STM32_RX_INTERRUPT
+static IRQn_Type const phy_irqn[1+UART_COUNT] = {
+    (IRQn_Type)0,
+#ifdef USART1
+    USART1_IRQn,
+#endif
+#ifdef USART2
+    USART2_IRQn,
+#endif
+#ifdef USART3
+    USART3_IRQn,
+#endif
+#ifdef UART4
+    UART4_IRQn,
+#endif
+#ifdef UART5
+    UART5_IRQn,
+#endif
+};
+#endif
+
 static uint8_t log_hdl[UART_COUNT] = { 0 };
 
 typedef enum {
@@ -181,7 +202,7 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
     }
 
     switch (phy_cfg.phy_hdl) {
-        #ifdef USART1
+#       ifdef USART1
         case HDL_U1:
             LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_USART1);
             switch (phy_cfg.rmp) {
@@ -189,8 +210,8 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
                 default: LL_GPIO_AF_DisableRemap_USART1(); break;
             }
             break;
-        #endif
-        #ifdef USART2
+#       endif
+#       ifdef USART2
         case HDL_U2:
             LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
             switch (phy_cfg.rmp) {
@@ -198,8 +219,8 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
                 default: LL_GPIO_AF_DisableRemap_USART2(); break;
             }
             break;
-        #endif
-        #ifdef USART3
+#       endif
+#       ifdef USART3
         case HDL_U3:
             LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART3);
             switch (phy_cfg.rmp) {
@@ -208,17 +229,17 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
                 default: LL_GPIO_AF_DisableRemap_USART3(); break;
             }
             break;
-        #endif
-        #ifdef UART4
+#       endif
+#       ifdef UART4
         case HDL_U4:
             LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART4);
             break;
-        #endif
-        #ifdef UART5
+#       endif
+#       ifdef UART5
         case HDL_U5:
             LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART5);
             break;
-        #endif
+#       endif
     }
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_AFIO);
     if (phy_cfg.pin.rx != BOARD_PIN_UNDEF) {
@@ -297,6 +318,11 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
         res = LL_USART_Init(u, &usart_config);
 
         if (res == 0) {
+#           ifdef CONFIG_UART_STM32_RX_INTERRUPT
+            LL_USART_EnableIT_RXNE(u);
+            NVIC_ClearPendingIRQ(phy_irqn[phy_cfg.phy_hdl]);
+            NVIC_EnableIRQ(phy_irqn[phy_cfg.phy_hdl]);
+#           endif
             LL_USART_Enable(u);
         }
     }
@@ -349,6 +375,11 @@ int uart_hal_deinit(unsigned int hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t
 
     LL_USART_Disable(u);
 
+#   ifdef CONFIG_UART_STM32_RX_INTERRUPT
+    NVIC_DisableIRQ(phy_irqn[log_hdl[hdl]]);
+    NVIC_ClearPendingIRQ(phy_irqn[log_hdl[hdl]]);
+#   endif
+
     switch (log_hdl[hdl]) {
         #ifdef USART1
         case HDL_U1:
@@ -387,3 +418,55 @@ int uart_hal_deinit(unsigned int hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t
     log_hdl[hdl] = 0;
     return 0;
 }
+
+#ifdef CONFIG_UART_STM32_RX_INTERRUPT
+void uart_irq_rxchar_stm32f1(unsigned int hdl, char x);
+__attribute__(( weak )) void uart_irq_rxchar_stm32f1(unsigned int hdl, char x) {}
+
+static void stm32f1_uart_irq(int phy_hdl_ix) {
+    USART_TypeDef *u = phy_hdl[phy_hdl_ix];
+    NVIC_ClearPendingIRQ(phy_irqn[phy_hdl_ix]);
+    uint8_t hdl;
+    for (hdl = 0; hdl < UART_COUNT; hdl++) {
+        if (log_hdl[hdl] == phy_hdl_ix) {
+            break;
+        }
+    }
+    if (LL_USART_IsActiveFlag_RXNE(u)) {
+         // cleared by reading byte
+        uart_irq_rxchar_stm32f1(hdl, LL_USART_ReceiveData8(u));
+    }
+}
+
+#if defined(USART1)
+void USART1_IRQHandler(void);
+void USART1_IRQHandler(void) {
+    stm32f1_uart_irq(HDL_U1);
+}
+#endif
+#if defined(USART2)
+void USART2_IRQHandler(void);
+void USART2_IRQHandler(void) {
+    stm32f1_uart_irq(HDL_U2);
+}
+#endif
+#if defined(USART3)
+void USART3_IRQHandler(void);
+void USART3_IRQHandler(void) {
+    stm32f1_uart_irq(HDL_U3);
+}
+#endif
+#if defined(UART4)
+void UART4_IRQHandler(void);
+void UART4_IRQHandler(void) {
+    stm32f1_uart_irq(HDL_U4);
+}
+#endif
+#if defined(USART5)
+void UART5_IRQHandler(void);
+void UART5_IRQHandler(void) {
+    stm32f1_uart_irq(HDL_U5);
+}
+#endif
+
+#endif

@@ -259,5 +259,7 @@ info:
 	$(foreach c,$(CFLAGS),$(info .           $(c)))
 	$(info INCLUDE)
 	$(foreach c,$(INCLUDE),$(info .           $(c)))
+	$(info LIBS)
+	$(foreach c,$(LIBS),$(info .           $(c)))
 	$(info LD FILE     $(LINKER_FILE))
 	$(info CC          $(XCC))

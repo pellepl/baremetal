@@ -38,7 +38,7 @@ void tick_timer_hal_init(tick_timer_t *tim) {
 }
 
 uint32_t tick_timer_hal_get_current(tick_timer_t *tim) {
-    return __tick_timer_period - LL_TIM_GetCounter(TIMx);
+    return (uint32_t)((__tick_timer_period -  LL_TIM_GetCounter(TIMx)) & 0xffff);
 }
 
 void tick_timer_hal_set_period(tick_timer_t *tim, uint32_t ticks) {
