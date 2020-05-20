@@ -23,6 +23,7 @@ XCC ?= $(toolchain)gcc$(exe)
 XAS ?= $(XCC)
 XLD ?= $(toolchain)ld$(exe)
 XOBJCOPY ?= $(toolchain)objcopy$(exe)
+XOBJDUMP ?= $(toolchain)objdump$(exe)
 MKDIR ?= mkdir -p
 RM ?= rm -f
 CC_OPTIMISATION ?= s
@@ -182,6 +183,10 @@ endif
 $(target).hex: $(target).elf
 	$(v)$(XOBJCOPY) -O ihex $< $@
 	$(v)$(XOBJCOPY) -O binary $< $(target).bin
+
+asm: $(target).elf
+	@$(ECHO) "ASM\t$(target)_disasm.S"
+	$(v)$(XOBJDUMP) -hd -j .text -j .data -d -S $< > $(target)_disasm.S
 
 LDFLAGS += -Map=$(target).map
 

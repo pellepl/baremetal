@@ -11,6 +11,14 @@ static uint16_t _sector_size;
 #define FLASH_BASE  ((uint32_t)0x08000000)
 #define OPT_BASE    ((uint32_t)0x1ffff800)
 
+int flash_get_address_for_sector(uint32_t sector, void **address) {
+    if (address == 0) return -1;
+    uint8_t *a = _flash_addr_for_sector(sector);
+    if (a == 0) return -1;
+    *address = (void *)a;
+    return 0;
+}
+
 int flash_init(void) {
     volatile uint16_t *FLASH_SIZE = (volatile uint16_t *)0x1ffff7e0; // in kB
     uint32_t size = *FLASH_SIZE;

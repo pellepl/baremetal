@@ -66,6 +66,11 @@ int flash_get_sector_for_address(uint32_t address, uint32_t *sector, uint32_t *o
 /** Returns size of given sector */
 int flash_get_sector_size(uint32_t sector);
 /**
+ * Sets address for given sector if possible
+ * @return 0 on success, -1 if no such address or sector exists
+ */
+int flash_get_address_for_sector(uint32_t sector, void **address);
+/**
  * Returns least necessary alignment of given sector in bytes, or 0 if no alignment
  * is needed
  */
