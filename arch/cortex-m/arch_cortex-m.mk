@@ -7,6 +7,8 @@
 family_dir := $(arch_dir)/$(FAMILY)
 ifeq "$(FAMILY)" "nrf52"
 CFLAGS += -D_CORTEX_CORE_HEADER="\"nrf.h\""
+else ifeq "$(FAMILY)" "nrf53"
+CFLAGS += -D_CORTEX_CORE_HEADER="\"nrf.h\""
 else ifeq "$(FAMILY)" "stm32f1"
 CFLAGS += -D_CORTEX_CORE_HEADER="\"stm32f1xx.h\""
 else

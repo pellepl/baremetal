@@ -2,3 +2,4 @@ build/
 .vscode/
 .gdb_history
 .parallel.pids
+*removeme*

@@ -60,5 +60,5 @@ endif
 
 INCLUDE += $(family_dir)/hal
 
--include $(family_dir)/nrf-flash.mk
+-include $(family_dir)/../nrf-flash.mk
 
