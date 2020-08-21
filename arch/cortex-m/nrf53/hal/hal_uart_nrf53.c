@@ -9,7 +9,7 @@
 
 // TODO PETER needs 53-specific love
 
-// UART seems deprecated in 53, but it is still same HW block. 
+// UART seems deprecated in 53 in favour for UARTE, but it is still same HW block. 
 // Avoid enforcing the DMA in favour for KISS.
 typedef struct {                                /*!< (@ 0x40002000) UART0 Structure                                            */
   __OM  uint32_t  TASKS_STARTRX;                /*!< (@ 0x00000000) Start UART receiver                                        */

@@ -23,7 +23,7 @@
 #define BOARD_UART_COUNT                (1)
 #define BOARD_UART_GPIO_PINS          \
     { \
-        (board_uart_pindef_t){.rx_pin=19,.tx_pin=20,.cts_pin=21,.rts_pin=22}, \
+        (board_uart_pindef_t){.rx_pin=22,.tx_pin=20,.cts_pin=21,.rts_pin=19}, \
     }
 
 #endif // _BOARD_H_
