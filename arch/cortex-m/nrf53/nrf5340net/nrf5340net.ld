@@ -13,4 +13,4 @@ MEMORY
 }
 
 
-INCLUDE "nrf_common.ld"
+INCLUDE "arch/cortex-m/nrf53/mdk/nrf_common.ld"

@@ -20,6 +20,12 @@ JLINK_DEVICE ?= nrf52833_xxaa
 else ifeq "$(PROC)" "nrf52840"
 SOFTDEVICE_PREFIX ?= s140
 JLINK_DEVICE ?= nrf52840_xxaa
+else ifeq "$(PROC)" "nrf5340app"
+JLINK_DEVICE ?= nRF5340_xxAA_APP
+NRFJPROG_EXTRAS ?= -f NRF53
+else ifeq "$(PROC)" "nrf5340net"
+JLINK_DEVICE ?= nRF5340_xxAA_NET
+NRFJPROG_EXTRAS ?= -f NRF53 --coprocessor CP_NETWORK
 else
 SOFTDEVICE_PREFIX ?= s132
 JLINK_DEVICE ?= nrf52832_xxaa
@@ -59,18 +65,18 @@ endef
 # Resets nrf52 devices.
 nrf-reset: .prereq-devs
 	@echo "Resetting $(NRF_DEVICES)"
-	$(call _parallel,$(NRFJPROG) -s $$arg -r,$(NRF_DEVICES),5)
+	$(call _parallel,$(NRFJPROG) $(NRFJPROG_EXTRAS) -s $$arg -r,$(NRF_DEVICES),5)
 
 # Flashes nrf52 devices with the application binary.
 nrf-flash: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
 	@echo "Flashing $< to $(NRF_DEVICES)"
-	$(call _parallel,$(NRFJPROG) -s $$arg --program "$<" --sectorerase && \
-          $(NRFJPROG) -s $$arg -d,$(NRF_DEVICES),60)
+	$(call _parallel,$(NRFJPROG) $(NRFJPROG_EXTRAS) -s $$arg --program "$<" --sectorerase && \
+          $(NRFJPROG) $(NRFJPROG_EXTRAS) -s $$arg -d,$(NRF_DEVICES),60)
 
 # Flashes nrf52 devices with the soft device.
 nrf-flash-softdevice: $(SOFTDEVICE) .prereq-devs
 	@echo "Flashing $< to $(NRF_DEVICES)"
-	$(call _parallel,$(NRFJPROG) -s $$arg --program "$<" --sectorerase,$(NRF_DEVICES),60)
+	$(call _parallel,$(NRFJPROG) $(NRFJPROG_EXTRAS) -s $$arg --program "$<" --sectorerase,$(NRF_DEVICES),60)
 
 # Flashes nrf52 devices with given file.
 nrf-flash-file: .prereq-devs
@@ -79,12 +85,12 @@ nrf-flash-file: .prereq-devs
 		echo "*** ERROR: No file specified or file not found, please define FILE to path to file to flash"; \
 		exit 1; \
 	fi
-	$(call _parallel,$(NRFJPROG) -s $$arg --program "$(realpath $(FILE))" --sectorerase,$(NRF_DEVICES),60)
+	$(call _parallel,$(NRFJPROG) $(NRFJPROG_EXTRAS) -s $$arg --program "$(realpath $(FILE))" --sectorerase,$(NRF_DEVICES),60)
 
 # Fully erases nrf52 devices.
 nrf-erase-all: .prereq-devs
 	@echo "Erasing $(NRF_DEVICES)"
-	$(call _parallel,$(NRFJPROG) -s $$arg --eraseall,$(NRF_DEVICES),60)
+	$(call _parallel,$(NRFJPROG) $(NRFJPROG_EXTRAS) -s $$arg --eraseall,$(NRF_DEVICES),60)
 
 # Connects first best device to jlinks gdb server
 nrf-connect: .prereq-devs
@@ -150,12 +156,24 @@ else ifdef DEVICE
 	$(eval NRF_DEVICE_FIRST := $(word 1, $(NRF_DEVICES)))
   ifndef GDB_PORT
 	$(eval gdb_port_nbr := $(shell echo "$(strip $(NRF_DEVICE_FIRST))" | grep -o "[0-9][0-9][0-9][0-9]$$"))
-	$(eval GDB_PORT := 3$(gdb_port_nbr))
+    ifeq "$(PROC)" "nrf5340app"
+	  $(eval GDB_PORT := $(shell echo $$(( 3$(gdb_port_nbr)&65534 )) ) )
+    else ifeq "$(PROC)" "nrf5340net"
+	  $(eval GDB_PORT := $(shell echo $$(( 3$(gdb_port_nbr)|1 )) ) )
+    else
+	  $(eval GDB_PORT := 3$(gdb_port_nbr) )
+    endif
 	$(info Auto GDB_PORT: $(GDB_PORT))
   endif
   ifndef RTT_PORT
 	$(eval rtt_port_nbr := $(shell echo "$(strip $(NRF_DEVICE_FIRST))" | grep -o "[0-9][0-9][0-9][0-9]$$"))
-	$(eval RTT_PORT := 4$(rtt_port_nbr))
+    ifeq "$(PROC)" "nrf5340app"
+	  $(eval RTT_PORT := $(shell echo $$(( 4$(rtt_port_nbr)&65534 )) ) )
+    else ifeq "$(PROC)" "nrf5340net"
+	  $(eval RTT_PORT := $(shell echo $$(( 4$(rtt_port_nbr)|1 )) ) )
+    else
+	  $(eval RTT_PORT := 4$(rtt_port_nbr) )
+    endif
 	$(info Auto RTT_PORT: $(RTT_PORT))
   endif
 else ifdef DEVICE_FILTER
@@ -191,4 +209,3 @@ endif
 	if [ $(has_jlink) -ne 0 ]; then \
 		echo "WARNING: Could not find $(JLINK). Make sure JLINK variable is set correctly."; \
 	fi
-

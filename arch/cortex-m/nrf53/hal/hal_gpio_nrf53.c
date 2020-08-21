@@ -1,13 +1,14 @@
-/* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
+/* Copyright (c) 2020 Peter Andersson (pelleplutt1976<at>gmail.com) */
 /* MIT License (see ./LICENSE) */
 
 #include "gpio_hal.h"
 #include "nrf.h"
-#include "nrf5340_application_peripherals.h"
+#include "hal_peripherals_nrf53.h"
+
 #define P0_PIN_NUM  32
 
 static NRF_GPIO_Type *port_for_pin(uint16_t pin) {
-    return pin < P0_PIN_NUM ? NRF_P0_S : NRF_P1_S;
+    return pin < P0_PIN_NUM ? NRF_P0 : NRF_P1;
 }
 
 int gpio_hal_init(void) {
