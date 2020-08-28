@@ -3,6 +3,31 @@
 
 #include "board.h"
 #include "gpio_driver.h"
+
+#if defined(NRF5340_XXAA_NETWORK)
+
+int main(void) {
+    uint32_t ix;
+    cpu_init();
+    board_init();
+    gpio_init();
+    for (ix = 0; ix < BOARD_LED_COUNT; ix++) {
+        gpio_config(BOARD_LED_GPIO_PIN[ix], GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
+    }
+    while(1) {
+        for (ix = 0; ix < BOARD_LED_COUNT; ix++) {
+            gpio_set(BOARD_LED_GPIO_PIN[ix], BOARD_LED_GPIO_ACTIVE[ix]);
+        }
+        cpu_halt(500);
+        for (ix = 0; ix < BOARD_LED_COUNT; ix++) {
+            gpio_set(BOARD_LED_GPIO_PIN[ix], !BOARD_LED_GPIO_ACTIVE[ix]);
+        }
+        cpu_halt(500);
+    }
+}
+
+#else // APP processor
+
 #include "uart_driver.h"
 #include "minio.h"
 #include "cli.h"
@@ -13,6 +38,7 @@
 #define __str(x) #x
 
 static int cli_net(int argc, const char **argv) {
+    NRF_RESET_S->NETWORK.FORCEOFF = RESET_NETWORK_FORCEOFF_FORCEOFF_Hold;
     printf("Start NET core\n");
 
 #if 0 // not necessary
@@ -30,13 +56,15 @@ static int cli_net(int argc, const char **argv) {
     for (int i = 0; i < BOARD_LED_COUNT; i++) {
         uint16_t pin = BOARD_LED_GPIO_PIN[i];
         if  (pin < 32) {
-            NRF_P0_S->PIN_CNF[i] &= ~(GPIO_PIN_CNF_MCUSEL_Msk << GPIO_PIN_CNF_MCUSEL_Pos);
-            NRF_P0_S->PIN_CNF[i] |= GPIO_PIN_CNF_MCUSEL_NetworkMCU << GPIO_PIN_CNF_MCUSEL_Pos;
+            NRF_P0_S->PIN_CNF[pin] = GPIO_PIN_CNF_MCUSEL_NetworkMCU << GPIO_PIN_CNF_MCUSEL_Pos;
         } else {
-            NRF_P1_S->PIN_CNF[(i & 0x1f)] &= ~(GPIO_PIN_CNF_MCUSEL_Msk << GPIO_PIN_CNF_MCUSEL_Pos);
-            NRF_P1_S->PIN_CNF[(i & 0x1f)] |= GPIO_PIN_CNF_MCUSEL_NetworkMCU << GPIO_PIN_CNF_MCUSEL_Pos;
+            NRF_P1_S->PIN_CNF[(pin & 0x1f)] = GPIO_PIN_CNF_MCUSEL_NetworkMCU << GPIO_PIN_CNF_MCUSEL_Pos;
         }
     }
+#if 0 // not necessary
+    printf(".. put NET in secure domain\n");
+	NRF_SPU_S->EXTDOMAIN[0].PERM = 1 << 4;
+#endif
     printf(".. release FORCE-OFF on NET\n");
     NRF_RESET_S->NETWORK.FORCEOFF = RESET_NETWORK_FORCEOFF_FORCEOFF_Release;
     return 0;
@@ -109,6 +137,22 @@ int main(void) {
        _str(BUILD_INFO_CC_MACHINE),
        _str(BUILD_INFO_CC_VERSION));
     cli_init(cli_cb, "\r\n;", " ,", "", "");
+    {
+        uint32_t ix, times = 0;
+        for (ix = 0; ix < BOARD_LED_COUNT; ix++) {
+        gpio_config(BOARD_LED_GPIO_PIN[ix], GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
+        }
+        while(times++ < 5) {
+            for (ix = 0; ix < BOARD_LED_COUNT; ix++) {
+                gpio_set(BOARD_LED_GPIO_PIN[ix], BOARD_LED_GPIO_ACTIVE[ix]);
+            }
+            cpu_halt(100);
+            for (ix = 0; ix < BOARD_LED_COUNT; ix++) {
+                gpio_set(BOARD_LED_GPIO_PIN[ix], !BOARD_LED_GPIO_ACTIVE[ix]);
+            }
+            cpu_halt(100);
+        }
+    }
 
     while(1) {
         int rx = uart_getchar(UART_STD);
@@ -118,3 +162,5 @@ int main(void) {
         }
     }
 }
+
+#endif // APP / NET processor

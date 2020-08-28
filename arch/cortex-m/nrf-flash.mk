@@ -11,8 +11,8 @@
 
 NRFJPROG ?= nrfjprog
 
-JLINK ?= /opt/SEGGER/JLink/JLinkExe
-JLINK_GDBSERVER ?= /opt/SEGGER/JLink/JLinkGDBServerCLExe
+JLINK ?= JLinkExe
+JLINK_GDBSERVER ?= JLinkGDBServerCLExe
 
 ifeq "$(PROC)" "nrf52833"
 SOFTDEVICE_PREFIX ?= s140
@@ -153,29 +153,6 @@ else ifdef DEVICE
 		echo "*** ERROR: No device selected using device id \"$(DEVICE)\""; \
 		exit 1; \
 	fi
-	$(eval NRF_DEVICE_FIRST := $(word 1, $(NRF_DEVICES)))
-  ifndef GDB_PORT
-	$(eval gdb_port_nbr := $(shell echo "$(strip $(NRF_DEVICE_FIRST))" | grep -o "[0-9][0-9][0-9][0-9]$$"))
-    ifeq "$(PROC)" "nrf5340app"
-	  $(eval GDB_PORT := $(shell echo $$(( 3$(gdb_port_nbr)&65534 )) ) )
-    else ifeq "$(PROC)" "nrf5340net"
-	  $(eval GDB_PORT := $(shell echo $$(( 3$(gdb_port_nbr)|1 )) ) )
-    else
-	  $(eval GDB_PORT := 3$(gdb_port_nbr) )
-    endif
-	$(info Auto GDB_PORT: $(GDB_PORT))
-  endif
-  ifndef RTT_PORT
-	$(eval rtt_port_nbr := $(shell echo "$(strip $(NRF_DEVICE_FIRST))" | grep -o "[0-9][0-9][0-9][0-9]$$"))
-    ifeq "$(PROC)" "nrf5340app"
-	  $(eval RTT_PORT := $(shell echo $$(( 4$(rtt_port_nbr)&65534 )) ) )
-    else ifeq "$(PROC)" "nrf5340net"
-	  $(eval RTT_PORT := $(shell echo $$(( 4$(rtt_port_nbr)|1 )) ) )
-    else
-	  $(eval RTT_PORT := 4$(rtt_port_nbr) )
-    endif
-	$(info Auto RTT_PORT: $(RTT_PORT))
-  endif
 else ifdef DEVICE_FILTER
 	$(eval NRF_DEVICES := $(call _filter,$(DEVICE_FILTER),$(shell $(NRFJPROG) -i)))
 	@if [ $(words $(NRF_DEVICES)) -eq 0 ]; then \
@@ -190,8 +167,26 @@ else
 	fi
 endif
 	$(eval NRF_DEVICE_FIRST ?= $(word 1, $(NRF_DEVICES)))
-	$(eval GDB_PORT ?= 2331)
-	$(eval RTT_PORT ?= 5331)
+ifndef GDB_PORT
+	$(eval gdb_port_nbr := $(shell echo "$(strip $(NRF_DEVICE_FIRST))" | grep -o "[0-9][0-9][0-9][0-9]$$"))
+  ifeq "$(PROC)" "nrf5340app"
+	  $(eval GDB_PORT := $(shell echo $$(( 3$(gdb_port_nbr)&65534 )) ) )
+  else ifeq "$(PROC)" "nrf5340net"
+	  $(eval GDB_PORT := $(shell echo $$(( 3$(gdb_port_nbr)|1 )) ) )
+  else
+	  $(eval GDB_PORT := 3$(gdb_port_nbr) )
+  endif
+endif
+ifndef RTT_PORT
+	$(eval rtt_port_nbr := $(shell echo "$(strip $(NRF_DEVICE_FIRST))" | grep -o "[0-9][0-9][0-9][0-9]$$"))
+  ifeq "$(PROC)" "nrf5340app"
+	  $(eval RTT_PORT := $(shell echo $$(( 4$(rtt_port_nbr)&65534 )) ) )
+  else ifeq "$(PROC)" "nrf5340net"
+	  $(eval RTT_PORT := $(shell echo $$(( 4$(rtt_port_nbr)|1 )) ) )
+  else
+	  $(eval RTT_PORT := 4$(rtt_port_nbr) )
+  endif
+endif
 
 # private, checks we have nrfjprog
 .prereq-prog: has_nrfjprog=$(shell which $(NRFJPROG) > /dev/null 2>&1; echo $$?)
