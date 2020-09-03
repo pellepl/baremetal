@@ -1,0 +1,33 @@
+nrf53test
+=========
+Starts app cpu by blinking 5 times on all leds. Then kicks off a cli @ 115200 8N1.
+Issue "net" to start the net cpu which will take over the leds and blink forever.
+
+* Build it like this:
+
+$ make APP=nrf53test BOARD=nrf5340pdk PROC=nrf5340app
+$ make APP=nrf53test BOARD=nrf5340pdk PROC=nrf5340net
+
+* Flash it like this:
+
+$ make APP=nrf53test BOARD=nrf5340pdk PROC=nrf5340app nrf-flash
+$ make APP=nrf53test BOARD=nrf5340pdk PROC=nrf5340net nrf-flash
+
+* Debug app and net cpu simultaneously
+
+** Start an app cpu debug session in a terminal like this:
+
+$ make APP=nrf53test BOARD=nrf5340pdk PROC=nrf5340app nrf-connect &
+$ make APP=nrf53test BOARD=nrf5340pdk PROC=nrf5340app nrf-debug
+gdb (app) > mon reset 0
+gdb (app) > c
+
+** In another terminal, debug net cpu like this:
+
+$ make APP=nrf53test BOARD=nrf5340pdk PROC=nrf5340net nrf-connect &
+$ make APP=nrf53test BOARD=nrf5340pdk PROC=nrf5340net nrf-debug
+gdb (net) > mon reset 0
+gdb (net) > b main
+gdb (net) > c
+
+Now, connect to cli and issue "net". The net cpu debug session should halt on main.
