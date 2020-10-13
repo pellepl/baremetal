@@ -15,6 +15,10 @@ else
 $(error PROC is not defined correctly for arch $(ARCH), family $(FAMILY))
 endif
 
+ifdef EXECUTE_IN_RAM
+LINKER_FILE = $(proc_dir)/$(PROC)-exe-ram.ld
+endif
+
 INCLUDE += $(mdk_dir)
 
 nrf53-cc-flags += -mthumb -mabi=aapcs -ffreestanding -fno-common
