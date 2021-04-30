@@ -4,7 +4,7 @@ Define cli functions anywhere in your linked code in following manner:
        printf("hello world\n");
        return 0;
     }
-    CLI_FUNCTION(cli_hello_world, "helloworld");
+    CLI_FUNCTION(cli_hello_world, "helloworld", "prints hello world");
  
 Linkwise, includes a section after .rodata with the cli function entries.
 If there is no .rodata in your link file, you will need to include these

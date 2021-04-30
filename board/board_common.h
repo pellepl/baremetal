@@ -4,7 +4,7 @@
 #ifndef _BOARD_COMMON_H_
 #define _BOARD_COMMON_H_
 
-#include "types.h"
+#include "bmtypes.h"
 #include "cpu.h"
 
 typedef struct  {

@@ -54,4 +54,5 @@ CFLAGS += -DUSE_FULL_LL_DRIVER
 endif
 endif
 
--include $(family_dir)/stm-flash.mk
+-include $(family_dir)/stm-flash-f1.mk
+

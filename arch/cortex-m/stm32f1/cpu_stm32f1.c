@@ -1,7 +1,7 @@
 /* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
 /* MIT License (see ./LICENSE) */
 
-#include "types.h"
+#include "bmtypes.h"
 #include "stm32f1xx.h"
 #include "cpu.h"
 #include "stm32f1xx_ll_rcc.h"

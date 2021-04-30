@@ -6,7 +6,7 @@
 
 // bit banging i2c master
 
-#include "types.h"
+#include "bmtypes.h"
 
 #ifndef ERR_I2C_SW_BASE
 #define ERR_I2C_SW_BASE       (20)

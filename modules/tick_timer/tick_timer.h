@@ -1,7 +1,7 @@
 #ifndef _TICK_TIMER_H_
 #define _TICK_TIMER_H_
 
-#include "types.h"
+#include "bmtypes.h"
 
 // do not do any operations if timer is lower than this value
 #ifndef TICK_TIMER_LEAST_VALUE_BEFORE_OP

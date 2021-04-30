@@ -1,0 +1,23 @@
+Makeflags:
+  NO_STM32_LL_DRIVER
+    By default, the STM32 LL driver is compiled and included. Define this not
+    to include the LL driver files.
+
+  NO_STM32_LL_DRIVER_FULL
+    By defult, the above LL driver is compiled with flag USE_FULL_LL_DRIVER.
+    Define this not to do this.
+
+  NO_STM32_HAL_DRIVER
+    By default, if the LL driver is included, so is the HAL driver. Define
+    this not to include the HAL driver files.
+
+  NO_STM32_HAL_ALL_MODULES_INCLUDED
+    By default, all inclusions for the hal modules are added. Define this
+    not to do that.
+
+  CONFIG_UART_STM32_RX_INTERRUPT
+    Define this to have uart rx interrupts, will be called back to
+    uart_irq_rxchar_stm32f7 from interrupt context. A weak implementation
+    doing nothing is default.
+
+See stm-flash.mk for convenience targets for flashing, debugging etc.

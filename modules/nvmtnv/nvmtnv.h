@@ -4,7 +4,7 @@
 #ifndef _NVMTNV_H
 #define _NVMTNV_H
 
-#include "types.h"
+#include "bmtypes.h"
 
 #ifndef ERR_NVTNV_BASE
 #define ERR_NVTNV_BASE      (300)

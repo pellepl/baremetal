@@ -96,6 +96,8 @@ include arch/arch.mk
 modules_dir := modules
 include modules/modules.mk
 
+GCC_AS_LD ?= 1
+
 ifeq "$(GCC_AS_LD)" "1"
   XLD := $(XCC)
 else
@@ -121,7 +123,7 @@ endif
 
 # set default linker file
 LINKER_FILE ?= $(proc_dir)/$(PROC).ld
-# general include directories in specific-first order
+# general include directories in specific-first, general-last order
 INCLUDE += $(board_dir) board/ $(proc_dir) $(family_dir) $(arch_dir) arch/
 # board compile files
 CFILES += board/board_common.c
@@ -180,6 +182,8 @@ ifeq (,$(findstring $(MAKECMDGOALS),clean info makeinfo))
 -include $(depfiles)
 endif
 
+CFLAGS += $(CFLAGS_LATE)
+
 $(target).hex: $(target).elf
 	$(v)$(XOBJCOPY) -O ihex $< $@
 	$(v)$(XOBJCOPY) -O binary $< $(target).bin
@@ -229,6 +233,8 @@ $(depfiles): $(TARGET_DIR)/%.d:%.c
 
 clean:
 	$(v)$(RM) -r $(TARGET_DIR)
+
+-include apps/$(APP)/$(APP)-late.mk
 
 define var_set
 $(if $1,✓,)

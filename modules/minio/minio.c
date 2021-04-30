@@ -3,6 +3,8 @@
 
 #include "minio.h"
 
+#ifndef MINIO_STD_API_REPLACE
+
 static const char *I_BASE_ARR_L = "0123456789abcdefghijklmnopqrstuvwxyz";
 static const char *I_BASE_ARR_U = "0123456789ABCDEFGHIJKLMNOPQRTSUVWXYZ";
 
@@ -16,7 +18,7 @@ static const char *I_BASE_ARR_U = "0123456789ABCDEFGHIJKLMNOPQRTSUVWXYZ";
 #define NUM_FLAG_FORCE_SIGN         (1<<3)
 // adds base signature, e.g. "0x", "0b", etc
 #define NUM_FLAG_BASE_SIG           (1<<4)
-// generates string ascii as captials
+// generates string ascii as capitals
 #define NUM_FLAG_CAPITALS           (1<<5)
 
 #ifndef MINIO_MAX_HDL_B4_MEM
@@ -26,8 +28,17 @@ static const char *I_BASE_ARR_U = "0123456789ABCDEFGHIJKLMNOPQRTSUVWXYZ";
 unsigned int minio_putchar(unsigned int hdl, char c) {
     if (hdl >= MINIO_MAX_HDL_B4_MEM)
         *(((char *)hdl++)) = c;
-    else 
+    else {
+#ifdef MINIO_PUTCHAR
+        MINIO_PUTCHAR(hdl, c);
+#else
+#  ifdef CONFIG_UART
         uart_putchar(hdl, c);
+#  else
+#    warning Please define macro MINIO_PUTCHAR(handle, character)
+#  endif
+#endif
+    }
     return hdl;
 }
 
@@ -157,7 +168,7 @@ static void u_itoan(uint32_t v, char *dst, int base, int num, int flags) {
     }
 }
 
-char *itoa(int v, char *dst, int base) {
+char *minio_itoa(int v, char *dst, int base) {
     if (base == 10) {
         if (v < 0) {
             u_itoan(-v, dst, base, 0, NUM_FLAG_NEGATE);
@@ -170,18 +181,18 @@ char *itoa(int v, char *dst, int base) {
     return dst;
 }
 
-int atoi(const char *s) {
+int minio_atoi(const char *s) {
     return u_atoin(s, 0, 0);
 }
 
-long strtol(const char *s, char **endptr, int base) {
+long minio_strtol(const char *s, char **endptr, int base) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
     return u_atoin(s, (char **)endptr, base);
 #pragma GCC diagnostic pop
 }
 
-int vn_printf(unsigned int hdl, const char *format, unsigned int count, va_list arg_p) {
+int minio_vn_printf(unsigned int hdl, const char *format, unsigned int count, va_list arg_p) {
     char c;
     char buf[32*2 + 4];
     int esc = 0;
@@ -211,7 +222,7 @@ int vn_printf(unsigned int hdl, const char *format, unsigned int count, va_list 
             case '#':
                 flags |= NUM_FLAG_BASE_SIG;
                 continue; // jump to next char
-            case '0': 
+            case '0':
                 flen = 0;
                 numerator = 1;
                 continue; // jump to next char, expect numerator
@@ -275,7 +286,7 @@ int vn_printf(unsigned int hdl, const char *format, unsigned int count, va_list 
         }
         if (count && hdl >= MINIO_MAX_HDL_B4_MEM && hdl >= count) {
             break;
-        }  
+        }
     }
     if (hdl >= MINIO_MAX_HDL_B4_MEM){
         hdl = minio_putchar(hdl, 0);
@@ -283,55 +294,55 @@ int vn_printf(unsigned int hdl, const char *format, unsigned int count, va_list 
     return hdl - ohdl;
 }
 
-void fprintf(unsigned int hdl, const char *format, ...) {
+void minio_fprintf(unsigned int hdl, const char *format, ...) {
     va_list arg_p;
     va_start(arg_p, format);
-    vn_printf(hdl, format, 0, arg_p);
+    minio_vn_printf(hdl, format, 0, arg_p);
     va_end(arg_p);
 }
 
-int sprintf(char *s, const char *format, ...) {
+int minio_sprintf(char *s, const char *format, ...) {
     unsigned int hdl = (intptr_t)s;
     va_list arg_p;
     va_start(arg_p, format);
-    unsigned int ret = vn_printf(hdl, format, 0, arg_p);
+    unsigned int ret = minio_vn_printf(hdl, format, 0, arg_p);
     va_end(arg_p);
     return ret;
 }
 
-int snprintf(char *s, unsigned int n, const char *format, ...) {
+int minio_snprintf(char *s, unsigned int n, const char *format, ...) {
     if (n == 0) return 0;
     unsigned int hdl = (intptr_t)s;
     va_list arg_p;
     va_start(arg_p, format);
-    int ret = vn_printf(hdl, format, n-1, arg_p);
+    int ret = minio_vn_printf(hdl, format, n-1, arg_p);
     va_end(arg_p);
     return ret;
 }
 
-void fprint_mem(unsigned int hdl, uint8_t *data, unsigned int len) {
+void minio_fprint_mem(unsigned int hdl, uint8_t *data, unsigned int len) {
     while (len) {
         uint32_t rem = len >= 16 ? 16 : len;
         uint32_t fill = 16-rem;
         uint32_t i;
         for (i = 0; i < rem; i++) {
-            fprintf(hdl, "%02x ", data[i]);
+            minio_fprintf(hdl, "%02x ", data[i]);
         }
         for (i = 0; i < fill+1; i++) {
-            fprintf(hdl, "   ");
+            minio_fprintf(hdl, "   ");
         }
         for (i = 0; i < rem; i++) {
             uint8_t c = data[i];
             if (c <= ' ' || c > 127) c = '.';
-            fprintf(hdl, "%c", c);
+            minio_fprintf(hdl, "%c", c);
         }
         data += rem;
         len -= rem;
-        fprintf(hdl, "\n");
+        minio_fprintf(hdl, "\n");
     }
 }
 
-void *memset(void *p, int v, unsigned int num) {
+void *minio_memset(void *p, int v, unsigned int num) {
     uint8_t *pp = (uint8_t *)p;
     while (num--) {
         *pp++ = v;
@@ -339,7 +350,7 @@ void *memset(void *p, int v, unsigned int num) {
     return p;
 }
 
-void *memcpy(void *dst, const void *src, unsigned int num)
+void *minio_memcpy(void *dst, const void *src, unsigned int num)
 {
     const uint8_t *psrc = (const uint8_t *)src;
     uint8_t *pdst = (uint8_t *)dst;
@@ -349,13 +360,13 @@ void *memcpy(void *dst, const void *src, unsigned int num)
     return dst;
 }
 
-unsigned int strlen(const char *str) {
+unsigned int minio_strlen(const char *str) {
     const char *s;
     for (s = str; *s; ++s);
     return (s - str);
 }
 
-int strcmp(const char* s1, const char* s2) {
+int minio_strcmp(const char* s1, const char* s2) {
     const unsigned char *p1 = (const unsigned char *)s1;
     const unsigned char *p2 = (const unsigned char *)s2;
 
@@ -367,13 +378,31 @@ int strcmp(const char* s1, const char* s2) {
     return (*p1 > *p2) - (*p2  > *p1);
 }
 
-char *strncpy(char *dst, const char *src, unsigned int num) {
+const char *minio_strstr(const char* str, const char* sub) {
+    int len = minio_strlen(sub);
+    int ix = 0;
+    char c;
+    while ((c = *str++) != 0 && ix < len) {
+        if (c == sub[ix]) {
+            ix++;
+        } else {
+            ix = 0;
+        }
+    }
+    if (ix == len) {
+        return (const char *)(str - len - 1);
+    } else {
+        return 0;
+    }
+}
+
+char *minio_strncpy(char *dst, const char *src, unsigned int num) {
     char *r = dst;
     while (num-- && (*dst++ = *src++));
     return r;
 }
 
-int memcmp(const void *str1, const void *str2, unsigned int count) {
+int minio_memcmp(const void *str1, const void *str2, unsigned int count) {
     const unsigned char *s1 = (const unsigned char*)str1;
     const unsigned char *s2 = (const unsigned char*)str2;
 
@@ -385,7 +414,7 @@ int memcmp(const void *str1, const void *str2, unsigned int count) {
     return 0;
 }
 
-void *memmove(void *dst, const void *src, unsigned int num) {
+void *minio_memmove(void *dst, const void *src, unsigned int num) {
     uint8_t *d = (uint8_t *)dst;
     const uint8_t *s = (const uint8_t *)src;
     if (d < s) {
@@ -397,3 +426,5 @@ void *memmove(void *dst, const void *src, unsigned int num) {
     }
     return dst;
 }
+
+#endif // MINIO_STD_API_REPLACE

@@ -1,7 +1,7 @@
 /* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
 /* MIT License (see ./LICENSE) */
 
-#include "types.h"
+#include "bmtypes.h"
 #include "flash_driver.h"
 #include "flash_stm32f1.h"
 #include "stm32f1xx.h"
@@ -246,7 +246,7 @@ int flash_write(uint32_t sector, uint32_t offset, const uint8_t *data, uint32_t 
     int sector_size = flash_get_sector_size(sector);
     if (sector_size < 0) return sector_size;
     if (length == 0 || offset >= (uint32_t)sector_size) return 0;
-    
+
     uint8_t *addr = _flash_addr_for_sector(sector);
     int written = 0;
     FLASH_res res = 0;

@@ -7,25 +7,25 @@
 /* Simple command line interface.
  *
  * Define cli functions anywhere in your linked code in following manner:
- * 
+ *
  *    static int cli_hello_world(int argc, const char **argv) {
  *       printf("hello world\n");
  *       return 0;
  *    }
- *    CLI_FUNCTION(cli_hello_world, "helloworld");
- * 
+ *    CLI_FUNCTION(cli_hello_world, "helloworld", "help text");
+ *
  * Expects a pointer aligned section in linker called .cli_func_entries,
  * with __cli_func_entries_start and __cli_func_entries_end symbols wrapping
  * the section.
  * Like so:
- * 
+ *
  *    . = ALIGN(4);
  *    __cli_func_entries_start = .;
  *    KEEP(*(.cli_func_entries*))
  *    __cli_func_entries_end = .;
  */
 
-#include "types.h"
+#include "bmtypes.h"
 
 #ifndef CLI_BUFFER_SIZE
 #define CLI_BUFFER_SIZE             (256)
@@ -47,11 +47,12 @@
 
 typedef struct cli_entry {
     const char *name;
+    const char *help;
     int (* func)(int argc, const char **argv);
 } cli_entry_t;
 
-#define CLI_FUNCTION(_func, _name) \
-static const cli_entry_t  __cli_descr_ ## _func = {.name=_name, .func=_func }; \
+#define CLI_FUNCTION(_func, _name, _help) \
+static const cli_entry_t  __cli_descr_ ## _func = {.name=_name, .func=_func, .help=_help }; \
 __attribute__(( used, section(".cli_func_entries") )) static const cli_entry_t  *__cli_entry_ ## _func = &__cli_descr_ ## _func;
 
 /** CLI callback */

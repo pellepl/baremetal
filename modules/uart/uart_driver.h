@@ -4,7 +4,7 @@
 #ifndef _UART_DRIVER_H_
 #define _UART_DRIVER_H_
 
-#include "types.h"
+#include "bmtypes.h"
 
 #ifndef UART_STD
 #define UART_STD            (0)

@@ -11,6 +11,8 @@ else ifeq "$(FAMILY)" "nrf53"
 CFLAGS += -D_CORTEX_CORE_HEADER="\"nrf.h\""
 else ifeq "$(FAMILY)" "stm32f1"
 CFLAGS += -D_CORTEX_CORE_HEADER="\"stm32f1xx.h\""
+else ifeq "$(FAMILY)" "stm32f7"
+CFLAGS += -D_CORTEX_CORE_HEADER="\"stm32f7xx.h\""
 else
 $(error FAMILY is not defined correctly for arch $(ARCH))
 endif

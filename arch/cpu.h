@@ -4,7 +4,7 @@
 #ifndef _CPU_H_
 #define _CPU_H_
 
-#include "types.h"
+#include "bmtypes.h"
 
 void cpu_init(void);
 void cpu_reset(void);

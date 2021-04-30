@@ -1,0 +1,4 @@
+MEMORY
+{
+  SDRAM (xrw)	: ORIGIN = 0xC0000000, LENGTH = 4M
+}

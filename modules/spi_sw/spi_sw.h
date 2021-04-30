@@ -6,7 +6,7 @@
 
 // bit banging spi master
 
-#include "types.h"
+#include "bmtypes.h"
 
 #ifndef ERR_SPI_SW_BASE
 #define ERR_SPI_SW_BASE       (30)

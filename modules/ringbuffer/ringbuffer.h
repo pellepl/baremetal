@@ -1,7 +1,7 @@
 #ifndef _RINGBUFFER_H_
 #define _RINGBUFFER_H_
 
-#include "types.h"
+#include "bmtypes.h"
 
 #ifndef RB_MEMCPY
 #if CONFIG_MINIO

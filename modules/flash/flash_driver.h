@@ -4,7 +4,7 @@
 #ifndef _FLASH_DRIVER_H
 #define _FLASH_DRIVER_H
 
-#include "types.h"
+#include "bmtypes.h"
 
 #ifndef ERR_FLASH_BASE
 #define ERR_FLASH_BASE      (200)
