@@ -20,7 +20,8 @@ ifneq "$(GCC_AS_LD)" "1"
 NO_CRT0 := 1
 msp_crt0_o := $(realpath $(shell find $(TOOLCHAIN_DIR) -name "crt0.o" | grep "$(msp_link_type)/crt0.o" | head -n 1))
 ifeq "$(strip $(msp_crt0_o))" ""
-$(error Could not find crt0.o for msp link type "$(msp_link_type)". Make sure msp_link_type is valid for $(PROC) in family_$(family).mk)
+$(error Could not find crt0.o for msp link type "$(msp_link_type)". Make sure msp_link_type is valid for PROC $(PROC) in $(family_dir)/family_$(FAMILY).mk \
+ and that your TOOLCHAIN_DIR is set correctly ($(TOOLCHAIN_DIR)))
 endif
 INCLUDE += $(mdk_dir)
 LDFLAGS += --library-path=$(mdk_dir)
