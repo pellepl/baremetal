@@ -1,32 +1,41 @@
 /*
 
-Copyright (c) 2010 - 2018, Nordic Semiconductor ASA All rights reserved.
+Copyright (c) 2010 - 2020, Nordic Semiconductor ASA
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
    list of conditions and the following disclaimer.
 
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
+2. Redistributions in binary form, except as embedded into a Nordic
+   Semiconductor ASA integrated circuit in a product or a software update for
+   such product, must reproduce the above copyright notice, this list of
+   conditions and the following disclaimer in the documentation and/or other
+   materials provided with the distribution.
 
 3. Neither the name of Nordic Semiconductor ASA nor the names of its
    contributors may be used to endorse or promote products derived from this
    software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY, AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+4. This software, with or without modification, must only be used with a
+   Nordic Semiconductor ASA integrated circuit.
+
+5. Any software provided in binary form under this license must not be reverse
+   engineered, decompiled, modified and/or disassembled.
+
+THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
+OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
 LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
@@ -59,6 +68,10 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #define REGULATORS_FEATURE_VDDH_PRESENT
 
+/* USB Regulator Peripheral */
+#define USBREG_PRESENT
+#define USBREG_COUNT 1
+
 /* Volatile Memory Controller Peripheral */
 #define VMC_PRESENT
 #define VMC_COUNT 1
@@ -80,14 +93,17 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #define IPC_CH_NUM 16
 #define IPC_CONF_NUM 16
-#define IPC_GPMEM_NUM 4
+#define IPC_GPMEM_NUM 2
 
 /* GPIO */
 #define GPIO_PRESENT
 #define GPIO_COUNT 2
 
 #define P0_PIN_NUM 32
-#define P1_PIN_NUM 12
+#define P1_PIN_NUM 16
+
+#define P0_FEATURE_PINS_PRESENT 0xFFFFFFFFUL
+#define P1_FEATURE_PINS_PRESENT 0x0000FFFFUL
 
 /* NFC Tag */
 #define NFCT_PRESENT
@@ -138,59 +154,77 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Serial Peripheral Interface Master with DMA */
 #define SPIM_PRESENT
-#define SPIM_COUNT 3
+#define SPIM_COUNT 5
 
 #define SPIM0_MAX_DATARATE  8
 #define SPIM1_MAX_DATARATE  8
-#define SPIM2_MAX_DATARATE  32
+#define SPIM2_MAX_DATARATE  8
+#define SPIM3_MAX_DATARATE  8
+#define SPIM4_MAX_DATARATE  32
 
 #define SPIM0_FEATURE_HARDWARE_CSN_PRESENT  0
 #define SPIM1_FEATURE_HARDWARE_CSN_PRESENT  0
-#define SPIM2_FEATURE_HARDWARE_CSN_PRESENT  1
+#define SPIM2_FEATURE_HARDWARE_CSN_PRESENT  0
+#define SPIM3_FEATURE_HARDWARE_CSN_PRESENT  0
+#define SPIM4_FEATURE_HARDWARE_CSN_PRESENT  1
 
 #define SPIM0_FEATURE_DCX_PRESENT  0
 #define SPIM1_FEATURE_DCX_PRESENT  0
-#define SPIM2_FEATURE_DCX_PRESENT  1
+#define SPIM2_FEATURE_DCX_PRESENT  0
+#define SPIM3_FEATURE_DCX_PRESENT  0
+#define SPIM4_FEATURE_DCX_PRESENT  1
 
 #define SPIM0_FEATURE_RXDELAY_PRESENT  0
 #define SPIM1_FEATURE_RXDELAY_PRESENT  0
-#define SPIM2_FEATURE_RXDELAY_PRESENT  1
+#define SPIM2_FEATURE_RXDELAY_PRESENT  0
+#define SPIM3_FEATURE_RXDELAY_PRESENT  0
+#define SPIM4_FEATURE_RXDELAY_PRESENT  1
 
 #define SPIM0_EASYDMA_MAXCNT_SIZE 16
 #define SPIM1_EASYDMA_MAXCNT_SIZE 16
 #define SPIM2_EASYDMA_MAXCNT_SIZE 16
+#define SPIM3_EASYDMA_MAXCNT_SIZE 16
+#define SPIM4_EASYDMA_MAXCNT_SIZE 16
 
 /* Serial Peripheral Interface Slave with DMA*/
 #define SPIS_PRESENT
-#define SPIS_COUNT 2
+#define SPIS_COUNT 4
 
 #define SPIS0_EASYDMA_MAXCNT_SIZE 16
 #define SPIS1_EASYDMA_MAXCNT_SIZE 16
+#define SPIS2_EASYDMA_MAXCNT_SIZE 16
+#define SPIS3_EASYDMA_MAXCNT_SIZE 16
 
 /* Two Wire Interface Master with DMA */
 #define TWIM_PRESENT
-#define TWIM_COUNT 2
+#define TWIM_COUNT 4
 
 #define TWIM0_EASYDMA_MAXCNT_SIZE 16
 #define TWIM1_EASYDMA_MAXCNT_SIZE 16
+#define TWIM2_EASYDMA_MAXCNT_SIZE 16
+#define TWIM3_EASYDMA_MAXCNT_SIZE 16
 
 /* Two Wire Interface Slave with DMA */
 #define TWIS_PRESENT
-#define TWIS_COUNT 2
+#define TWIS_COUNT 4
 
 #define TWIS0_EASYDMA_MAXCNT_SIZE 16
 #define TWIS1_EASYDMA_MAXCNT_SIZE 16
+#define TWIS2_EASYDMA_MAXCNT_SIZE 16
+#define TWIS3_EASYDMA_MAXCNT_SIZE 16
 
 /* Universal Asynchronous Receiver-Transmitter with DMA */
 #define UARTE_PRESENT
-#define UARTE_COUNT 2
+#define UARTE_COUNT 4
 
 #define UARTE0_EASYDMA_MAXCNT_SIZE 16
 #define UARTE1_EASYDMA_MAXCNT_SIZE 16
+#define UARTE2_EASYDMA_MAXCNT_SIZE 16
+#define UARTE3_EASYDMA_MAXCNT_SIZE 16
 
 /* Quadrature Decoder */
 #define QDEC_PRESENT
-#define QDEC_COUNT 1
+#define QDEC_COUNT 2
 
 /* Successive Approximation Analog to Digital Converter */
 #define SAADC_PRESENT
@@ -222,15 +256,17 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Pulse Width Modulator */
 #define PWM_PRESENT
-#define PWM_COUNT 3
+#define PWM_COUNT 4
 
 #define PWM0_CH_NUM 4
 #define PWM1_CH_NUM 4
 #define PWM2_CH_NUM 4
+#define PWM3_CH_NUM 4
 
 #define PWM0_EASYDMA_MAXCNT_SIZE 15
 #define PWM1_EASYDMA_MAXCNT_SIZE 15
 #define PWM2_EASYDMA_MAXCNT_SIZE 15
+#define PWM3_EASYDMA_MAXCNT_SIZE 15
 
 /* ARM TrustZone Cryptocell 310 */
 #define CRYPTOCELL_PRESENT
@@ -269,5 +305,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #define USBD_COUNT 1
 
 #define USBD_EASYDMA_MAXCNT_SIZE 7
+
+/* Oscillators */
+#define OSCILLATORS_PRESENT
+#define OSCILLATORS_COUNT 1
 
 #endif      // _NRF5340_PERIPHERALS_H

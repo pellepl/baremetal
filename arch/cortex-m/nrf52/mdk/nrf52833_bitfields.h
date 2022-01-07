@@ -1,32 +1,41 @@
 /*
 
-Copyright (c) 2010 - 2018, Nordic Semiconductor ASA All rights reserved.
+Copyright (c) 2010 - 2020, Nordic Semiconductor ASA
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
    list of conditions and the following disclaimer.
 
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
+2. Redistributions in binary form, except as embedded into a Nordic
+   Semiconductor ASA integrated circuit in a product or a software update for
+   such product, must reproduce the above copyright notice, this list of
+   conditions and the following disclaimer in the documentation and/or other
+   materials provided with the distribution.
 
 3. Neither the name of Nordic Semiconductor ASA nor the names of its
    contributors may be used to endorse or promote products derived from this
    software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY, AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+4. This software, with or without modification, must only be used with a
+   Nordic Semiconductor ASA integrated circuit.
+
+5. Any software provided in binary form under this license must not be reverse
+   engineered, decompiled, modified and/or disassembled.
+
+THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
+OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
 LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
@@ -705,8 +714,8 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Bits 7..0 : HFXO debounce time. Debounce time = HFXODEBOUNCE * 16 us. */
 #define CLOCK_HFXODEBOUNCE_HFXODEBOUNCE_Pos (0UL) /*!< Position of HFXODEBOUNCE field. */
 #define CLOCK_HFXODEBOUNCE_HFXODEBOUNCE_Msk (0xFFUL << CLOCK_HFXODEBOUNCE_HFXODEBOUNCE_Pos) /*!< Bit mask of HFXODEBOUNCE field. */
-#define CLOCK_HFXODEBOUNCE_HFXODEBOUNCE_Db256us (0x10UL) /*!< 256 us debounce time. Recommended for TSX-3225, FA-20H and FA-128 crystals. */
-#define CLOCK_HFXODEBOUNCE_HFXODEBOUNCE_Db1024us (0x40UL) /*!< 1024 us debounce time. Recommended for NX1612AA and NX1210AB crystals. */
+#define CLOCK_HFXODEBOUNCE_HFXODEBOUNCE_Db256us (0x10UL) /*!< 256 us debounce time. Recommended for 1.6 mm x 2.0 mm crystals and larger. */
+#define CLOCK_HFXODEBOUNCE_HFXODEBOUNCE_Db1024us (0x40UL) /*!< 1024 us debounce time. Recommended for 1.6 mm x 1.2 mm crystals and smaller. */
 
 /* Register: CLOCK_LFXODEBOUNCE */
 /* Description: LFXO debounce time. The LFXO is started by triggering the TASKS_LFCLKSTART task when the LFCLKSRC register is configured for Xtal. */
@@ -4858,7 +4867,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Register: NVMC_ERASEALL */
 /* Description: Register for erasing all non-volatile user memory */
 
-/* Bit 0 : Erase all non-volatile memory including UICR registers. Note that the erase must be enabled using CONFIG.WEN before the non-volatile memory can be erased. */
+/* Bit 0 : Erase all non-volatile memory including UICR registers. The erase must be enabled using CONFIG.WEN before the non-volatile memory can be erased. */
 #define NVMC_ERASEALL_ERASEALL_Pos (0UL) /*!< Position of ERASEALL field. */
 #define NVMC_ERASEALL_ERASEALL_Msk (0x1UL << NVMC_ERASEALL_ERASEALL_Pos) /*!< Bit mask of ERASEALL field. */
 #define NVMC_ERASEALL_ERASEALL_NoOperation (0UL) /*!< No operation */
@@ -4874,7 +4883,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Register: NVMC_ERASEUICR */
 /* Description: Register for erasing user information configuration registers */
 
-/* Bit 0 : Register starting erase of all user information configuration registers. Note that the erase must be enabled using CONFIG.WEN before the UICR can be erased. */
+/* Bit 0 : Register starting erase of all user information configuration registers. The erase must be enabled using CONFIG.WEN before the UICR can be erased. */
 #define NVMC_ERASEUICR_ERASEUICR_Pos (0UL) /*!< Position of ERASEUICR field. */
 #define NVMC_ERASEUICR_ERASEUICR_Msk (0x1UL << NVMC_ERASEUICR_ERASEUICR_Pos) /*!< Bit mask of ERASEUICR field. */
 #define NVMC_ERASEUICR_ERASEUICR_NoOperation (0UL) /*!< No operation */
@@ -4912,14 +4921,14 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Register: NVMC_IHIT */
 /* Description: I-code cache hit counter */
 
-/* Bits 31..0 : Number of cache hits */
+/* Bits 31..0 : Number of cache hits. Register is writable, but only to '0'. */
 #define NVMC_IHIT_HITS_Pos (0UL) /*!< Position of HITS field. */
 #define NVMC_IHIT_HITS_Msk (0xFFFFFFFFUL << NVMC_IHIT_HITS_Pos) /*!< Bit mask of HITS field. */
 
 /* Register: NVMC_IMISS */
 /* Description: I-code cache miss counter */
 
-/* Bits 31..0 : Number of cache misses */
+/* Bits 31..0 : Number of cache misses. Register is writable, but only to '0'. */
 #define NVMC_IMISS_MISSES_Pos (0UL) /*!< Position of MISSES field. */
 #define NVMC_IMISS_MISSES_Msk (0xFFFFFFFFUL << NVMC_IMISS_MISSES_Pos) /*!< Bit mask of MISSES field. */
 
@@ -6824,9 +6833,9 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Bits 6..0 : Left output gain adjustment, in 0.5 dB steps, around the default module gain (see electrical parameters) 0x00    -20 dB gain adjust 0x01  -19.5 dB gain adjust (...) 0x27   -0.5 dB gain adjust 0x28      0 dB gain adjust 0x29   +0.5 dB gain adjust (...) 0x4F  +19.5 dB gain adjust 0x50    +20 dB gain adjust */
 #define PDM_GAINL_GAINL_Pos (0UL) /*!< Position of GAINL field. */
 #define PDM_GAINL_GAINL_Msk (0x7FUL << PDM_GAINL_GAINL_Pos) /*!< Bit mask of GAINL field. */
-#define PDM_GAINL_GAINL_MinGain (0x00UL) /*!< -20dB gain adjustment (minimum) */
-#define PDM_GAINL_GAINL_DefaultGain (0x28UL) /*!< 0dB gain adjustment */
-#define PDM_GAINL_GAINL_MaxGain (0x50UL) /*!< +20dB gain adjustment (maximum) */
+#define PDM_GAINL_GAINL_MinGain (0x00UL) /*!< -20 dB gain adjustment (minimum) */
+#define PDM_GAINL_GAINL_DefaultGain (0x28UL) /*!< 0 dB gain adjustment */
+#define PDM_GAINL_GAINL_MaxGain (0x50UL) /*!< +20 dB gain adjustment (maximum) */
 
 /* Register: PDM_GAINR */
 /* Description: Right output gain adjustment */
@@ -6834,9 +6843,9 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Bits 6..0 : Right output gain adjustment, in 0.5 dB steps, around the default module gain (see electrical parameters) */
 #define PDM_GAINR_GAINR_Pos (0UL) /*!< Position of GAINR field. */
 #define PDM_GAINR_GAINR_Msk (0x7FUL << PDM_GAINR_GAINR_Pos) /*!< Bit mask of GAINR field. */
-#define PDM_GAINR_GAINR_MinGain (0x00UL) /*!< -20dB gain adjustment (minimum) */
-#define PDM_GAINR_GAINR_DefaultGain (0x28UL) /*!< 0dB gain adjustment */
-#define PDM_GAINR_GAINR_MaxGain (0x50UL) /*!< +20dB gain adjustment (maximum) */
+#define PDM_GAINR_GAINR_MinGain (0x00UL) /*!< -20 dB gain adjustment (minimum) */
+#define PDM_GAINR_GAINR_DefaultGain (0x28UL) /*!< 0 dB gain adjustment */
+#define PDM_GAINR_GAINR_MaxGain (0x50UL) /*!< +20 dB gain adjustment (maximum) */
 
 /* Register: PDM_RATIO */
 /* Description: Selects the ratio between PDM_CLK and output sample rate. Change PDMCLKCTRL accordingly. */
@@ -9677,10 +9686,19 @@ POSSIBILITY OF SUCH DAMAGE.
 #define RADIO_EVENTS_MHRMATCH_EVENTS_MHRMATCH_NotGenerated (0UL) /*!< Event not generated */
 #define RADIO_EVENTS_MHRMATCH_EVENTS_MHRMATCH_Generated (1UL) /*!< Event generated */
 
-/* Register: RADIO_EVENTS_PHYEND */
-/* Description: Generated when last bit is sent on air */
+/* Register: RADIO_EVENTS_SYNC */
+/* Description: Preamble indicator */
 
-/* Bit 0 : Generated when last bit is sent on air */
+/* Bit 0 : Preamble indicator */
+#define RADIO_EVENTS_SYNC_EVENTS_SYNC_Pos (0UL) /*!< Position of EVENTS_SYNC field. */
+#define RADIO_EVENTS_SYNC_EVENTS_SYNC_Msk (0x1UL << RADIO_EVENTS_SYNC_EVENTS_SYNC_Pos) /*!< Bit mask of EVENTS_SYNC field. */
+#define RADIO_EVENTS_SYNC_EVENTS_SYNC_NotGenerated (0UL) /*!< Event not generated */
+#define RADIO_EVENTS_SYNC_EVENTS_SYNC_Generated (1UL) /*!< Event generated */
+
+/* Register: RADIO_EVENTS_PHYEND */
+/* Description: Generated when last bit is sent on air, or received from air */
+
+/* Bit 0 : Generated when last bit is sent on air, or received from air */
 #define RADIO_EVENTS_PHYEND_EVENTS_PHYEND_Pos (0UL) /*!< Position of EVENTS_PHYEND field. */
 #define RADIO_EVENTS_PHYEND_EVENTS_PHYEND_Msk (0x1UL << RADIO_EVENTS_PHYEND_EVENTS_PHYEND_Pos) /*!< Bit mask of EVENTS_PHYEND field. */
 #define RADIO_EVENTS_PHYEND_EVENTS_PHYEND_NotGenerated (0UL) /*!< Event not generated */
@@ -9828,6 +9846,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #define RADIO_INTENSET_PHYEND_Disabled (0UL) /*!< Read: Disabled */
 #define RADIO_INTENSET_PHYEND_Enabled (1UL) /*!< Read: Enabled */
 #define RADIO_INTENSET_PHYEND_Set (1UL) /*!< Enable */
+
+/* Bit 26 : Write '1' to enable interrupt for event SYNC */
+#define RADIO_INTENSET_SYNC_Pos (26UL) /*!< Position of SYNC field. */
+#define RADIO_INTENSET_SYNC_Msk (0x1UL << RADIO_INTENSET_SYNC_Pos) /*!< Bit mask of SYNC field. */
+#define RADIO_INTENSET_SYNC_Disabled (0UL) /*!< Read: Disabled */
+#define RADIO_INTENSET_SYNC_Enabled (1UL) /*!< Read: Enabled */
+#define RADIO_INTENSET_SYNC_Set (1UL) /*!< Enable */
 
 /* Bit 23 : Write '1' to enable interrupt for event MHRMATCH */
 #define RADIO_INTENSET_MHRMATCH_Pos (23UL) /*!< Position of MHRMATCH field. */
@@ -9992,6 +10017,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #define RADIO_INTENCLR_PHYEND_Disabled (0UL) /*!< Read: Disabled */
 #define RADIO_INTENCLR_PHYEND_Enabled (1UL) /*!< Read: Enabled */
 #define RADIO_INTENCLR_PHYEND_Clear (1UL) /*!< Disable */
+
+/* Bit 26 : Write '1' to disable interrupt for event SYNC */
+#define RADIO_INTENCLR_SYNC_Pos (26UL) /*!< Position of SYNC field. */
+#define RADIO_INTENCLR_SYNC_Msk (0x1UL << RADIO_INTENCLR_SYNC_Pos) /*!< Bit mask of SYNC field. */
+#define RADIO_INTENCLR_SYNC_Disabled (0UL) /*!< Read: Disabled */
+#define RADIO_INTENCLR_SYNC_Enabled (1UL) /*!< Read: Enabled */
+#define RADIO_INTENCLR_SYNC_Clear (1UL) /*!< Disable */
 
 /* Bit 23 : Write '1' to disable interrupt for event MHRMATCH */
 #define RADIO_INTENCLR_MHRMATCH_Pos (23UL) /*!< Position of MHRMATCH field. */
@@ -10776,7 +10808,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define RADIO_DFECTRL1_AGCBACKOFFGAIN_Pos (24UL) /*!< Position of AGCBACKOFFGAIN field. */
 #define RADIO_DFECTRL1_AGCBACKOFFGAIN_Msk (0xFUL << RADIO_DFECTRL1_AGCBACKOFFGAIN_Pos) /*!< Bit mask of AGCBACKOFFGAIN field. */
 
-/* Bits 23..20 : Repeat every antenna pattern N times. */
+/* Bits 23..20 : Repeat each individual antenna pattern N times sequentially, i.e. P0, P0, P1, P1, P2, P2, P3, P3, etc. */
 #define RADIO_DFECTRL1_REPEATPATTERN_Pos (20UL) /*!< Position of REPEATPATTERN field. */
 #define RADIO_DFECTRL1_REPEATPATTERN_Msk (0xFUL << RADIO_DFECTRL1_REPEATPATTERN_Pos) /*!< Bit mask of REPEATPATTERN field. */
 #define RADIO_DFECTRL1_REPEATPATTERN_NoRepeat (0UL) /*!< Do not repeat (1 time in total) */
