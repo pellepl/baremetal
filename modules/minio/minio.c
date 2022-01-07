@@ -27,7 +27,7 @@ static const char *I_BASE_ARR_U = "0123456789ABCDEFGHIJKLMNOPQRTSUVWXYZ";
 
 unsigned int minio_putchar(unsigned int hdl, char c) {
     if (hdl >= MINIO_MAX_HDL_B4_MEM)
-        *(((char *)hdl++)) = c;
+        *(((char *)(intptr_t)hdl++)) = c;
     else {
 #ifdef MINIO_PUTCHAR
         MINIO_PUTCHAR(hdl, c);
@@ -57,13 +57,13 @@ static unsigned int print_string(unsigned int hdl, const char *str, unsigned int
     return hdl;
 }
 
-static int isspace(char c) {
+static int _isspace(char c) {
     return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
 static int u_atoin(const char *str, const char **endptr, int base) {
     uint8_t flags = 0;
-    while (isspace(*str)) {
+    while (_isspace(*str)) {
         str++;
     }
     if (*str == '-') {
@@ -198,11 +198,29 @@ int minio_vn_printf(unsigned int hdl, const char *format, unsigned int count, va
     int esc = 0;
     int numerator = 0;
     int flen = 0;
+#   ifdef MINIO_FORMAT_FLOAT
+    int fnumerator = 0;
+    int fraclen = 3;
+#   endif
     uint8_t flags = 0;
     unsigned int ohdl = hdl;
     if (hdl >= MINIO_MAX_HDL_B4_MEM && count) count += hdl;
     while ((c = *format++) != 0) {
         if (esc) {
+#           ifdef MINIO_FORMAT_FLOAT
+            if (fnumerator) {
+                if (c >= '0' && c <= '9') {
+                    fraclen = fraclen * 10 + (c - '0');
+                    continue; // numerator, goto next char
+                } else {
+                    // non numerator, back to escape mode
+                    if ((uint32_t)fraclen > sizeof(buf) - 1) {
+                        fraclen = sizeof(buf) - 1;
+                    }
+                    fnumerator = 0;
+                }
+            } else
+#           endif
             if (numerator) {
                 if (c >= '0' && c <= '9') {
                     flen = flen * 10 + (c - '0');
@@ -226,6 +244,12 @@ int minio_vn_printf(unsigned int hdl, const char *format, unsigned int count, va
                 flen = 0;
                 numerator = 1;
                 continue; // jump to next char, expect numerator
+#           ifdef MINIO_FORMAT_FLOAT
+            case '.':
+                fraclen = 0;
+                fnumerator = 1;
+                continue; // jump to next char, expect fractional numerator
+#           endif
             case '1':
             case '2':
             case '3':
@@ -270,6 +294,39 @@ int minio_vn_printf(unsigned int hdl, const char *format, unsigned int count, va
                 hdl = print_string(hdl, buf, count);
                 break;
             }
+#           ifdef MINIO_FORMAT_FLOAT
+            case 'f': {
+                double v = va_arg(arg_p, double);
+                if (v < 0) {
+                    v = -v;
+                    flags |= NUM_FLAG_NEGATE;
+                }
+                unsigned long mul = 1;
+                for (int i = 0; i < fraclen; i++) mul *= 10;
+                int whole = (int)v;
+                double tmp = (v - whole) * mul;
+                unsigned long frac = (unsigned long)tmp;
+                double diff = tmp - frac;
+                if (diff > 0.5) {
+                    ++frac;
+                    // handle rollover, e.g. case 0.99 with prec 1 is 1.0
+                    if (frac >= mul) {
+                        frac = 0;
+                        ++whole;
+                    }
+                } else if ((diff == 0.5) && ((frac == 0U) || (frac & 1U))) {
+                    // if halfway, round up if odd, OR if last digit is 0
+                    ++frac;
+                }
+
+                u_itoan(whole, &buf[0], 10, flen, flags);
+                int ilen = minio_strlen(&buf[0]);
+                buf[ilen] = '.';
+                u_itoan(frac, &buf[ilen+1], 10, fraclen, 0);
+                hdl = print_string(hdl, buf, minio_strlen(&buf[0]));
+                break;
+            }
+#           endif
             default: hdl = minio_putchar(hdl, '?'); break;
             }
             // turn off escape mode
@@ -426,5 +483,69 @@ void *minio_memmove(void *dst, const void *src, unsigned int num) {
     }
     return dst;
 }
+
+static const char tbl_b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+unsigned int minio_base64_enc(char *dst, const char *src, unsigned int num)
+{
+    unsigned char a,b,c;
+    unsigned int olen = 0;
+    while (num >= 3) {
+        a = *src++;
+        b = *src++;
+        c = *src++;
+        dst[olen++] = tbl_b64[a >> 2];
+        dst[olen++] = tbl_b64[((a & 3) << 4) | (b >> 4)];
+        dst[olen++] = tbl_b64[((b & 0x0f) << 2) | (c >> 6)];
+        dst[olen++] = tbl_b64[(c & 0x3f)];
+        num -= 3;
+    }
+    if (num == 0) return olen;
+    a = b = 0;
+    if (num == 2) b = src[1];
+    if (num >= 1) a = src[0];
+    dst[olen++] = tbl_b64[a >> 2];
+    dst[olen++] = tbl_b64[((a & 3) << 4) | (b >> 4)];
+    if (num == 1) return olen;
+    dst[olen++] = tbl_b64[((b & 0x0f) << 2)];
+    return olen;
+}
+
+static unsigned char _b64_ctoi(char c) {
+  if (c >= 'A' && c <= 'Z') return c-'A';
+  if (c >= 'a' && c <= 'z') return c-'a'+26;
+  if (c >= '0' && c <= '9') return c-'0'+2*26;
+  if (c == '+') return 62;
+  if (c == '/') return 63;
+  return -1;
+}
+
+unsigned int minio_base64_dec(char *dst, const char *src, unsigned int num)
+{
+    unsigned char a,b,c,d;
+    unsigned int olen = 0;
+    while (num >= 4) {
+        a = _b64_ctoi(*src++);
+        b = _b64_ctoi(*src++);
+        c = _b64_ctoi(*src++);
+        d = _b64_ctoi(*src++);
+        dst[olen++] = (a<<2) | (b>>4);
+        dst[olen++] = (b<<4) | (c>>2);
+        dst[olen++] = (c<<6) | d;
+        num -= 4;
+    }
+    if (num <= 1) return olen;
+    a = b = c = 0;
+    if (num >= 2) {
+        a = _b64_ctoi(*src++);
+        b = _b64_ctoi(*src++);
+        dst[olen++] = (a<<2) | (b>>4);
+    }
+    if (num == 2) return olen;
+    c = _b64_ctoi(*src++);
+    dst[olen++] = (b<<4) | (c>>2);
+    return olen;
+}
+
 
 #endif // MINIO_STD_API_REPLACE

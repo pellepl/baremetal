@@ -66,5 +66,8 @@ void *minio_memmove(void *dst, const void *src, unsigned int num);
 const char *minio_strstr(const char *s1, const char *s2);
 // override this if wanted, defaults to uart_putchar, return hdl
 unsigned int minio_putchar(unsigned int hdl, char c) __attribute__ ((weak));
+unsigned int minio_base64_enc(char *dst, const char *src, unsigned int num);
+unsigned int minio_base64_dec(char *dst, const char *src, unsigned int num);
+
 #endif // MINIO_STD_API_REPLACE
 #endif // _MINIO_H_
