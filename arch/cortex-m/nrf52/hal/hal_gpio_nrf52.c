@@ -40,7 +40,7 @@ int gpio_hal_config(uint16_t pin, gpio_direction_t dir, gpio_pull_t pull) {
     port->PIN_CNF[pin] = 0
         | ((dir == GPIO_DIRECTION_OUTPUT ? GPIO_PIN_CNF_DIR_Output : GPIO_PIN_CNF_DIR_Input)          << GPIO_PIN_CNF_DIR_Pos)
         | ((dir == GPIO_DIRECTION_INPUT ? GPIO_PIN_CNF_INPUT_Connect : GPIO_PIN_CNF_INPUT_Disconnect) << GPIO_PIN_CNF_INPUT_Pos)
-        | ((pull == GPIO_PULL_NONE ? GPIO_PIN_CNF_PULL_Disabled : 
+        | ((pull == GPIO_PULL_NONE ? GPIO_PIN_CNF_PULL_Disabled :
               (pull == GPIO_PULL_DOWN ? GPIO_PIN_CNF_PULL_Pulldown : GPIO_PIN_CNF_PULL_Pullup))       << GPIO_PIN_CNF_PULL_Pos)
         | (GPIO_PIN_CNF_DRIVE_S0S1                                                                    << GPIO_PIN_CNF_DRIVE_Pos)
         | (GPIO_PIN_CNF_SENSE_Disabled                                                                << GPIO_PIN_CNF_SENSE_Pos)

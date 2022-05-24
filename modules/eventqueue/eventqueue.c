@@ -1,15 +1,15 @@
 #include "eventqueue.h"
 
 static struct {
-    eventq_handle_fn_t common_handle_fn;
     eventq_evt_t pool[EVENTQ_EVENT_POOL_SIZE];
     volatile eventq_evt_t *scheduled_first;
     volatile eventq_evt_t *scheduled_last;
     volatile eventq_evt_t *free;
+    eventq_handle_fn_t handle_fn;
 } _ev_q;
 
-void eventq_init(eventq_handle_fn_t common_handle_fn) {
-    _ev_q.common_handle_fn = common_handle_fn;
+void eventq_init(eventq_handle_fn_t generic_handle_fn) {
+    _ev_q.handle_fn= generic_handle_fn;
     _ev_q.scheduled_first = _ev_q.scheduled_last = 0;
     _ev_q.free = 0;
     for (int i = 0; i < EVENTQ_EVENT_POOL_SIZE; i++) {
@@ -20,9 +20,9 @@ void eventq_init(eventq_handle_fn_t common_handle_fn) {
 
 int eventq_run(void) {
     eventq_type_t type;
-    void *arg;
+    void *arg = 0;
     eventq_handle_fn_t fn = 0;
-    eventq_evt_t *ev = 0;
+    volatile eventq_evt_t *ev = 0;
     EVENTQ_CRITICAL_REGION_ENTER();
     {
         // fetch first event, get data, make it free, and put it in free queue
@@ -52,10 +52,10 @@ int eventq_run(void) {
     }
     EVENTQ_CRITICAL_REGION_EXIT();
     if (ev) {
-        if (fn) { 
+        if (fn) {
             fn(type, arg);
-        } else if (_ev_q.common_handle_fn) {
-            _ev_q.common_handle_fn(type, arg);
+        } else if (_ev_q.handle_fn) {
+            _ev_q.handle_fn(type, arg);
         }
     }
     return ev != 0;
@@ -66,7 +66,7 @@ int eventq_add(eventq_type_t type, void *arg, eventq_handle_fn_t handle_fn) {
     EVENTQ_CRITICAL_REGION_ENTER();
     if (_ev_q.free) {
         // fetch free event
-        eventq_evt_t *ev = _ev_q.free;
+        volatile eventq_evt_t *ev = _ev_q.free;
         _ev_q.free = ev->_next;
 
         // put it last in scheduled list

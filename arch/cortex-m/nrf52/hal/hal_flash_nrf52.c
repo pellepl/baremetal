@@ -115,11 +115,11 @@ int flash_write(uint32_t sector, uint32_t offset, const uint8_t *data, uint32_t 
         return 0;
     }
 
-    sector_size -= offset;
-
-    if (length > sector_size) {
-        length = sector_size;
-    }
+    // allow for cross page writing
+    // sector_size -= offset;
+    // if (length > sector_size) {
+    //     length = sector_size;
+    // }
 
     uint32_t address;
     if (/*sector >= NRF_FLASH_SECTOR_CODE || */ sector < NRF_FLASH_SECTOR_CODE + NRF_FICR->CODESIZE) {
@@ -133,10 +133,10 @@ int flash_write(uint32_t sector, uint32_t offset, const uint8_t *data, uint32_t 
     res = (int)length;
     NRF_NVMC->CONFIG = 1;
     while (length) {
-        uint32_t word = 
-            (data[0] <<  0) | 
-            (data[1] <<  8) | 
-            (data[2] << 16) | 
+        uint32_t word =
+            (data[0] <<  0) |
+            (data[1] <<  8) |
+            (data[2] << 16) |
             (data[3] << 24);
         *((uint32_t *)address) = word;
         while (NRF_NVMC->READY == 0);

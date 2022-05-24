@@ -45,16 +45,18 @@ typedef struct eventq_evt_s {
 } eventq_evt_t;
 
 /**
- * Initiates the event queue
- * @param common_handle_fn common event handle function
+ * Initiates the event queue.
+ * @param generic_handle_fn event handle function, for events without specific
+ *                           handle function.
  */
-void eventq_init(eventq_handle_fn_t common_handle_fn);
+void eventq_init(eventq_handle_fn_t generic_handle_fn);
 
 /**
- * Schedules a new event for execution. 
+ * Schedules a new event for execution.
  * @param type      type of event, passed to handle function
  * @param arg       event argument, passed to handle function
- * @param handle_fn event handle function - if NULL, common eventhandler is called
+ * @param handle_fn event handle function, if NULL the generic function handler
+ *                  giving in initialization is called.
  * @return zero if there are no free events, non-zero if ok
  */
 int eventq_add(eventq_type_t type, void *arg, eventq_handle_fn_t handle_fn);

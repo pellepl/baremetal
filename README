@@ -13,7 +13,7 @@ Compiling an application
 $ make BOARD=<board> APP=<app>
 
 where <board> is any of the boards in board/ directory, and <app> is any of the
-apps in source/ directory.
+apps in apps/ directory.
 
 Make sure TOOLCHAIN_DIR and CROSS_COMPILE is set, e.g.
   TOOLCHAIN_DIR = /home/human_entity/toolchain/arm-none-eabi-gcc
@@ -23,20 +23,20 @@ Make sure TOOLCHAIN_DIR and CROSS_COMPILE is set, e.g.
 Adding a new application
 ------------------------
 
-Create a new folder, source/<newapp>. Add the C files and header files needed 
-to source/<newapp>. Assuming you need modules gpio and uart, create 
-source/<newapp>/<newapp>.mk:
+Create a new folder, apps/<newapp>. Add the C files and header files needed 
+to apps/<newapp>. Assuming you need modules gpio and uart, create 
+apps/<newapp>/<newapp>.mk:
   TARGETNAME := $(APP)
   CONFIG_GPIO := 1
   CONFIG_UART := 1
-  CFILES += $(wildcard source/$(APP)/*.c)
-  INCLUDE += source/$(APP) 
+  CFILES += $(wildcard apps/$(APP)/*.c)
+  INCLUDE += apps/$(APP) 
 
 In main, the first thing to do is to call
   cpu_init();
   board_init();
 
-Create a text file source/<newapp>/README describing your new fancy application.
+Create a text file apps/<newapp>/README describing your new fancy application.
 
 
 Adding a new module

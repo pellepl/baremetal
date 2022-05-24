@@ -33,7 +33,7 @@ v = $(VERBOSE)
 toolchain = $(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)
 target = $(TARGET_DIR)/$(TARGETNAME)
 
-all: $(target).hex
+all:: $(target).hex
 
 # sanity check environment
 
@@ -144,18 +144,17 @@ CFLAGS += -DBUILD_INFO_GIT_BRANCH=$(build_info_git_branch)
 CFLAGS += -DBUILD_INFO_GIT_TAG=$(build_info_git_tag)
 endif
 ifndef NO_BUILD_INFO_HOST
-CFLAGS += -DBUILD_INFO_HOST_NAME="$(shell hostname)"
-CFLAGS += -DBUILD_INFO_HOST_WHO="$(shell whoami)"
-ifeq ($(OS),Windows_NT)
-#CFLAGS += -DBUILD_INFO_HOST_WHEN_DATE="$(shell date /T)"
-#CFLAGS += -DBUILD_INFO_HOST_WHEN_TIME="$(shell time /T)"
-#CFLAGS += -DBUILD_INFO_HOST_WHEN_EPOCH="0"
-else
-CFLAGS += -DBUILD_INFO_HOST_WHEN_DATE="$(shell date +%Y%m%d)"
-CFLAGS += -DBUILD_INFO_HOST_WHEN_TIME="$(shell date +%H%M%S)"
-CFLAGS += -DBUILD_INFO_HOST_WHEN_EPOCH="$(shell date +%s)"
+host_info_name := "$(shell hostname)"
+host_info_who := "$(shell whoami)"
+host_info_when_date := "$(shell date +%Y%m%d)"
+host_info_when_time := "$(shell date +%H%M%S)"
+host_info_when_epoch := "$(shell date +%s)"
+CFLAGS += -DBUILD_INFO_HOST_NAME=$(host_info_name)
+CFLAGS += -DBUILD_INFO_HOST_WHO=$(host_info_who)
+CFLAGS += -DBUILD_INFO_HOST_WHEN_DATE=$(host_info_when_date)
+CFLAGS += -DBUILD_INFO_HOST_WHEN_TIME=$(host_info_when_time)
+CFLAGS += -DBUILD_INFO_HOST_WHEN_EPOCH=$(host_info_when_epoch)
 endif
-endif # Windows_NT
 ifndef NO_BUILD_INFO_TARGET
 CFLAGS += -DBUILD_INFO_TARGET_NAME="$(TARGETNAME)"
 CFLAGS += -DBUILD_INFO_TARGET_ARCH="$(ARCH)"
@@ -164,8 +163,10 @@ CFLAGS += -DBUILD_INFO_TARGET_PROC="$(PROC)"
 CFLAGS += -DBUILD_INFO_TARGET_BOARD="$(BOARD)"
 endif
 ifndef NO_BUILD_INFO_COMPILER
-CFLAGS += -DBUILD_INFO_CC_MACHINE="$(shell $(XCC) -dumpmachine)"
-CFLAGS += -DBUILD_INFO_CC_VERSION="$(shell $(XCC) -dumpversion)"
+cc_info_machine := "$(shell $(XCC) -dumpmachine)"
+cc_info_version := "$(shell $(XCC) -dumpversion)"
+CFLAGS += -DBUILD_INFO_CC_MACHINE=$(cc_info_machine)
+CFLAGS += -DBUILD_INFO_CC_VERSION=$(cc_info_version)
 endif
 
 # compile recipes
@@ -184,9 +185,10 @@ endif
 
 CFLAGS += $(CFLAGS_LATE)
 
-$(target).hex: $(target).elf
-	$(v)$(XOBJCOPY) -O ihex $< $@
-	$(v)$(XOBJCOPY) -O binary $< $(target).bin
+$(target).hex:: $(target).elf
+	$(v)$(XOBJCOPY) $(XTRA_OBJCOPY_PARAMS) -O ihex $< $@
+	$(v)$(XOBJCOPY) $(XTRA_OBJCOPY_PARAMS) --gap-fill 0xff -I ihex $@ -O binary $(target).bin
+
 
 asm: $(target).elf
 	@$(ECHO) "ASM\t$(target)_disasm.S"
@@ -212,7 +214,17 @@ $(target).elf: $(objfiles) $(asobjfiles)
 ifneq ($(OS),Windows_NT)
 	$(v)size $@
 endif
-
+	$(v)$(ECHO) "BUILD.commit: $(build_info_git_commit)" > $(target).build
+	$(v)$(ECHO) "BUILD.branch: $(build_info_git_branch)" >> $(target).build
+	$(v)$(ECHO) 'BUILD.tag: $(build_info_git_tag)' >> $(target).build
+	$(v)$(ECHO) "HOST.name: $(host_info_name)" >> $(target).build
+	$(v)$(ECHO) "HOST.who: $(host_info_who)" >> $(target).build
+	$(v)$(ECHO) "HOST.when: $(host_info_when_date) $(host_info_when_time)" >> $(target).build
+	$(v)$(ECHO) "TARGET.name: $(TARGETNAME)" >> $(target).build
+	$(v)$(ECHO) "TARGET.arch: $(ARCH)" >> $(target).build
+	$(v)$(ECHO) "TARGET.family: $(FAMILY)" >> $(target).build
+	$(v)$(ECHO) "TARGET.proc: $(PROC)" >> $(target).build
+	$(v)$(ECHO) "TARGET.board: $(BOARD)" >> $(target).build
 
 $(objfiles): $(TARGET_DIR)/%.o:%.c
 	@$(ECHO) "CC\t$@"
