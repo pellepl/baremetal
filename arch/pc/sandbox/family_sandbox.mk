@@ -1,0 +1,3 @@
+NO_CRT0 := 1
+LINKER_FILE := 
+GCC_AS_LD := 1
