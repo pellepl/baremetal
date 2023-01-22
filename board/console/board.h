@@ -15,8 +15,8 @@
 #define BOARD_BUTTON_GPIO_ACTIVE        ((const uint8_t[BOARD_BUTTON_COUNT]){})
 
 #define BOARD_LED_COUNT                 (0)
-#define BOARD_LED_GPIO_PIN              ((const uint16_t[BOARD_LED_COUNT]){2*16+13})
-#define BOARD_LED_GPIO_ACTIVE           ((const uint8_t[BOARD_LED_COUNT]){0})
+#define BOARD_LED_GPIO_PIN              ((const uint16_t[BOARD_LED_COUNT]){})
+#define BOARD_LED_GPIO_ACTIVE           ((const uint8_t[BOARD_LED_COUNT]){})
 
 // used like this
 // static const board_uart_pindef_t uart_pindefs[BOARD_UART_COUNT] = BOARD_UART_GPIO_PINS;

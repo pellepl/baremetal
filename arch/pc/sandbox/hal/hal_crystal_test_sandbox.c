@@ -1,3 +1,4 @@
+#include "uart_driver.h"
 #include "crystal_test.h"
 #include "minio.h"
 

@@ -12,32 +12,36 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
 }
 
 int uart_hal_tx(unsigned int hdl, char x) {
-    printf("%c", x);
+    if (hdl == UART_STD) {
+        printf("%c", x);
+    }
     return 0;
 }
 
 int uart_hal_rx(unsigned int hdl) {
     uint8_t b;
-    int err = read(STDIN_FILENO, &b, 1);
-    if (err < 1) {
-        return -1;
-    } else {
-        return b;
+    if (hdl == UART_STD) {
+        int err = read(STDIN_FILENO, &b, 1);
+        if (err >= 1) {
+            return b;
+        }
     }
+    return -1;
 }
 
 int uart_hal_rxpoll(unsigned int hdl) {
-    struct pollfd ufds = {
-        .fd = STDIN_FILENO,
-        .events = POLLIN,
-        .revents = 0
-    };
-    int err = poll(&ufds, 1, 0);
-    if (err < 0 || (ufds.revents & POLLIN) == 0) {
-        return -1;
-    } else {
-        return uart_hal_rx(hdl);
+    if (hdl == UART_STD) {
+        struct pollfd ufds = {
+            .fd = STDIN_FILENO,
+            .events = POLLIN,
+            .revents = 0
+        };
+        int err = poll(&ufds, 1, 0);
+        if (err > 0 && (ufds.revents & POLLIN) != 0) {
+            return uart_hal_rx(hdl);
+        }
     }
+    return -1;
 }
 
 int uart_hal_deinit(unsigned int hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
