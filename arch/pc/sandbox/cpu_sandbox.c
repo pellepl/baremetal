@@ -1,13 +1,15 @@
 /* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
 /* MIT License (see ./LICENSE) */
 
-#include "cpu.h"
 #include <unistd.h>
+#include <stdlib.h>
+#include "cpu.h"
 
 void cpu_init(void) {
 }
 
 void cpu_reset(void) {
+    exit(0);
 }
 
 void cpu_halt(uint32_t milliseconds) {
