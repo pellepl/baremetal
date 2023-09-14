@@ -8,6 +8,10 @@ else
 ifeq "$(FAMILY)" "msp430"
 LDFLAGS_LATE += --script=$(modules_dir)/cli/cli_msp430.ld
 else
+ifeq "$(FAMILY)" "stm32f1"
+LDFLAGS_LATE += --script=$(modules_dir)/cli/cli_stm.ld
+else
 LDFLAGS_LATE += --script=$(modules_dir)/cli/cli.ld
+endif
 endif
 endif
