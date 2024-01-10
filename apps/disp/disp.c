@@ -1,6 +1,8 @@
 /* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
 /* MIT License (see ./LICENSE) */
 
+#include <stdarg.h>
+
 #include "board.h"
 #include "gpio_driver.h"
 #include "uart_driver.h"
@@ -12,6 +14,11 @@
 #include "nrf52840.h"
 
 static void cli_cb(const char *func_name, int res);
+
+static struct {
+    volatile uint32_t running;
+    volatile uint32_t txed;
+} spi_status;
 
 const disp_cfg_t *disp_get_cfg(void)
 {
@@ -25,7 +32,7 @@ const disp_cfg_t *disp_get_cfg(void)
     return &cfg;
 }
 
-static void disp_init(void)
+static void disp_ifc_init(void)
 {
     const disp_cfg_t *cfg = disp_get_cfg();
 
@@ -45,9 +52,9 @@ static void disp_init(void)
     BOARD_DISP_SPI_BUS->PSELDCX = cfg->pins.dc;
 
     BOARD_DISP_SPI_BUS->INTENSET = 
-        (0<<1) | // stopped
+        (1<<1) | // stopped
         (0<<4) | // endrx
-        (0<<6) | // end
+        (1<<6) | // end
         (1<<8) | // endtx
         (1<<19) | // started
         0;
@@ -59,25 +66,28 @@ static void disp_init(void)
     NVIC_EnableIRQ(SPIM3_IRQn);
 
     BOARD_DISP_SPI_BUS->ENABLE = 7;
+
+    memset(&spi_status, 0, sizeof(spi_status));
 }
 
 static void spi_handle_irq(void)
 {
     if (BOARD_DISP_SPI_BUS->EVENTS_STARTED) {
         BOARD_DISP_SPI_BUS->EVENTS_STARTED = 0;
-        printf("spim3 irq STARTED\n");
+        spi_status.running = 1;
     }
     if (BOARD_DISP_SPI_BUS->EVENTS_ENDTX) {
         BOARD_DISP_SPI_BUS->EVENTS_ENDTX = 0;
-        printf("spim3 irq ENDTX\n");
+        spi_status.txed = 1;
+
     }
     if (BOARD_DISP_SPI_BUS->EVENTS_END) {
         BOARD_DISP_SPI_BUS->EVENTS_END = 0;
-        printf("spim3 irq END\n");
+        spi_status.running = 0;
     }
     if (BOARD_DISP_SPI_BUS->EVENTS_STOPPED) {
         BOARD_DISP_SPI_BUS->EVENTS_STOPPED = 0;
-        printf("spim3 irq STOPPED\n");
+        spi_status.running = 0;
     }
 }
 
@@ -96,12 +106,98 @@ static uint32_t timer_read(int reset)
     return NRF_TIMER0->CC[0];
 }
 
+static void disp_write_cmd_blocking(uint8_t cmd, uint32_t args_count, ...) {
+    static uint8_t spi_cmd_buffer[32];
+    va_list ap;
+    const disp_cfg_t *cfg = disp_get_cfg();
+
+    while (spi_status.running);
+    
+    gpio_set(cfg->pins.spi_csn, 0);
+    spi_cmd_buffer[0] = cmd;
+    va_start(ap, args_count);
+    uint32_t arg_nbr = 0;
+    while (arg_nbr < args_count) {
+        spi_cmd_buffer[arg_nbr+1] = (uint8_t)va_arg(ap, int);
+        arg_nbr++;
+    }
+
+    fprint_mem(0, spi_cmd_buffer, args_count+1);
+
+    spi_status.txed = 0;
+
+    BOARD_DISP_SPI_BUS->TXD.PTR = (uint32_t)(intptr_t)spi_cmd_buffer;
+    BOARD_DISP_SPI_BUS->TXD.MAXCNT = 1 + args_count;
+    BOARD_DISP_SPI_BUS->DCXCNT = 1;
+    BOARD_DISP_SPI_BUS->TASKS_START = 1;
+
+    while(!spi_status.txed);
+    gpio_set(cfg->pins.spi_csn, 1);
+
+}
+
+#define NUMARGS(...)  (sizeof((int[]){0, ##__VA_ARGS__})/sizeof(int)-1)
+#define DISP_CMD_BLOCKING(cmd, ...) disp_write_cmd_blocking(cmd, NUMARGS(__VA_ARGS__), ## __VA_ARGS__)
+static void disp_init(void) 
+{
+    // power on sequence - See datasheet CH13613 SPEC V0.08, page 218.
+    const disp_cfg_t *cfg = disp_get_cfg();
+    // vdd always on
+    // wait more than 10 ms before setting pin_reset high
+    //cpu_halt(15);
+    gpio_set(cfg->pins.resetn, 1);
+    cpu_halt(15);
+    gpio_set(cfg->pins.resetn, 0);
+    cpu_halt(5);
+    gpio_set(cfg->pins.resetn, 1);
+    cpu_halt(15);
+
+    DISP_CMD_BLOCKING(0xf0, 0x50);
+    DISP_CMD_BLOCKING(0xb1, 0x78, 0x70);
+    DISP_CMD_BLOCKING(0xf0, 0xf1);
+    DISP_CMD_BLOCKING(0xc1, 0x02, 0x02, 0x02);
+    DISP_CMD_BLOCKING(0xc3, 0x01, 0xf3);
+    DISP_CMD_BLOCKING(0xf0, 0x50);
+    DISP_CMD_BLOCKING(0x2a, 0x00, 0x06, 0x01, 0x8b);
+    DISP_CMD_BLOCKING(0x2b, 0x00, 0x00, 0x01, 0x85);
+    DISP_CMD_BLOCKING(0x35, 0x00);
+    DISP_CMD_BLOCKING(0x36, 0xc0);
+    DISP_CMD_BLOCKING(0x3a, 0x05);
+    DISP_CMD_BLOCKING(0x11);
+    cpu_halt(200);
+    DISP_CMD_BLOCKING(0x29);
+    cpu_halt(100);
+    DISP_CMD_BLOCKING(0x38);
+
+
+    int x1 = 20, y1 = 20, x2 = 40, y2 = 40;
+    DISP_CMD_BLOCKING(0x2a, x1 >> 8, x1, x2 >> 8, x2);
+    DISP_CMD_BLOCKING(0x2b, y1 >> 8, y1, y2 >> 8, y2);
+    {
+        gpio_set(cfg->pins.spi_csn, 0);
+
+        static uint8_t gbuffer[20*20*2];
+        memset(gbuffer, 0xff, sizeof(gbuffer));
+
+        spi_status.txed = 0;
+
+        BOARD_DISP_SPI_BUS->TXD.PTR = (uint32_t)(intptr_t)gbuffer;
+        BOARD_DISP_SPI_BUS->TXD.MAXCNT = sizeof(gbuffer);
+        BOARD_DISP_SPI_BUS->DCXCNT = 0;
+        BOARD_DISP_SPI_BUS->TASKS_START = 1;
+
+        while(!spi_status.txed);
+        gpio_set(cfg->pins.spi_csn, 1);
+    }
+    
+}
+
 int main(void)
 {
     cpu_init();
     board_init();
     gpio_init();
-    disp_init();
+    disp_ifc_init();
     uart_config_t cfg = {
         .baudrate = UART_BAUDRATE_115200,
         .parity = UART_PARITY_NONE,
@@ -150,9 +246,7 @@ CLI_FUNCTION(cli_reset, "reset", "reset");
 
 static int cli_test(int argc, const char **argv)
 {
-    BOARD_DISP_SPI_BUS->TXD.PTR = 0x20000000;
-    BOARD_DISP_SPI_BUS->TXD.MAXCNT = 0x1000;
-    BOARD_DISP_SPI_BUS->TASKS_START = 1;
+    disp_init();
     return 0;
 }
 CLI_FUNCTION(cli_test, "test", "test");
