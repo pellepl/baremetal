@@ -10,8 +10,9 @@
 #include "cli.h"
 
 #include "disp.h"
-
+#include "nrf.h"
 #include "nrf52840.h"
+#include "nrf52840_peripherals.h"
 
 static void cli_cb(const char *func_name, int res);
 
@@ -32,24 +33,32 @@ const disp_cfg_t *disp_get_cfg(void)
     return &cfg;
 }
 
+static NRF_GPIO_Type *port_for_pin(uint16_t pin)
+{
+    return pin < 32 ? NRF_P0 : NRF_P1;
+}
+
 static void disp_ifc_init(void)
 {
     const disp_cfg_t *cfg = disp_get_cfg();
 
     gpio_set(cfg->pins.resetn, 0);
     gpio_set(cfg->pins.spi_csn, 1);
+    gpio_set(cfg->pins.spi_sck, 0);
     gpio_config(cfg->pins.resetn, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
     gpio_config(cfg->pins.spi_csn, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
-    gpio_config(cfg->pins.dc, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_NONE);
+    gpio_config(cfg->pins.dc, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
     gpio_config(cfg->pins.spi_mosi, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_NONE);
     gpio_config(cfg->pins.spi_sck, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_NONE);
     gpio_config(cfg->pins.tearing, GPIO_DIRECTION_INPUT, GPIO_PULL_UP);
+    NRF_GPIO_Type *port = port_for_pin(cfg->pins.spi_sck);
+    port->PIN_CNF[cfg->pins.spi_sck & 0x1f] |= GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos;
 
     BOARD_DISP_SPI_BUS->PSEL.SCK = cfg->pins.spi_sck;
     BOARD_DISP_SPI_BUS->PSEL.MOSI = cfg->pins.spi_mosi;
     BOARD_DISP_SPI_BUS->PSEL.CSN = -1;
     BOARD_DISP_SPI_BUS->PSEL.MISO = -1;
-    BOARD_DISP_SPI_BUS->PSELDCX = cfg->pins.dc;
+    BOARD_DISP_SPI_BUS->PSELDCX = -1;
 
     BOARD_DISP_SPI_BUS->INTENSET = 
         (1<<1) | // stopped
@@ -106,34 +115,72 @@ static uint32_t timer_read(int reset)
     return NRF_TIMER0->CC[0];
 }
 
-static void disp_write_cmd_blocking(uint8_t cmd, uint32_t args_count, ...) {
-    static uint8_t spi_cmd_buffer[32];
-    va_list ap;
+static void cs(int c)
+{
     const disp_cfg_t *cfg = disp_get_cfg();
+    gpio_set(cfg->pins.spi_csn, c);
+    cpu_halt(0);
+}
 
-    while (spi_status.running);
-    
-    gpio_set(cfg->pins.spi_csn, 0);
-    spi_cmd_buffer[0] = cmd;
-    va_start(ap, args_count);
-    uint32_t arg_nbr = 0;
-    while (arg_nbr < args_count) {
-        spi_cmd_buffer[arg_nbr+1] = (uint8_t)va_arg(ap, int);
-        arg_nbr++;
-    }
+#define DATA 1
+#define COMM 0
 
-    fprint_mem(0, spi_cmd_buffer, args_count+1);
+static void dcx(int data_else_comm)
+{
+    const disp_cfg_t *cfg = disp_get_cfg();
+    gpio_set(cfg->pins.dc, data_else_comm ? DATA : COMM);
+}
 
+static void disp_write_cmd_blocking_arr(const uint8_t *cmd_arr, uint32_t arr_len)
+{
+    while (spi_status.running)
+        ;
+
+    cs(0);
+    dcx(COMM);
     spi_status.txed = 0;
-
-    BOARD_DISP_SPI_BUS->TXD.PTR = (uint32_t)(intptr_t)spi_cmd_buffer;
-    BOARD_DISP_SPI_BUS->TXD.MAXCNT = 1 + args_count;
+    BOARD_DISP_SPI_BUS->TXD.PTR = (uint32_t)(intptr_t)cmd_arr;
+    BOARD_DISP_SPI_BUS->TXD.MAXCNT = 1;
     BOARD_DISP_SPI_BUS->DCXCNT = 1;
     BOARD_DISP_SPI_BUS->TASKS_START = 1;
 
-    while(!spi_status.txed);
-    gpio_set(cfg->pins.spi_csn, 1);
+    while (!spi_status.txed)
+        ;
+    while (spi_status.running)
+        ;
+    cs(1);
+    dcx(DATA);
 
+    if (arr_len > 1)
+    {
+        cs(0);
+        spi_status.txed = 0;
+        BOARD_DISP_SPI_BUS->TXD.PTR = (uint32_t)(intptr_t)cmd_arr + 1;
+        BOARD_DISP_SPI_BUS->TXD.MAXCNT = arr_len - 1;
+        BOARD_DISP_SPI_BUS->DCXCNT = 0;
+        BOARD_DISP_SPI_BUS->TASKS_START = 1;
+
+        while (!spi_status.txed)
+            ;
+        cs(1);
+    }
+}
+
+static void disp_write_cmd_blocking(uint8_t cmd, uint32_t args_count, ...)
+{
+    static uint8_t spi_cmd_buffer[32];
+    va_list ap;
+
+    spi_cmd_buffer[0] = cmd;
+    va_start(ap, args_count);
+    uint32_t arg_nbr = 0;
+    while (arg_nbr < args_count)
+    {
+        spi_cmd_buffer[arg_nbr + 1] = (uint8_t)va_arg(ap, int);
+        arg_nbr++;
+    }
+    fprint_mem(0, spi_cmd_buffer, args_count + 1);
+    disp_write_cmd_blocking_arr(spi_cmd_buffer, args_count + 1);
 }
 
 #define NUMARGS(...)  (sizeof((int[]){0, ##__VA_ARGS__})/sizeof(int)-1)
@@ -144,7 +191,8 @@ static void disp_init(void)
     const disp_cfg_t *cfg = disp_get_cfg();
     // vdd always on
     // wait more than 10 ms before setting pin_reset high
-    //cpu_halt(15);
+    gpio_set(cfg->pins.resetn, 0);
+    cpu_halt(50);
     gpio_set(cfg->pins.resetn, 1);
     cpu_halt(15);
     gpio_set(cfg->pins.resetn, 0);
@@ -154,7 +202,7 @@ static void disp_init(void)
 
     DISP_CMD_BLOCKING(0xf0, 0x50);
     DISP_CMD_BLOCKING(0xb1, 0x78, 0x70);
-    DISP_CMD_BLOCKING(0xf0, 0xf1);
+    DISP_CMD_BLOCKING(0xf0, 0x51);
     DISP_CMD_BLOCKING(0xc1, 0x02, 0x02, 0x02);
     DISP_CMD_BLOCKING(0xc3, 0x01, 0xf3);
     DISP_CMD_BLOCKING(0xf0, 0x50);
@@ -167,14 +215,14 @@ static void disp_init(void)
     cpu_halt(200);
     DISP_CMD_BLOCKING(0x29);
     cpu_halt(100);
-    DISP_CMD_BLOCKING(0x38);
+    // DISP_CMD_BLOCKING(0x38);
 
-
+#if 0
     int x1 = 20, y1 = 20, x2 = 40, y2 = 40;
     DISP_CMD_BLOCKING(0x2a, x1 >> 8, x1, x2 >> 8, x2);
     DISP_CMD_BLOCKING(0x2b, y1 >> 8, y1, y2 >> 8, y2);
     {
-        gpio_set(cfg->pins.spi_csn, 0);
+        cs(0);
 
         static uint8_t gbuffer[20*20*2];
         memset(gbuffer, 0xff, sizeof(gbuffer));
@@ -187,9 +235,9 @@ static void disp_init(void)
         BOARD_DISP_SPI_BUS->TASKS_START = 1;
 
         while(!spi_status.txed);
-        gpio_set(cfg->pins.spi_csn, 1);
+        cs(1);
     }
-    
+#endif
 }
 
 int main(void)
@@ -244,12 +292,26 @@ static int cli_reset(int argc, const char **argv)
 }
 CLI_FUNCTION(cli_reset, "reset", "reset");
 
-static int cli_test(int argc, const char **argv)
+static int cli_disp_init(int argc, const char **argv)
 {
     disp_init();
     return 0;
 }
-CLI_FUNCTION(cli_test, "test", "test");
+CLI_FUNCTION(cli_disp_init, "init", "initialize display");
+
+static int cli_disp_cmd(int argc, const char **argv)
+{
+    if (argc == 0)
+        return ERR_CLI_EINVAL;
+    static uint8_t cmd[32];
+    for (int i = 0; i < argc; i++)
+    {
+        cmd[i] = (uint8_t)strtol(argv[i], 0, 0);
+    }
+    disp_write_cmd_blocking_arr(cmd, argc);
+    return 0;
+}
+CLI_FUNCTION(cli_disp_cmd, "cmd", "<cmd> (<data> *): send command to display");
 
 static int cli_timer(int argc, const char **argv)
 {

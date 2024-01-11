@@ -1,6 +1,9 @@
 #ifndef _BOARD_DISP_H_
 #define _BOARD_DISP_H_
 
+// #define BOARD_BUTTON_GPIO_PIN ((const uint16_t[BOARD_BUTTON_COUNT]){11, 12, 24, 25})
+// #define BOARD_LED_GPIO_PIN ((const uint16_t[BOARD_LED_COUNT]){13, 14, 15, 16})
+
 #define BOARD_DISP_TEARING_PIN (14)
 #define BOARD_DISP_SPI_CSN_PIN (18)  // dedicated QSPI pin
 #define BOARD_DISP_SPI_SCK_PIN (19)  // dedicated QSPI pin
@@ -22,6 +25,17 @@
 #define CPOL_LOW (1 << 0)
 #define BOARD_DISP_SPI_BUS_CFG  (MSB_FIRST | CPHA_TRAIL | CPOL_LOW) // spi mode 3
 
-#define BOARD_DISP_SPI_BUS_FREQ (0x14000000) // 32 MHz
+#define BOARD_DISP_SPI_BUS_FREQ (0x10000000)
+/*
+K125 0x02000000 125 kbps
+K250 0x04000000 250 kbps
+K500 0x08000000 500 kbps
+M1 0x10000000 1 Mbps
+M2 0x20000000 2 Mbps
+M4 0x40000000 4 Mbps
+M8 0x80000000 8 Mbps
+M16 0x0A000000 16 Mbps
+M32 0x14000000 32 Mbps
+*/
 
 #endif // _BOARD_DISP_H_
