@@ -17,15 +17,15 @@
 #define BOARD_DISP_SPI_BUS NRF_SPIM3 // the one single spi bus having 32MHz capabilities
 #define BOARD_DISP_SPI_BUS_IRQ_HANDLER_FUNC SPIM3_IRQHandler
 
-#define MSB_FIRST (0 << 2)
-#define LSB_FIRST (1 << 2)
+#define MSB_FIRST (0 << 0)
+#define LSB_FIRST (1 << 0)
 #define CPHA_LEAD (0 << 1)
 #define CPHA_TRAIL (1 << 1)
-#define CPOL_HIGH (0 << 0)
-#define CPOL_LOW (1 << 0)
+#define CPOL_HIGH (0 << 2)
+#define CPOL_LOW (1 << 2)
 #define BOARD_DISP_SPI_BUS_CFG  (MSB_FIRST | CPHA_TRAIL | CPOL_LOW) // spi mode 3
 
-#define BOARD_DISP_SPI_BUS_FREQ (0x10000000)
+#define BOARD_DISP_SPI_BUS_FREQ (0x14000000)
 /*
 K125 0x02000000 125 kbps
 K250 0x04000000 250 kbps

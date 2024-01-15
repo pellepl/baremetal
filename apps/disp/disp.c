@@ -16,6 +16,16 @@
 
 static void cli_cb(const char *func_name, int res);
 
+#define NUMARGS(...) (sizeof((int[]){0, ##__VA_ARGS__}) / sizeof(int) - 1)
+#define DISP_CMD_BLOCKING(cmd, ...) disp_write_cmd_blocking(cmd, NUMARGS(__VA_ARGS__), ##__VA_ARGS__)
+#define DCX_DATA 1
+#define DCX_COMM 0
+#define DISP_W 390
+#define DISP_H 390
+#define BYTES_PER_PIXEL 2
+
+static uint8_t gbuf[(uint32_t)(DISP_W * DISP_H * BYTES_PER_PIXEL / 2)];
+
 static struct {
     volatile uint32_t running;
     volatile uint32_t txed;
@@ -108,6 +118,10 @@ static void timer_init(void)
     NRF_TIMER0->TASKS_START = 1;
 }
 
+static void vsync_init(void)
+{
+}
+
 static uint32_t timer_read(int reset)
 {
     NRF_TIMER0->TASKS_CAPTURE[0] = 1;
@@ -122,13 +136,10 @@ static void cs(int c)
     cpu_halt(0);
 }
 
-#define DATA 1
-#define COMM 0
-
 static void dcx(int data_else_comm)
 {
     const disp_cfg_t *cfg = disp_get_cfg();
-    gpio_set(cfg->pins.dc, data_else_comm ? DATA : COMM);
+    gpio_set(cfg->pins.dc, data_else_comm);
 }
 
 static void disp_write_cmd_blocking_arr(const uint8_t *cmd_arr, uint32_t arr_len)
@@ -137,7 +148,7 @@ static void disp_write_cmd_blocking_arr(const uint8_t *cmd_arr, uint32_t arr_len
         ;
 
     cs(0);
-    dcx(COMM);
+    dcx(DCX_COMM);
     spi_status.txed = 0;
     BOARD_DISP_SPI_BUS->TXD.PTR = (uint32_t)(intptr_t)cmd_arr;
     BOARD_DISP_SPI_BUS->TXD.MAXCNT = 1;
@@ -149,7 +160,7 @@ static void disp_write_cmd_blocking_arr(const uint8_t *cmd_arr, uint32_t arr_len
     while (spi_status.running)
         ;
     cs(1);
-    dcx(DATA);
+    dcx(DCX_DATA);
 
     if (arr_len > 1)
     {
@@ -179,12 +190,10 @@ static void disp_write_cmd_blocking(uint8_t cmd, uint32_t args_count, ...)
         spi_cmd_buffer[arg_nbr + 1] = (uint8_t)va_arg(ap, int);
         arg_nbr++;
     }
-    fprint_mem(0, spi_cmd_buffer, args_count + 1);
+    // fprint_mem(0, spi_cmd_buffer, args_count + 1);
     disp_write_cmd_blocking_arr(spi_cmd_buffer, args_count + 1);
 }
 
-#define NUMARGS(...)  (sizeof((int[]){0, ##__VA_ARGS__})/sizeof(int)-1)
-#define DISP_CMD_BLOCKING(cmd, ...) disp_write_cmd_blocking(cmd, NUMARGS(__VA_ARGS__), ## __VA_ARGS__)
 static void disp_init(void) 
 {
     // power on sequence - See datasheet CH13613 SPEC V0.08, page 218.
@@ -200,44 +209,21 @@ static void disp_init(void)
     gpio_set(cfg->pins.resetn, 1);
     cpu_halt(15);
 
-    DISP_CMD_BLOCKING(0xf0, 0x50);
-    DISP_CMD_BLOCKING(0xb1, 0x78, 0x70);
-    DISP_CMD_BLOCKING(0xf0, 0x51);
-    DISP_CMD_BLOCKING(0xc1, 0x02, 0x02, 0x02);
-    DISP_CMD_BLOCKING(0xc3, 0x01, 0xf3);
-    DISP_CMD_BLOCKING(0xf0, 0x50);
-    DISP_CMD_BLOCKING(0x2a, 0x00, 0x06, 0x01, 0x8b);
-    DISP_CMD_BLOCKING(0x2b, 0x00, 0x00, 0x01, 0x85);
-    DISP_CMD_BLOCKING(0x35, 0x00);
-    DISP_CMD_BLOCKING(0x36, 0xc0);
-    DISP_CMD_BLOCKING(0x3a, 0x05);
-    DISP_CMD_BLOCKING(0x11);
+    DISP_CMD_BLOCKING(CH13613_M_MAUCCTR, 0x50);
+    DISP_CMD_BLOCKING(CH13613_MP0_IFCTR2, 0x78, 0x70);
+    DISP_CMD_BLOCKING(CH13613_M_MAUCCTR, 0x51);
+    DISP_CMD_BLOCKING(CH13613_MP1_ELVSSCMD, 0x02, 0x02, 0x02);
+    DISP_CMD_BLOCKING(CH13613_MP1_SWIRECTR, 0x01, 0xf3);
+    DISP_CMD_BLOCKING(CH13613_M_MAUCCTR, 0x50);
+    DISP_CMD_BLOCKING(CH13613_USER_CASET, 0x00, 0x06, 0x01, 0x8b);
+    DISP_CMD_BLOCKING(CH13613_USER_RASET, 0x00, 0x00, 0x01, 0x85);
+    DISP_CMD_BLOCKING(CH13613_USER_TEON, 0x00);
+    DISP_CMD_BLOCKING(CH13613_USER_SDC, 0xc0);
+    DISP_CMD_BLOCKING(CH13613_USER_IPF, 0x05);
+    DISP_CMD_BLOCKING(CH13613_USER_SLPOUT);
     cpu_halt(200);
-    DISP_CMD_BLOCKING(0x29);
+    DISP_CMD_BLOCKING(CH13613_USER_DISPON);
     cpu_halt(100);
-    // DISP_CMD_BLOCKING(0x38);
-
-#if 0
-    int x1 = 20, y1 = 20, x2 = 40, y2 = 40;
-    DISP_CMD_BLOCKING(0x2a, x1 >> 8, x1, x2 >> 8, x2);
-    DISP_CMD_BLOCKING(0x2b, y1 >> 8, y1, y2 >> 8, y2);
-    {
-        cs(0);
-
-        static uint8_t gbuffer[20*20*2];
-        memset(gbuffer, 0xff, sizeof(gbuffer));
-
-        spi_status.txed = 0;
-
-        BOARD_DISP_SPI_BUS->TXD.PTR = (uint32_t)(intptr_t)gbuffer;
-        BOARD_DISP_SPI_BUS->TXD.MAXCNT = sizeof(gbuffer);
-        BOARD_DISP_SPI_BUS->DCXCNT = 0;
-        BOARD_DISP_SPI_BUS->TASKS_START = 1;
-
-        while(!spi_status.txed);
-        cs(1);
-    }
-#endif
 }
 
 int main(void)
@@ -257,8 +243,11 @@ int main(void)
     cli_init(cli_cb, "\r\n;", " ,", "", "");
 
     timer_init();
-
     cpu_interrupt_enable();
+    disp_init();
+    vsync_init();
+
+    printf("init done\n");
 
     while (1)
     {
@@ -319,6 +308,55 @@ static int cli_timer(int argc, const char **argv)
     return 0;
 }
 CLI_FUNCTION(cli_timer, "timer", "(0): return timer (and reset)");
+
+static int cli_box(int argc, const char **argv)
+{
+    int x1 = DISP_W / 2 - 10;
+    int y1 = DISP_H / 2 - 10;
+    int w = 20;
+    int h = 20;
+    uint8_t col = 0xff;
+    if (argc >= 1)
+        x1 = strtol(argv[0], 0, 0);
+    if (argc >= 2)
+        y1 = strtol(argv[1], 0, 0);
+    if (argc >= 3)
+        w = strtol(argv[2], 0, 0);
+    if (argc >= 4)
+        h = strtol(argv[3], 0, 0);
+    if (argc >= 5)
+        col = strtol(argv[4], 0, 0);
+
+    int x2 = x1 + w + 1;
+    int y2 = y1 + h + 1;
+
+    uint32_t len_to_tx = (uint32_t)(w * h * BYTES_PER_PIXEL);
+
+    memset(gbuf, col, sizeof(gbuf));
+
+    DISP_CMD_BLOCKING(CH13613_USER_CASET, x1 >> 8, x1, x2 >> 8, x2);
+    DISP_CMD_BLOCKING(CH13613_USER_RASET, y1 >> 8, y1, y2 >> 8, y2);
+    DISP_CMD_BLOCKING(CH13613_USER_RAMW);
+    cs(0);
+    dcx(DCX_DATA);
+
+    (void)timer_read(1);
+    spi_status.txed = 0;
+
+    BOARD_DISP_SPI_BUS->TXD.PTR = (uint32_t)(intptr_t)gbuf;
+    BOARD_DISP_SPI_BUS->TXD.MAXCNT = len_to_tx;
+    BOARD_DISP_SPI_BUS->DCXCNT = 0;
+    BOARD_DISP_SPI_BUS->TASKS_START = 1;
+
+    while (!spi_status.txed)
+        ;
+    uint32_t ticks = timer_read(1);
+    float speed = 8.f * (float)len_to_tx * 16000000.f / (float)ticks;
+    printf("box ticks %d ticks, %f bps, %d bytes\n", ticks, speed, len_to_tx);
+    cs(1);
+    return 0;
+}
+CLI_FUNCTION(cli_box, "box", "(x(,y(,w(,h(,col)))))): draw box");
 
 static void cli_cb(const char *func_name, int res)
 {
