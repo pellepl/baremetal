@@ -6,3 +6,4 @@ CFLAGS += -DMINIO_FORMAT_FLOAT
 CONFIG_CLI := 1
 
 CFILES += $(wildcard apps/$(APP)/*.c)
+CC_OPTIMISATION := s
