@@ -25,6 +25,7 @@
 #define BYTES_PER_PIXEL (0.5f)
 #define BYTES_PER_COL (uint32_t)(DISP_W * BYTES_PER_PIXEL)
 #define MAX_SPI_CHUNK 0x7fff
+#define G_BUF_SIZE (int)(DISP_W * DISP_H * BYTES_PER_PIXEL)
 
 const uint16_t sineLookupTable[] = {
 0x8000, 0x8324, 0x8647, 0x896a, 0x8c8b, 0x8fab, 0x92c7, 0x95e1,
@@ -62,14 +63,19 @@ const uint16_t sineLookupTable[] = {
 
 #define INDEXED_IMAGE_W 256
 #define INDEXED_IMAGE_H 256
+
 extern const uint8_t indexed_image[INDEXED_IMAGE_W * INDEXED_IMAGE_H];
 extern const uint32_t indexed_image_palette[16];
+extern unsigned const char font[256][8];
 
-static uint8_t g_buffer[DISP_H * BYTES_PER_COL];
+static uint8_t g_buffer_a[G_BUF_SIZE];
+static uint8_t g_buffer_b[G_BUF_SIZE];
+static uint8_t *g_buffer = g_buffer_a;
 
 static struct {
     volatile uint32_t running;
     volatile uint32_t txed;
+    volatile uint8_t *g_buffer;
     volatile uint32_t gbuf_ix;
     volatile uint32_t gbuf_chunk_len;
     volatile uint32_t target_gbuf_ix;
@@ -86,7 +92,7 @@ static void disp_write_cmd_blocking(uint8_t cmd, uint32_t args_count, ...);
 
 static uint32_t lfsr_a, lfsr_b, lfsr_c;
 
-void prand_seed(uint32_t seed) {
+static void prand_seed(uint32_t seed) {
 	lfsr_a = seed ^ 0x20070515;
 	lfsr_b = seed ^ 0x20090129;
 	lfsr_c = seed ^ 0x20140318;
@@ -101,7 +107,7 @@ static uint32_t _prand_bit(void) {
 	return (uint32_t)(lfsr_a ^ lfsr_b ^ lfsr_c) & 1;
 }
 
-uint32_t prand(uint8_t bits) {
+static uint32_t prand(uint8_t bits) {
 	uint32_t r = 0;
 	while (bits--) {
 		r = (r << 1) | _prand_bit();
@@ -248,6 +254,11 @@ static void vsync_halt(void) {
     vsync = 0;
 }
 
+static uint32_t vsync_elased(void) {
+    NRF_TIMER1->TASKS_CAPTURE[1] = 1;
+    return (int32_t)NRF_TIMER1->CC[1] - (int32_t)vsync_last_tick;
+}
+
 static uint32_t vsync_ticks_left(void) {
 {
     NRF_TIMER1->TASKS_CAPTURE[1] = 1;
@@ -299,7 +310,7 @@ static void spi_dispatch_gbuf_chunk(void) {
         uint32_t remaining = spi_status.target_gbuf_ix - spi_status.gbuf_ix;
         uint32_t chunk_len = (remaining > MAX_SPI_CHUNK) ? MAX_SPI_CHUNK : remaining;
         spi_status.gbuf_chunk_len = chunk_len;
-        BOARD_DISP_SPI_BUS->TXD.PTR = (uint32_t)(intptr_t)g_buffer + spi_status.gbuf_ix;
+        BOARD_DISP_SPI_BUS->TXD.PTR = (uint32_t)(intptr_t)spi_status.g_buffer + spi_status.gbuf_ix;
         BOARD_DISP_SPI_BUS->TXD.MAXCNT = chunk_len;
         BOARD_DISP_SPI_BUS->DCXCNT = 0;
         BOARD_DISP_SPI_BUS->TASKS_START = 1;
@@ -318,10 +329,12 @@ static void disp_send_gbuf(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h) {
     DISP_CMD_BLOCKING(CH13613_USER_CASET, x1 >> 8, x1, x2 >> 8, x2);
     DISP_CMD_BLOCKING(CH13613_USER_RASET, y1 >> 8, y1, y2 >> 8, y2);
     DISP_CMD_BLOCKING(CH13613_USER_RAMW);
-    if (len_to_tx > sizeof(g_buffer))
-        len_to_tx = sizeof(g_buffer);
+    if (len_to_tx > G_BUF_SIZE)
+        len_to_tx = G_BUF_SIZE;
     spi_status.target_gbuf_ix = len_to_tx;
     spi_status.gbuf_chunk_len = 0;
+    spi_status.g_buffer = g_buffer;
+    g_buffer = (g_buffer == g_buffer_a ? g_buffer_b : g_buffer_a);
     spi_dispatch_gbuf_chunk();
 }
 
@@ -527,8 +540,8 @@ static void disp_init(void)
 
 
 static void disp_pattern(float dh_x, float dh_y, float dv_x, float dv_y) {
-    float ix = DISP_W / 2;
-    float iy = DISP_H / 2;
+    float ix = DISP_W / 2 - (dh_x + dv_y) * INDEXED_IMAGE_W / 2;
+    float iy = DISP_H / 2 - (dv_x + dh_y) * INDEXED_IMAGE_H / 2;
     for (uint32_t y = 0; y < DISP_H; y++, ix += dv_x, iy += dv_y) {
         float _ix = ix;
         float _iy = iy;
@@ -556,6 +569,32 @@ static void disp_pattern(float dh_x, float dh_y, float dv_x, float dv_y) {
 
             g_buffer[x+y*BYTES_PER_COL] = (col1) | (col2 << 4);
         }
+    }
+}
+
+static void disp_str(const char *str, uint32_t x, uint32_t y) {
+    char c;
+    while ((c = *str++) != 0) {
+        if (x > BYTES_PER_COL) break;
+        if (y > DISP_H) break;
+        for (int fy = 0; fy < 8; fy++) {
+            uint8_t bitmap = font[(uint8_t)c][fy];
+            if (y  + fy*2 > DISP_H) break;
+            for (int fx = 0; fx < 8; fx++) {
+                if (x + fx*2 > BYTES_PER_COL) continue;
+                if (bitmap & (1<<(7-fx))) {
+                    g_buffer[x+fx*2+(fy*4+y)*BYTES_PER_COL] = 0x11;
+                    g_buffer[x+fx*2+(fy*4+1+y)*BYTES_PER_COL] = 0x11;
+                    g_buffer[x+fx*2+(fy*4+2+y)*BYTES_PER_COL] = 0x11;
+                    g_buffer[x+fx*2+(fy*4+3+y)*BYTES_PER_COL] = 0x11;
+                    g_buffer[x+fx*2+1+(fy*4+y)*BYTES_PER_COL] = 0x11;
+                    g_buffer[x+fx*2+1+(fy*4+1+y)*BYTES_PER_COL] = 0x11;
+                    g_buffer[x+fx*2+1+(fy*4+2+y)*BYTES_PER_COL] = 0x11;
+                    g_buffer[x+fx*2+1+(fy*4+3+y)*BYTES_PER_COL] = 0x11;
+                }
+            }
+        }
+        x += 2*8;
     }
 }
 
@@ -655,6 +694,22 @@ static int cli_last_vsync(int argc, const char **argv)
 }
 CLI_FUNCTION(cli_last_vsync, "vsync", "return last vsync frequency");
 
+static int cli_pal(int argc, const char **argv)
+{
+    uint32_t pal[16] = {
+    0x000000, 0x111111, 0x222222, 0x333333,
+    0x444444, 0x555555, 0x666666, 0x777777,
+    0x888888, 0x999999, 0xaaaaaa, 0xbbbbbb,
+    0xcccccc, 0xdddddd, 0xeeeeee, 0xffffff
+    };
+    for (int i = 0; i < argc; i++) {
+        pal[i] = strtol(argv[i],0,0);
+    }
+    disp_set_palette(pal);
+    return 0;
+}
+CLI_FUNCTION(cli_pal, "pal", "(colors)*: set palette");
+
 static int cli_box(int argc, const char **argv)
 {
     int x1 = DISP_W / 2 - 10;
@@ -678,7 +733,7 @@ static int cli_box(int argc, const char **argv)
 
     uint32_t len_to_tx = (uint32_t)(w * h * BYTES_PER_PIXEL);
 
-    memset(g_buffer, col, sizeof(g_buffer));
+    __builtin_memset(g_buffer, col, G_BUF_SIZE);
 
     DISP_CMD_BLOCKING(CH13613_USER_CASET, x1 >> 8, x1, x2 >> 8, x2);
     DISP_CMD_BLOCKING(CH13613_USER_RASET, y1 >> 8, y1, y2 >> 8, y2);
@@ -702,7 +757,7 @@ static int cli_box(int argc, const char **argv)
     cs(1);
     return 0;
 }
-CLI_FUNCTION(cli_box, "box", "(x(,y(,w(,h(,col)))))): draw box");
+CLI_FUNCTION(cli_box, "box", "(x(,y(,w(,h(,fill)))))): draw box");
 
 static int cli_pat(int argc, const char **argv)
 {
@@ -754,12 +809,14 @@ static int cli_demo_bunny(int argc, const char **argv)
         }
         disp_set_palette(rev_pal);
     }
+    (void)timer_read(1);
     while (--runs) {
         float dx1 = sine((float)runs * 0.07f)*1.7f;
         float dy1 = sine((float)runs * 0.08f + 0.5f)*1.7f;
-        //vsync_halt();
         disp_pattern(dx1, dy1, -dy1, dx1);
         disp_send_gbuf(0,0,DISP_W, DISP_H);
+        uint32_t ticks = timer_read(1);
+        if ((runs % 20) == 0) printf("fps: %f\n", 16000000.f/(float)ticks);
     }
 
     disp_pattern(1.f, 0, 0, 1.f);
@@ -790,9 +847,10 @@ static int cli_demo_balls(int argc, const char **argv)
         balls[b].dy = (prand(32) % 9) - 5;
         if (balls[b].dy >= 0) balls[b].dy ++;
     }
+    (void)timer_read(1);
     while (--runs) {
         vsync_halt();
-        memset(g_buffer, 0, sizeof(g_buffer));
+        __builtin_memset(g_buffer, 0, G_BUF_SIZE);
         for (int b = 0; b < ball_count; b++) {
             int xx = balls[b].x;
             int yy = balls[b].y;
@@ -819,13 +877,38 @@ static int cli_demo_balls(int argc, const char **argv)
             }
         }
         disp_send_gbuf(0,0,DISP_W, DISP_H);
-        printf("remaining vsync: %d\n", vsync_ticks_left());
+        uint32_t ticks = timer_read(1);
+        if ((runs % 40) == 0) printf("fps: %f\n", 16000000.f/(float)ticks);
     }
-
 
     return 0;
 }
-CLI_FUNCTION(cli_demo_balls, "demo_balls", "(cycles): demo_balls");
+CLI_FUNCTION(cli_demo_balls, "demo_balls", "(cycles (balls)): demo_balls");
+
+static int cli_clr(int argc, const char **argv) {
+    memset(g_buffer_a, 0, G_BUF_SIZE);
+    memset(g_buffer_b, 0, G_BUF_SIZE);
+    return 0;
+}
+CLI_FUNCTION(cli_clr, "clr", "clear");
+
+static int cli_str(int argc, const char **argv) {
+    char str[256];
+    __builtin_memset(str, 0, 256);
+    for (int i = 2; i < argc; i++) {
+        sprintf(str + strlen(str), "%s ", argv[i]);
+    }
+    disp_str(str, strtol(argv[0],0,0), strtol(argv[1],0,0));
+    return 0;
+}
+CLI_FUNCTION(cli_str, "str", "x y str: draw string");
+
+static int cli_flush(int argc, const char **argv) {
+    disp_send_gbuf(0,0,DISP_W, DISP_H);
+    return 0;
+}
+CLI_FUNCTION(cli_flush, "flush", "flush gbuffer");
+
 
 static void cli_cb(const char *func_name, int res)
 {
