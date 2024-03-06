@@ -381,7 +381,8 @@ int minio_snprintf(char *s, unsigned int n, const char *format, ...) {
     return ret;
 }
 
-void minio_fprint_mem(unsigned int hdl, uint8_t *data, unsigned int len) {
+void minio_fprint_mem(unsigned int hdl, const uint8_t *data, unsigned int len)
+{
     while (len) {
         uint32_t rem = len >= 16 ? 16 : len;
         uint32_t fill = 16-rem;

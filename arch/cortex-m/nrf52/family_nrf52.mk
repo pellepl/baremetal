@@ -34,6 +34,11 @@ CFLAGS += -DNRF52840_XXAA
 CFILES-system = $(mdk_dir)/system_nrf52840.c
 nrf52-cc-flags += $(cc-flags-fpu)
 else ifeq "$(PROC)" "nrf528xx"
+ifeq "$(SDK_PROC)" ""
+ifneq "$(CONFIG_NRF_SDK)" ""
+$(error SDK_PROC is undefined, when using target nr528xx and an SDK this must be set manually)
+endif
+endif
 CFLAGS += -DNRF52840_XXAA
 CFILES += $(family_dir)/nrf528xx/system_nrf528xx.c
 nrf52-cc-flags += $(cc-flags-fpu)
@@ -71,6 +76,10 @@ ifeq "$(CONFIG_NRF52_TEST_BLE_DTM)" "1"
 CFLAGS += -DCONFIG_NRF52_TEST_BLE_DTM=1
 CFILES += $(wildcard $(family_dir)/test-ble-dtm/*.c)
 INCLUDE += $(family_dir)/test-ble-dtm
+endif
+
+ifeq "$(CONFIG_GPIO_IRQ)" "1"
+CFLAGS += -DCONFIG_GPIO_IRQ=1
 endif
 
 ifneq "$(CONFIG_NRF_SDK)" ""
