@@ -32,6 +32,26 @@ int gpio_read(uint16_t pin) {
     return -1;
 #endif
 }
+int gpio_disconnect(uint16_t pin, gpio_pull_t pull)
+{
+#if defined(BOARD_PIN_MAX) && BOARD_PIN_MAX > 0
+    if (pin >= BOARD_PIN_MAX)
+        return -1;
+    return gpio_hal_disconnect(pin, pull);
+#else
+    return 0;
+#endif
+}
 int gpio_deinit(void) {
     return gpio_hal_deinit();
+}
+int gpio_irq_callback(uint16_t pin, gpio_irq_cb_t callback)
+{
+#if defined(BOARD_PIN_MAX) && BOARD_PIN_MAX > 0
+    if (pin >= BOARD_PIN_MAX)
+        return -1;
+    return gpio_hal_irq_callback(pin, callback);
+#else
+    return -1;
+#endif
 }

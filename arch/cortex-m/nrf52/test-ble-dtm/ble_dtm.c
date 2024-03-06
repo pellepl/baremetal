@@ -186,13 +186,13 @@ static bool check_pdu(void)
         return false;
     }
 
-#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA) || defined(NRF52811_XXAA) 
+if (NRF_FICR->INFO.PART == 0x52840 || NRF_FICR->INFO.PART == 0x52833 || NRF_FICR->INFO.PART == 0x52811) {
     // If a long range radio mode is active, check that one of the four valid coded DTM packet types are selected.
     if ((m_radio_mode == RADIO_MODE_MODE_Ble_LR500Kbit || m_radio_mode == RADIO_MODE_MODE_Ble_LR125Kbit) && (pdu_packet_type > (dtm_pkt_type_t)DTM_PKT_0XFF))
     {
         return false;
     }
-#endif //defined(NRF52840_XXAA) || defined(NRF52833_XXAA) || defined(NRF52811_XXAA)
+}
 
     if (pdu_packet_type == DTM_PKT_PRBS9)
     {
@@ -289,9 +289,9 @@ static uint32_t radio_init(void)
                            (m_packetHeaderLFlen << RADIO_PCNF0_LFLEN_Pos) |
                            (m_packetHeaderPlen << RADIO_PCNF0_PLEN_Pos);
     }
-#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA) || defined(NRF52811_XXAA)
     else
     {
+if (NRF_FICR->INFO.PART == 0x52840 || NRF_FICR->INFO.PART == 0x52833 || NRF_FICR->INFO.PART == 0x52811) {
         // Coded PHY (Long range)
         NRF_RADIO->PCNF0 = (m_packetHeaderS1len << RADIO_PCNF0_S1LEN_Pos) |
                        (m_packetHeaderS0len << RADIO_PCNF0_S0LEN_Pos) |
@@ -299,8 +299,9 @@ static uint32_t radio_init(void)
                        (3 << RADIO_PCNF0_TERMLEN_Pos) |
                        (2 << RADIO_PCNF0_CILEN_Pos) |
                        (m_packetHeaderPlen << RADIO_PCNF0_PLEN_Pos);
+}
     }
-#endif //defined(NRF52840_XXAA) || defined(NRF52833_XXAA) || defined(NRF52811_XXAA)
+
 
     NRF_RADIO->PCNF1 = (m_whitening          << RADIO_PCNF1_WHITEEN_Pos) |
                        (m_endian             << RADIO_PCNF1_ENDIAN_Pos)  |
@@ -405,7 +406,7 @@ static void dtm_test_done(void)
     NRF_PPI->CH[0].TEP = 0;
 
     ANOMALY_172_TIMER->TASKS_SHUTDOWN = 1;
-
+    
     radio_reset();
     m_state = STATE_IDLE;
 }
@@ -546,9 +547,10 @@ static uint32_t dtm_packet_interval_calculate(uint32_t test_payload_length, uint
         // 24 CRC
         overhead_bits = 80; // 10 bytes
     }
-#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA) || defined(NRF52811_XXAA)
+
     else if (mode == RADIO_MODE_MODE_Ble_LR125Kbit)
     {
+if (NRF_FICR->INFO.PART == 0x52840 || NRF_FICR->INFO.PART == 0x52833 || NRF_FICR->INFO.PART == 0x52811) {
         // 80     preamble
         // 32 * 8 sync word coding=8
         //  2 * 8 Coding indicator, coding=8
@@ -558,9 +560,11 @@ static uint32_t dtm_packet_interval_calculate(uint32_t test_payload_length, uint
         // 24 * 8 CRC coding=8
         //  3 * 8 TERM2 coding=8
         overhead_bits = 720; // 90 bytes
+}
     }
     else if (mode == RADIO_MODE_MODE_Ble_LR500Kbit)
     {
+if (NRF_FICR->INFO.PART == 0x52840 || NRF_FICR->INFO.PART == 0x52833 || NRF_FICR->INFO.PART == 0x52811) {
         // 80     preamble
         // 32 * 8 sync word coding=8
         //  2 * 8 Coding indicator, coding=8
@@ -572,11 +576,11 @@ static uint32_t dtm_packet_interval_calculate(uint32_t test_payload_length, uint
         // NOTE: this makes us clock out 46 bits for CI + TERM1 + TERM2
         //       assumption the radio will handle this
         overhead_bits = 462; // 57.75 bytes
+}
     }
-#endif //defined(NRF52840_XXAA) || defined(NRF52833_XXAA) || defined(NRF52811_XXAA)
     /* add PDU payload test_payload length */
     test_packet_length = (test_payload_length * 8); // in bits
-#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA) || defined(NRF52811_XXAA)
+if (NRF_FICR->INFO.PART == 0x52840 || NRF_FICR->INFO.PART == 0x52833 || NRF_FICR->INFO.PART == 0x52811) {
     // account for the encoding of PDU
     if (mode == RADIO_MODE_MODE_Ble_LR125Kbit)
     {
@@ -586,7 +590,7 @@ static uint32_t dtm_packet_interval_calculate(uint32_t test_payload_length, uint
     {
         test_packet_length *= 2; //  1 to 2 encoding
     }
-#endif //defined(NRF52840_XXAA) || defined(NRF52833_XXAA) || defined(NRF52811_XXAA)
+}
     // add overhead calculated above
     test_packet_length += overhead_bits;
     // we remember this bits are us in 1Mbit
@@ -626,10 +630,11 @@ uint32_t dtm_init(void)
     // Enable wake-up on event
     SCB->SCR |= SCB_SCR_SEVONPEND_Msk;
 
-#if defined(NRF52832_XXAA) || defined(NRF52840_XXAA) || defined(NRF52833_XXAA)
+if (NRF_FICR->INFO.PART == 0x52840 || NRF_FICR->INFO.PART == 0x52833 || NRF_FICR->INFO.PART == 0x52832) {
     // Enable cache
     NRF_NVMC->ICACHECNF = (NVMC_ICACHECNF_CACHEEN_Enabled << NVMC_ICACHECNF_CACHEEN_Pos) & NVMC_ICACHECNF_CACHEEN_Msk;
-#endif
+}
+
     return DTM_SUCCESS;
 }
 
@@ -814,11 +819,10 @@ uint32_t dtm_cmd(dtm_cmd_t cmd, dtm_freq_t freq, uint32_t length, dtm_pkt_type_t
             m_radio_mode        = RADIO_MODE_MODE_Ble_1Mbit;
             m_packetHeaderPlen  = RADIO_PCNF0_PLEN_8bit;
 
-#ifdef NRF52840_XXAA
+if (NRF_FICR->INFO.PART == 0x52840) {
             // Workaround for Errata ID 191
             *(volatile uint32_t *) 0x40001740 = ((*((volatile uint32_t *) 0x40001740)) & 0x7FFFFFFF);
-#endif
-        }
+}        }
         else if (freq == LE_TEST_SETUP_SET_UPPER)
         {
             if (length > 0x03)
@@ -836,10 +840,10 @@ uint32_t dtm_cmd(dtm_cmd_t cmd, dtm_freq_t freq, uint32_t length, dtm_pkt_type_t
                     m_radio_mode        = RADIO_MODE_MODE_Ble_1Mbit;
                     m_packetHeaderPlen  = RADIO_PCNF0_PLEN_8bit;
 
-#ifdef NRF52840_XXAA
+if (NRF_FICR->INFO.PART == 0x52840) {
                     // Workaround for Errata ID 191
                     *(volatile uint32_t *) 0x40001740 = ((*((volatile uint32_t *) 0x40001740)) & 0x7FFFFFFF);
-#endif
+}
                     // Disable the workaround for nRF52840 anomaly 172.
                     set_strict_mode(0);
                     ANOMALY_172_TIMER->TASKS_SHUTDOWN = 1;
@@ -851,10 +855,10 @@ uint32_t dtm_cmd(dtm_cmd_t cmd, dtm_freq_t freq, uint32_t length, dtm_pkt_type_t
                     m_radio_mode        = RADIO_MODE_MODE_Ble_2Mbit;
                     m_packetHeaderPlen  = RADIO_PCNF0_PLEN_16bit;
 
-#ifdef NRF52840_XXAA
+if (NRF_FICR->INFO.PART == 0x52840) {
                     // Workaround for Errata ID 191
                     *(volatile uint32_t *) 0x40001740 = ((*((volatile uint32_t *) 0x40001740)) & 0x7FFFFFFF);
-#endif
+}
 
                     // Disable the workaround for nRF52840 anomaly 172.
                     set_strict_mode(0);
@@ -864,10 +868,10 @@ uint32_t dtm_cmd(dtm_cmd_t cmd, dtm_freq_t freq, uint32_t length, dtm_pkt_type_t
                     return radio_init();
 
                 case LE_PHY_LE_CODED_S8:
-#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA) || defined(NRF52811_XXAA)
+if (NRF_FICR->INFO.PART == 0x52840 || NRF_FICR->INFO.PART == 0x52833 || NRF_FICR->INFO.PART == 0x52811) {
                     m_radio_mode        = RADIO_MODE_MODE_Ble_LR125Kbit;
                     m_packetHeaderPlen  = RADIO_PCNF0_PLEN_LongRange;
-#ifdef NRF52840_XXAA
+if (NRF_FICR->INFO.PART == 0x52840) {
                     //  Workaround for Errata ID 191
                     *(volatile uint32_t *) 0x40001740 = ((*((volatile uint32_t *) 0x40001740)) & 0x7FFF00FF) | 0x80000000 | (((uint32_t)(196)) << 8);
 
@@ -876,19 +880,19 @@ uint32_t dtm_cmd(dtm_cmd_t cmd, dtm_freq_t freq, uint32_t length, dtm_pkt_type_t
                     {
                         anomaly_172_wa_enabled = true;
                     }
-#endif //NRF52840_XXAA
+}
 
                     return radio_init();
-#else
+} else {
                     m_event = LE_TEST_STATUS_EVENT_ERROR;
                     return DTM_ERROR_ILLEGAL_CONFIGURATION;
-#endif //defined(NRF52840_XXAA) || defined(NRF52833_XXAA) || defined(NRF52811_XXAA)
+}
                 case LE_PHY_LE_CODED_S2:
-#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA) || defined(NRF52811_XXAA)
+if (NRF_FICR->INFO.PART == 0x52840 || NRF_FICR->INFO.PART == 0x52833 || NRF_FICR->INFO.PART == 0x52811) {
                     m_radio_mode        = RADIO_MODE_MODE_Ble_LR500Kbit;
                     m_packetHeaderPlen  = RADIO_PCNF0_PLEN_LongRange;
 
-#ifdef NRF52840_XXAA
+if (NRF_FICR->INFO.PART == 0x52840) {
                     //  Workaround for Errata ID 191
                     *(volatile uint32_t *) 0x40001740 = ((*((volatile uint32_t *) 0x40001740)) & 0x7FFF00FF) | 0x80000000 | (((uint32_t)(196)) << 8);
 
@@ -897,13 +901,13 @@ uint32_t dtm_cmd(dtm_cmd_t cmd, dtm_freq_t freq, uint32_t length, dtm_pkt_type_t
                     {
                         anomaly_172_wa_enabled = true;
                     }
-#endif //NRF52840_XXAA
+}
 
                     return radio_init();
-#else
+} else {
                     m_event = LE_TEST_STATUS_EVENT_ERROR;
                     return DTM_ERROR_ILLEGAL_CONFIGURATION;
-#endif
+}
                 default:
                     m_event = LE_TEST_STATUS_EVENT_ERROR;
                     return DTM_ERROR_ILLEGAL_CONFIGURATION;
@@ -968,6 +972,11 @@ uint32_t dtm_cmd(dtm_cmd_t cmd, dtm_freq_t freq, uint32_t length, dtm_pkt_type_t
 
     if (cmd == LE_TEST_END)
     {
+        mp_timer->TASKS_STOP = 1;
+        mp_timer->INTENCLR = 0xffffffff;
+        mp_timer->SHORTS      = 0;
+        mp_timer->TASKS_SHUTDOWN = 1;
+
         if (m_state == STATE_IDLE)
         {
             // Sequencing error - only rx or tx test may be ended!

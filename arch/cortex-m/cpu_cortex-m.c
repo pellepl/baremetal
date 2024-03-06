@@ -21,6 +21,26 @@ __attribute__((weak)) void cpu_halt(uint32_t milliseconds) {
     SysTick->CTRL = 0; // disable
 }
 
+__attribute__((weak)) void cpu_halt_us(uint32_t microseconds)
+{
+    if (microseconds == 0)
+        return;
+    const uint32_t ticks_per_us = cpu_core_clock_freq() / 1000000;
+    if (microseconds / ticks_per_us > (1 << 23)) // SysTick is 24 bits  by definition
+    {
+        cpu_halt(microseconds / 1000);
+    }
+    else
+    {
+        SysTick->LOAD = microseconds * ticks_per_us - 1;
+        SysTick->VAL = 0UL;
+        SysTick->CTRL = (1 << 0) | (1 << 2); // enable, use core clock
+        while ((SysTick->CTRL & (1 << 16)) == 0)
+            ;              // wait till overflow
+        SysTick->CTRL = 0; // disable
+    }
+}
+
 __attribute__((weak)) void cpu_interrupt_enable(void) {
     __enable_irq();
 }

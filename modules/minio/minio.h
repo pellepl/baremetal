@@ -53,7 +53,7 @@ int minio_vn_printf(unsigned int hdl, const char *format, unsigned int count, va
 void minio_fprintf(unsigned int hdl, const char *format, ...);
 int minio_sprintf(char *s, const char *format, ...);
 int minio_snprintf(char *s, unsigned int n, const char *format, ...);
-void minio_fprint_mem(unsigned int hdl, uint8_t *data, unsigned int len);
+void minio_fprint_mem(unsigned int hdl, const uint8_t *data, unsigned int len);
 int minio_atoi(const char *s);
 long minio_strtol(const char *s, char **endptr, int base);
 unsigned int minio_strlen(const char *str);
