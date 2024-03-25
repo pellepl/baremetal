@@ -8,6 +8,7 @@
 #include "accelerometer_bma400.h" // once we have more accelerometers, make this a common api instead
 #include "uart_prodtest.h"
 #include "rf.h"
+#include "stepper.h"
 
 typedef enum {
 	LFCLK_OSC_RC = 0,
@@ -38,8 +39,9 @@ typedef enum {
 
 static bool hfclk_constant_measure_calibrated = false;
 static int hfclk_constant_measure_error = 0;
-static volatile curm_state_t curm_state = CURM_STATE_NONE;
-static volatile curm_state_t curm_state_prev = CURM_STATE_NONE;
+static volatile bool next_curm_state = false;
+static curm_state_t curm_state = CURM_STATE_NONE;
+static curm_state_t curm_state_prev = CURM_STATE_NONE;
 
 
 static void curm_state_enter(curm_state_t state) {
@@ -51,7 +53,7 @@ static void curm_state_enter(curm_state_t state) {
 		acc_bma400_init();
 		acc_bma400_config(true, false);
 		break;
-	case CURM_STATE_BLE_TX:
+		case CURM_STATE_BLE_TX:
 		// Frequency : 2440 MHz (channel 17)
 		// Length    : 37 Bytes
 		// Packet    : PRBS9 Packet Payload
@@ -72,11 +74,27 @@ static void curm_state_enter(curm_state_t state) {
 	case CURM_STATE_LFCLK:
 		prodtest_output_lfclk(true);
 		break;
-	case CURM_STATE_MOTOR_CW:
+		case CURM_STATE_MOTOR_CW:
+		stepper_init();
+		for (int steps = 0; steps < 180; steps++) {
+			for (stepper_id_t id = STEPPER_ID_HOUR; id <= STEPPER_ID_MINUTE; id++) {
+				stepper_move_singlestep(id, STEPPER_DIR_CW);
+				cpu_halt(1);
+			}
+		}
 		break;
-	case CURM_STATE_MOTOR_CCW:
+		case CURM_STATE_MOTOR_CCW:
+		stepper_init();
+		for (int steps = 0; steps < 180; steps++) {
+			for (stepper_id_t id = STEPPER_ID_HOUR; id <= STEPPER_ID_MINUTE; id++) {
+				stepper_move_singlestep(id, STEPPER_DIR_CCW);
+				cpu_halt(1);
+			}
+		}
 		break;
-	default:
+		case CURM_STATE_END:
+		default:
+		curm_state = CURM_STATE_NONE;
 		break;
 	}
 }
@@ -91,7 +109,7 @@ static void curm_state_exit(curm_state_t state)
 	case CURM_STATE_ACC:
 		acc_bma400_deinit();
 		break;
-	case CURM_STATE_BLE_TX:
+		case CURM_STATE_BLE_TX:
 		rf_dtm_end();
 		break;
 	case CURM_STATE_BLE_RX:
@@ -107,9 +125,12 @@ static void curm_state_exit(curm_state_t state)
 	case CURM_STATE_LFCLK:
 		prodtest_output_lfclk(false);
 		break;
-	case CURM_STATE_MOTOR_CW:
+		case CURM_STATE_MOTOR_CW:
+		stepper_deinit();
 		break;
-	case CURM_STATE_MOTOR_CCW:
+		case CURM_STATE_MOTOR_CCW:
+		stepper_deinit();
+		curm_state = CURM_STATE_END;
 		break;
 	default:
 		break;
@@ -143,7 +164,7 @@ static bool test_lclock(void)
 	NRF_CLOCK->TASKS_LFCLKSTART = 1;
 
 	volatile uint32_t spoonguard = cpu_core_clock_freq() / 4;
-	while (NRF_CLOCK->EVENTS_LFCLKSTARTED != 1 && -spoonguard)
+	while (NRF_CLOCK->EVENTS_LFCLKSTARTED != 1 && --spoonguard)
 		;
 
 	res = NRF_CLOCK->LFCLKSTAT == (CLOCK_LFCLKSTAT_SRC_Xtal | CLOCK_LFCLKSTAT_STATE_Running << CLOCK_LFCLKSTAT_STATE_Pos);
@@ -406,18 +427,11 @@ static int cli_vibc(int argc, const char **argv)
 }
 CLI_FUNCTION(cli_vibc, "VIBC", "Vibrator control. VIBC=1; starts the vibrator, VIBC=0; stops the vibrator");
 
-static void curm_irq(uint16_t pin, uint8_t state)
-{
+static void curm_irq(uint16_t pin, uint8_t state) {
 	volatile int a = 0x10000;
-	while (--a)
-		; // pin settle
-	if (gpio_read(pin) == 0 && curm_state == curm_state_prev)
-	{
-		curm_state++;
-		if (curm_state >= CURM_STATE_END)
-		{
-			curm_state = CURM_STATE_NONE;
-		}
+	while (--a); // pin settle
+	if (gpio_read(pin) == 0 && curm_state == curm_state_prev) {
+		next_curm_state = true;
 	}
 }
 
@@ -432,6 +446,7 @@ static int cli_curm(int argc, const char **argv)
 
 	curm_state_prev = CURM_STATE_NONE;
 	curm_state = CURM_STATE_IDLE;
+	next_curm_state = false;
 
 	printf("CURM Start;\r\n");
 
@@ -449,6 +464,14 @@ static int cli_curm(int argc, const char **argv)
 			curm_state_prev = curm_state;
 		}
 		__WFI();
+		if (next_curm_state) {
+			next_curm_state = false;
+			if (curm_state < CURM_STATE_END) {
+				curm_state++;
+			} else {
+				break;
+			}
+		}
 	}
 
 	gpio_irq_callback(pin, NULL);

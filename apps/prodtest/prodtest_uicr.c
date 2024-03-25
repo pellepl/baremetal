@@ -160,3 +160,50 @@ static int cli_tatc(int argc, const char **argv)
 }
 CLI_FUNCTION(cli_tatc, "TATC", 
 	  "Reset Test Ok flags. Note: This can only be done about half a dozen times!");
+
+
+static int cli_ccbt(int argc, const char **argv)
+{
+    if (argc == 0) return ERR_CLI_EINVAL;
+    if (argv[0][0] == '0') {
+        printf("CCBT result : %s;\r\n", uicr_get_coretest_marker() == 0 ? "PASSED" : "FAILED");
+    } else {
+        int err = uicr_clear_coretest_marker();
+        if (err == -ENOMEM) {
+            printf("ERROR RESETTING CORETEST REGISTER, REFLASH NEEDED;\r\n"); 
+        }
+    }
+	
+	return ERROR_OK;
+}
+CLI_FUNCTION(cli_ccbt, "CCBT", "CCBT=0; Print value, CCBT=1; Clears CoreTest pass flag");
+
+static int cli_scbt(int argc, const char **argv)
+{
+    return uicr_set_coretest_marker(0);
+}
+CLI_FUNCTION(cli_scbt, "SCBT", "Sets the CoreTest pass flag;");
+
+static int cli_mvtc(int argc, const char **argv)
+{
+    int err = uicr_clear_mvttest_marker();
+    if (err == -ENOMEM) {
+        printf("ERROR RESETTING MOVEMENTTEST REGISTER, REFLASH NEEDED;\r\n"); 
+    }
+    return err;
+}
+CLI_FUNCTION(cli_mvtc, "MVTC", "MVTC=1; Clear the Movement test pass flag");
+
+static int cli_mvts(int argc, const char **argv)
+{
+    return uicr_set_mvttest_marker(0);
+}
+CLI_FUNCTION(cli_mvts, "MVTS", "MVTS=1; Set the Movement test pass flag");
+
+static int cli_mvtf(int argc, const char **argv) {
+    printf("Movement result : %s;\r\n", uicr_get_mvttest_marker() == 0 ? "PASSED" : "FAILED");
+    return ERROR_OK;
+}
+CLI_FUNCTION(cli_mvtf, "MVTF", "Read test OK flag for movement test. Example:. MVTF=1; displays if tests passed");
+
+

@@ -87,6 +87,7 @@ TARGET_SPEC pluto =
         .accelerometer.routed = true,
         .accelerometer.type = ACC_TYPE_BMA400,
         .accelerometer.pin_vdd = P(0, 24),
+        .accelerometer.pin_vdd_active_high = true,
         .accelerometer.pin_int = P(0, 10),
         .accelerometer.pin_int_secondary = BOARD_PIN_UNDEF,
         .accelerometer.bus.bus_type = BUS_TYPE_SPI,
