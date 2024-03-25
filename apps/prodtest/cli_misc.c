@@ -100,6 +100,57 @@ static int cli_toggle_dc(int argc, const char **argv)
 }
 CLI_FUNCTION(cli_toggle_dc, "dcdc", "control dcdc: 0|1");
 
+static int cli_xtal_lf(int argc, const char **argv)
+{
+    if (argc > 0 && argv[0][0] != '0')
+    {
+        NRF_CLOCK->TASKS_LFCLKSTOP = 1;
+        NRF_CLOCK->LFCLKSRC = CLOCK_LFCLKSRC_SRC_Xtal;
+        NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
+        NRF_CLOCK->TASKS_LFCLKSTART = 1;
+        volatile int spoonguard = cpu_core_clock_freq() / 4;
+        while (NRF_CLOCK->EVENTS_LFCLKSTARTED == 0 && spoonguard--)
+            ;
+        if (spoonguard == 0)
+        {
+            NRF_CLOCK->TASKS_LFCLKSTOP = 1;
+            return -ETIMEDOUT;
+        }
+    }
+    else
+    {
+        NRF_CLOCK->TASKS_LFCLKSTOP = 1;
+    }
+
+    return 0;
+}
+CLI_FUNCTION(cli_xtal_lf, "xtal_lf", "enable/disable lf xtal: 0|1");
+
+static int cli_xtal_hf(int argc, const char **argv)
+{
+    if (argc > 0 && argv[0][0] != '0')
+    {
+        NRF_CLOCK->TASKS_HFCLKSTOP = 1;
+        NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
+        NRF_CLOCK->TASKS_HFCLKSTART = 1;
+        volatile int spoonguard = cpu_core_clock_freq() / 4;
+        while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0 && spoonguard--)
+            ;
+        if (spoonguard == 0)
+        {
+            NRF_CLOCK->TASKS_LFCLKSTOP = 1;
+            return -ETIMEDOUT;
+        }
+    }
+    else
+    {
+        NRF_CLOCK->TASKS_HFCLKSTOP = 1;
+    }
+
+    return 0;
+}
+CLI_FUNCTION(cli_xtal_hf, "xtal_hf", "enable/disable hf xtal: 0|1");
+
 static int cli_help(int argc, const char **argv)
 {
     print_commands(false, 20);
