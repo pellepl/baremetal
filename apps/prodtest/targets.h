@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <errno.h>
+#include "gpio_driver.h"
 #include "nrf.h"
 #include "board_common.h"
 #include "errors.h"
@@ -232,5 +233,6 @@ int target_count(void);
 const target_t *target_get_all(void);
 const target_t *target_get(void);
 void target_reset_pin(uint16_t pin);
+gpio_pull_t target_default_pull_for_pin(uint16_t pin);
 
 #endif // _TARGETS_H_

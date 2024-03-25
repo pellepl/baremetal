@@ -60,6 +60,11 @@ const target_t *target_get(void)
 
 void target_reset_pin(uint16_t pin)
 {
+    gpio_disconnect(pin, target_default_pull_for_pin(pin));
+}
+
+gpio_pull_t target_default_pull_for_pin(uint16_t pin)
+{
     gpio_pull_t pull = GPIO_PULL_NONE;
     for (int i = 0; current_target->pins_pulled_up != NULL && i < current_target->pins_pulled_up_count; i++)
     {
@@ -75,8 +80,7 @@ void target_reset_pin(uint16_t pin)
             pull = GPIO_PULL_DOWN;
         }
     }
-
-    gpio_disconnect(pin, pull);
+    return pull;
 }
 
 #if NO_EXTRA_CLI == 0
