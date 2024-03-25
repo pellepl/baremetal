@@ -11,7 +11,9 @@ typedef enum
     MAX_STEPPER_DIRS
 } stepper_dir_t;
 
-int stepper_move(stepper_id_t id, stepper_dir_t dir);
+int stepper_move_singlestep(stepper_id_t id, stepper_dir_t dir);
+int stepper_move_singlestep_multiple(const stepper_id_t *ids, const stepper_dir_t *dir, int steppers);
+int stepper_move_multistep_multiple(const stepper_id_t *ids, const uint16_t *steps, const stepper_dir_t *dirs, int steppers);
 void stepper_init(void);
 void stepper_deinit(void);
 

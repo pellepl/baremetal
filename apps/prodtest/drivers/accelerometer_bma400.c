@@ -188,6 +188,7 @@ static void deinit(void)
 	const target_t *target = target_get();
 	if (!target->accelerometer.routed)
 		return;
+
 	if (target->accelerometer.bus.bus_type == BUS_TYPE_SPI)
 	{
 		spi_deinit(SPI_BUS_GENERIC);
@@ -199,7 +200,7 @@ static void deinit(void)
 	}
 	if (target->accelerometer.pin_vdd != BOARD_PIN_UNDEF)
 	{
-		gpio_set(target->accelerometer.pin_vdd, 0);
+		gpio_set(target->accelerometer.pin_vdd, target->accelerometer.pin_vdd_active_high ? 0 : 1);
 		target_reset_pin(target->accelerometer.pin_vdd);
 	}
 }
@@ -323,7 +324,7 @@ int acc_bma400_init(void) {
     }
 
     if (target->accelerometer.pin_vdd != BOARD_PIN_UNDEF) {
-        gpio_set(target->accelerometer.pin_vdd, 0);
+        gpio_set(target->accelerometer.pin_vdd, target->accelerometer.pin_vdd_active_high ? 0 : 1);
         gpio_config(target->accelerometer.pin_vdd, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
     }
 
@@ -356,15 +357,17 @@ int acc_bma400_init(void) {
 int acc_bma400_power(bool enable)
 {
 	const target_t *target = target_get();
-	if (target->accelerometer.routed && target->accelerometer.pin_vdd != BOARD_PIN_UNDEF)
-	{
-		gpio_set(target->accelerometer.pin_vdd, enable ? 1 : 0);
-		return ERROR_OK;
-	}
-	else
+	if (!target->accelerometer.routed || target->accelerometer.pin_vdd == BOARD_PIN_UNDEF)
 	{
 		return -ENOTSUP;
 	}
+	if (enable) {
+		gpio_set(target->accelerometer.pin_vdd, target->accelerometer.pin_vdd_active_high ? 1 : 0);
+	} else {
+		gpio_set(target->accelerometer.pin_vdd, target->accelerometer.pin_vdd_active_high ? 0 : 1);
+	}
+
+	return ERROR_OK;
 }
 
 void acc_bma400_deinit(void) {

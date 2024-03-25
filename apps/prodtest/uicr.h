@@ -78,5 +78,11 @@ int uicr_write_word(uint32_t addr, uint32_t word);
 uint32_t uicr_get_prodtest_marker(void);
 int uicr_set_prodtest_marker(int ix);
 int uicr_clear_prodtest_marker(void);
+uint32_t uicr_get_coretest_marker(void);
+int uicr_set_coretest_marker(int ix);
+int uicr_clear_coretest_marker(void);
+uint32_t uicr_get_mvttest_marker(void);
+int uicr_set_mvttest_marker(int ix);
+int uicr_clear_mvttest_marker(void);
 
 #endif //_UICR_H_

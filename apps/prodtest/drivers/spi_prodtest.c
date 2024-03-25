@@ -65,7 +65,7 @@ int spi_init(spi_bus_t spi_bus, const spi_config_t *cfg)
     bus->state = BUS_IDLE;
 
     gpio_set(bus->cfg.pins.csn, 1);
-    gpio_set(bus->cfg.pins.clk, 0);
+    gpio_set(bus->cfg.pins.clk, cfg->mode <= 1 ? 0 : 1);
     gpio_set(bus->cfg.pins.mosi, 0);
     gpio_config(bus->cfg.pins.clk, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
     NRF_GPIO_Type *port = bus->cfg.pins.clk < 32 ? NRF_P0 : NRF_P1;
@@ -141,10 +141,12 @@ void spi_deinit(spi_bus_t spi_bus) {
     if (!bus->init)
         return;
     NVIC_DisableIRQ(bus_hw[spi_bus].irqn);
+    hw->INTENCLR = 0xffffffff;
     NVIC_ClearPendingIRQ(bus_hw[spi_bus].irqn);
     hw->EVENTS_STOPPED = 0;
     hw->TASKS_STOP = 1;
     while (hw->EVENTS_STOPPED == 0);
+    hw->EVENTS_STOPPED = 0;
     hw->ENABLE = (SPIM_ENABLE_ENABLE_Disabled << SPIM_ENABLE_ENABLE_Pos);
 
     gpio_set(bus->cfg.pins.csn, 1);

@@ -103,6 +103,41 @@ int uicr_write_word(uint32_t addr, uint32_t word)  {
     return 0;
 }
 
+static uint32_t pluto_bitsize_for_marker(volatile const uint32_t *w) {
+    const target_t *t = target_get();
+    uint32_t bitsize = 0;
+    if (w == &uicr_get_pluto()->prodtest) {
+        bitsize = t->uicr_info.pronto.marker_prodtest_bitsize;
+    } else if (w == &uicr_get_pluto()->coretest) {
+        bitsize = t->uicr_info.pronto.marker_coretest_bitsize;
+    } else if (w == &uicr_get_pluto()->movementtest) {
+        bitsize = t->uicr_info.pronto.marker_movementtest_bitsize;
+    } 
+    return bitsize;
+}
+
+static uint32_t pluto_get_marker(volatile const uint32_t *w) {
+    return get_active_entry(*w, pluto_bitsize_for_marker(w));
+}
+
+static int pluto_set_marker(int ix, volatile const uint32_t *w) {
+    int entry_ix = uicr_get_active_entry_bit_ix(*w, pluto_bitsize_for_marker(w));
+    if (entry_ix < 0) {
+        return -ENOMEM;
+    }
+    return uicr_write_word((uint32_t)w, *w & ~(1<<(entry_ix + ix)));
+
+}
+
+static int pluto_clear_marker(volatile const uint32_t *w) {
+    uint32_t bitsize = pluto_bitsize_for_marker(w);
+    int entry_ix = uicr_get_active_entry_bit_ix(*w, bitsize);
+    if (entry_ix < 0 || entry_ix > 32 - ((int)bitsize + 1) * 2)  {
+        return -ENOMEM;
+    }
+    return uicr_write_word((uint32_t)w, *w & ~(1<<(entry_ix + bitsize)));
+}
+
 uint32_t uicr_get_prodtest_marker(void) {
     const target_t *t = target_get();
     if (strcmp(TARGET_PASCAL, t->name) == 0)
@@ -110,7 +145,7 @@ uint32_t uicr_get_prodtest_marker(void) {
         return uicr_get_pascal()->prodtest[0]; // TODO PETER
     }
     // defaults to pluto
-    return get_active_entry(uicr_get_pluto()->prodtest, t->uicr_info.pronto.marker_prodtest_bitsize);
+    return pluto_get_marker(&uicr_get_pluto()->prodtest);
 }
 
 int uicr_set_prodtest_marker(int ix) {
@@ -121,12 +156,9 @@ int uicr_set_prodtest_marker(int ix) {
     if (strcmp(TARGET_PASCAL, t->name) == 0) {
         return -ENOSYS; // TODO PETER
     }
+
     // defaults to pluto
-    int entry_ix = uicr_get_active_entry_bit_ix(uicr_get_pluto()->prodtest, t->uicr_info.pronto.marker_prodtest_bitsize);
-    if (entry_ix < 0) {
-        return -ENOMEM;
-    }
-    return uicr_write_word((uint32_t)&uicr_get_pluto()->prodtest, uicr_get_pluto()->prodtest & ~(1<<(entry_ix + ix)));
+    return pluto_set_marker(ix, &uicr_get_pluto()->prodtest);
 }
 
 int uicr_clear_prodtest_marker(void) {
@@ -135,11 +167,63 @@ int uicr_clear_prodtest_marker(void) {
         return -ENOSYS; // TODO PETER
     }
     // defaults to pluto
-    int entry_ix = uicr_get_active_entry_bit_ix(uicr_get_pluto()->prodtest, t->uicr_info.pronto.marker_prodtest_bitsize);
-    if (entry_ix < 0 || entry_ix > 32 - (t->uicr_info.pronto.marker_prodtest_bitsize + 1) * 2)  {
-        return -ENOMEM;
+    return pluto_clear_marker(&uicr_get_pluto()->prodtest);
+}
+
+uint32_t uicr_get_coretest_marker(void) {
+    const target_t *t = target_get();
+    if (strcmp(TARGET_PASCAL, t->name) == 0)
+    {
+        return uicr_get_pascal()->coretest[0].flag; // TODO PETER
     }
-    return uicr_write_word((uint32_t)&uicr_get_pluto()->prodtest, uicr_get_pluto()->prodtest & ~(1<<(entry_ix + t->uicr_info.pronto.marker_prodtest_bitsize)));
+    // defaults to pluto
+    return pluto_get_marker(&uicr_get_pluto()->coretest);
+}
+
+int uicr_set_coretest_marker(int ix) {
+    const target_t *t = target_get();
+    if (strcmp(TARGET_PASCAL, t->name) == 0) {
+        return -ENOSYS; // TODO PETER
+    }
+    // defaults to pluto
+    return pluto_set_marker(ix, &uicr_get_pluto()->coretest);
+}
+
+int uicr_clear_coretest_marker(void) {
+    const target_t *t = target_get();
+    if (strcmp(TARGET_PASCAL, t->name) == 0) {
+        return -ENOSYS; // TODO PETER
+    }
+    // defaults to pluto
+    return pluto_clear_marker(&uicr_get_pluto()->coretest);
+}
+
+uint32_t uicr_get_mvttest_marker(void) {
+    const target_t *t = target_get();
+    if (strcmp(TARGET_PASCAL, t->name) == 0)
+    {
+        return uicr_get_pascal()->movementtest; // TODO PETER
+    }
+    // defaults to pluto
+    return pluto_get_marker(&uicr_get_pluto()->movementtest);
+}
+
+int uicr_set_mvttest_marker(int ix) {
+    const target_t *t = target_get();
+    if (strcmp(TARGET_PASCAL, t->name) == 0) {
+        return -ENOSYS; // TODO PETER
+    }
+    // defaults to pluto
+    return pluto_set_marker(ix, &uicr_get_pluto()->movementtest);
+}
+
+int uicr_clear_mvttest_marker(void) {
+    const target_t *t = target_get();
+    if (strcmp(TARGET_PASCAL, t->name) == 0) {
+        return -ENOSYS; // TODO PETER
+    }
+    // defaults to pluto
+    return pluto_clear_marker(&uicr_get_pluto()->movementtest);
 }
 
 #if NO_EXTRA_CLI == 0

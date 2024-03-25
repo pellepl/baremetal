@@ -198,7 +198,7 @@ static int cli_step(int argc, const char **argv) {
     }
     stepper_init();
     while (steps--) {
-        int err = stepper_move(id, dir);
+        int err = stepper_move_singlestep(id, dir);
         if (err) {
             return err;
         }
