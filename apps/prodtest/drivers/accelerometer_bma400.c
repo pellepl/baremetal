@@ -180,10 +180,7 @@ static void acc_irq(uint16_t pin, uint8_t state)
 	if (!me.init)
 		return;
 	me.irqs++;
-	if (state != 0)
-	{
-		eventq_add(0, 0, acc_irq_handle);
-	}
+	eventq_add(0, 0, acc_irq_handle);
 }
 
 static void deinit(void)
