@@ -4,11 +4,6 @@
 #include "cli.h"
 #include "minio.h"
 
-static NRF_GPIO_Type *port_for_pin(uint16_t pin)
-{
-    return pin < 32 ? NRF_P0 : NRF_P1;
-}
-
 static void mast_inputify(const uint16_t *pins, uint8_t num_pins)
 {
     for (uint8_t i = 0; i < num_pins; i++)
@@ -27,7 +22,7 @@ static int mast_test_short_ref(const uint16_t *pins, uint8_t num_pins, gpio_pull
         uint16_t pin = pins[i];
         if (pin == BOARD_PIN_UNDEF)
             continue;
-        NRF_GPIO_Type *port = port_for_pin(pin);
+        NRF_GPIO_Type *port = prodtest_port_for_pin(pin);
         port->PIN_CNF[pin & 0x1f] =
             (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos) |
             (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos) |
@@ -63,7 +58,7 @@ static int mast_test_connection(const uint16_t *pins, uint8_t num_pins, bool con
         uint16_t pin = pins[i];
         if (pin == BOARD_PIN_UNDEF)
             continue;
-        NRF_GPIO_Type *port = port_for_pin(pin);
+        NRF_GPIO_Type *port = prodtest_port_for_pin(pin);
         port->PIN_CNF[pin & 0x1f] =
             (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos) |
             (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos) |
@@ -79,7 +74,7 @@ static int mast_test_connection(const uint16_t *pins, uint8_t num_pins, bool con
             continue;
         uint8_t output_pin = pins[i];
         gpio_set(output_pin, 0);
-        NRF_GPIO_Type *port = port_for_pin(output_pin);
+        NRF_GPIO_Type *port = prodtest_port_for_pin(output_pin);
         port->PIN_CNF[output_pin & 0x1f] =
             (GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos) |
             (GPIO_PIN_CNF_INPUT_Disconnect << GPIO_PIN_CNF_INPUT_Pos) |
@@ -105,7 +100,7 @@ static int mast_test_connection(const uint16_t *pins, uint8_t num_pins, bool con
             }
         }
 
-        port = port_for_pin(output_pin);
+        port = prodtest_port_for_pin(output_pin);
         port->PIN_CNF[output_pin & 0x1f] =
             (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos) |
             (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos) |

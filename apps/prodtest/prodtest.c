@@ -140,3 +140,8 @@ int prodtest_output_lfclk(bool enable) {
 
 	return ERROR_OK;
 }
+
+NRF_GPIO_Type *prodtest_port_for_pin(uint16_t pin)
+{
+    return pin < 32 ? NRF_P0 : NRF_P1;
+}

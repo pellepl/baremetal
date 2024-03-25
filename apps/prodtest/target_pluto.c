@@ -148,10 +148,11 @@ TARGET_SPEC pluto =
             P(0, 20), // battery load
             P(0, 26), // vibrator
             P(0, 24), // acc vdd
+            P(0, 4),  // prodtest
         },
-        .pins_pulled_down_count = 3,
+        .pins_pulled_down_count = 4,
         .pins_pulled_up = (const uint16_t[]){
-            P(0, 19), // pusher up 
+            P(0, 19), // pusher up
             P(0, 11), // pusher mid
             P(0, 25), // pusher down
         },
