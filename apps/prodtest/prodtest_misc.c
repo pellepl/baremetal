@@ -462,6 +462,10 @@ static int cli_curm(int argc, const char **argv)
 			curm_state_exit(curm_state_prev);
 			curm_state_enter(curm_state);
 			curm_state_prev = curm_state;
+			// restore pin irq if the curmstate change nuked the config
+			gpio_irq_callback(pin, NULL);
+			gpio_config(pin, GPIO_DIRECTION_INPUT, target_default_pull_for_pin(pin));
+			gpio_irq_callback(pin, curm_irq);
 		}
 		__WFI();
 		if (next_curm_state) {

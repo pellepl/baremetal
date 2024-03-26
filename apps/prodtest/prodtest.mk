@@ -23,9 +23,12 @@ CONFIG_NRF52_TEST_BLE_DTM := 1
 INCLUDE += apps/$(APP)
 CFILES += $(wildcard apps/$(APP)/*.c)
 
+INCLUDE += apps/$(APP)/targets
+CFILES += $(wildcard apps/$(APP)/targets/*.c)
+
 INCLUDE += apps/$(APP)/drivers
 CFILES += $(wildcard apps/$(APP)/drivers/*.c)
 
 CFLAGS += -Wno-address-of-packed-member
 
-LDFLAGS_LATE += --script=apps/$(APP)/linker_targets.ld
+LDFLAGS_LATE += --script=apps/$(APP)/targets/linker_targets.ld
