@@ -209,7 +209,7 @@ int acc_bma400_config(bool current_testing, bool debug)
 {
 	if (!me.init)
 	{
-		return -EFAULT;
+		return -EBADF;
 	}
 
 	me.debug = debug;
@@ -294,7 +294,7 @@ int acc_bma400_init(void) {
     const target_t *target = target_get();
 
     if (me.init) {
-        return -EFAULT;
+        return -EBADF;
     }
 
     if (!target->accelerometer.routed || target->accelerometer.type != ACC_TYPE_BMA400) {

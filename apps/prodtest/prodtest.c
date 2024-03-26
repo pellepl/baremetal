@@ -27,6 +27,41 @@ static void cli_cb(const char *func_name, int res)
     case ERR_CLI_ARGUMENT_OVERFLOW:
         printf("ERROR too many arguments\r\n");
         break;
+    case ERR_CLI_SILENT:
+        break;
+
+    case -ENOTSUP:
+        printf("ERROR not supported\r\n");
+        break;
+    case -ETIMEDOUT:
+    case -ETIME:
+        printf("ERROR timed out\r\n");
+        break;
+    case -EALREADY:
+        printf("ERROR already in progress\r\n");
+        break;
+    case -EAGAIN:
+        printf("ERROR temporarily unavailable\r\n");
+        break;
+    case -EINVAL:
+        printf("ERROR invalid argument\r\n");
+        break;
+    case -EIO:
+        printf("ERROR I/O error\r\n");
+        break;
+    case -EPROTO:
+        printf("ERROR protocol error\r\n");
+        break;
+    case -EBADF:
+        printf("ERROR bad state\r\n");
+        break;
+    case -ENXIO:
+        printf("ERROR no such device\r\n");
+        break;
+    case -ENOMEM:
+        printf("ERROR cannot allocate memory\r\n");
+        break;
+
     default:
         printf("ERROR %d\r\n", res);
         break;
@@ -110,7 +145,7 @@ int prodtest_output_lfclk(bool enable) {
         while (NRF_CLOCK->EVENTS_LFCLKSTARTED == 0 && spoonguard--);
         if (spoonguard == 0) {
             NRF_CLOCK->TASKS_LFCLKSTOP = 1;
-            return -ETIMEDOUT;
+            return -ETIME;
         }
 
         // wire RTC1 tick to gpio toggle task via PPI
