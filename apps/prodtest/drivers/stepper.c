@@ -39,6 +39,12 @@ static const stepper_driver_t drivers[MAX_STEPPER_TYPES] = {
         .dir[STEPPER_DIR_CCW] = {.sequences = 2, .pindef[0] = {{.a = HIGH, .b = FLOAT, .c = LOW, .delay_us = 2900}, {.a = LOW, .b = LOW, .c = LOW, .delay_us = 0}}, .pindef[1] = {{.a = LOW, .b = FLOAT, .c = HIGH, .delay_us = 2900}, {.a = LOW, .b = LOW, .c = LOW, .delay_us = 0}}}},
 };
 
+static struct
+{
+    uint32_t step_delay_us;
+    uint32_t sequence_delay_us;
+} stepper_delay_overrides[MAX_STEPPER_IDS];
+
 static struct stepper_state
 {
     uint16_t current_step;
@@ -153,6 +159,11 @@ int stepper_move_singlestep_multiple(const stepper_id_t *ids, const stepper_dir_
         const stepper_motor_t *stepper = &target->steppers[id];
         const stepper_driver_t *driver = &drivers[stepper->stepper_type];
         struct stepper_state *state = &states[id];
+        uint32_t delay_step_us = stepper->delay_us;
+        if (stepper_delay_overrides[id].step_delay_us != 0)
+        {
+            delay_step_us = stepper_delay_overrides[id].step_delay_us;
+        }
 
         uint8_t phase = state->phase;
         phase = (dir == STEPPER_DIR_CW) ? (phase + 1) : (phase - 1);
@@ -162,15 +173,21 @@ int stepper_move_singlestep_multiple(const stepper_id_t *ids, const stepper_dir_
         uint32_t instance_already_delayed_us = 0;
         for (int seq = 0; seq < driver->dir[dir].sequences; seq++)
         {
+            uint32_t delay_seq_us = driver->dir[dir].pindef[phase][seq].delay_us;
+            if (stepper_delay_overrides[id].sequence_delay_us != 0)
+            {
+                delay_seq_us = stepper_delay_overrides[id].sequence_delay_us;
+            }
             pin_def(stepper->pin_a, driver->dir[dir].pindef[phase][seq].a);
             pin_def(stepper->pin_b, driver->dir[dir].pindef[phase][seq].b);
             pin_def(stepper->pin_c, driver->dir[dir].pindef[phase][seq].c);
-            cpu_halt_us(driver->dir[dir].pindef[phase][seq].delay_us);
-            total_already_delayed_us += driver->dir[dir].pindef[phase][seq].delay_us;
-            instance_already_delayed_us += driver->dir[dir].pindef[phase][seq].delay_us;
+            cpu_halt_us(delay_seq_us);
+            total_already_delayed_us += delay_seq_us;
+            instance_already_delayed_us += delay_seq_us;
         }
-        if (stepper->delay_us > max_delay_us) {
-            max_delay_us = stepper->delay_us + instance_already_delayed_us;
+        if (delay_step_us > max_delay_us)
+        {
+            max_delay_us = delay_step_us + instance_already_delayed_us;
         }
         if (dir == STEPPER_DIR_CCW)
         {
@@ -322,19 +339,21 @@ CLI_FUNCTION(cli_step_info, "step_info", "show stepper motor information");
 
 static int cli_step_move(int argc, const char **argv)
 {
-    if (argc == 0 || (argc % 3) != 0) return ERR_CLI_EINVAL;
-    int steppers = argc / 3;
+    if (argc == 0 || (argc % 2) != 0)
+        return ERR_CLI_EINVAL;
+    int steppers = argc / 2;
     stepper_id_t ids[steppers];
     stepper_dir_t dirs[steppers];
     uint16_t steps[steppers];
     for (int i = 0; i < argc; i += 3) {
-        ids[i/3] = strtol(argv[i+0], NULL, 0);
-        dirs[i/3] = strcmp(argv[i+1], "ccw" ) == 0 ? STEPPER_DIR_CCW : STEPPER_DIR_CW;
-        steps[i/3] = strtol(argv[i+2], NULL, 0);
+        ids[i / 2] = strtol(argv[i + 0], NULL, 0);
+        int asteps = strtol(argv[i + 1], NULL, 0);
+        dirs[i / 2] = asteps < 0 ? STEPPER_DIR_CCW : STEPPER_DIR_CW;
+        steps[i / 2] = asteps < 0 ? -asteps : asteps;
     }
     return stepper_move_multistep_multiple(ids, steps, dirs, steppers);
 }
-CLI_FUNCTION(cli_step_move, "step_move", "move steppers: (<id> <cw|ccw> <steps>)*");
+CLI_FUNCTION(cli_step_move, "step_move", "move steppers, pos steps for CW, neg for CCW: (<id> <steps>)*");
 
 static int cli_step_pos(int argc, const char **argv)
 {
@@ -355,6 +374,54 @@ static int cli_step_pos(int argc, const char **argv)
     return stepper_position_multiple_hour(ids, hours, steppers);
 }
 CLI_FUNCTION(cli_step_pos, "step_pos", "posistion steppers: (<id> <hour:0-11>)* | <hour:0-11>");
+
+static int cli_step_conf(int argc, const char **argv)
+{
+    const target_t *target = target_get();
+    if (argc == 0)
+    {
+        for (stepper_id_t i = 0; i < MAX_STEPPER_IDS; i++)
+        {
+            const stepper_motor_t *stepper = &target->steppers[i];
+            if (!stepper->routed)
+                continue;
+
+            printf("id: %d", i);
+            printf("\tstep delay: ");
+            if (stepper_delay_overrides[i].step_delay_us != 0)
+            {
+                printf("%d us", stepper_delay_overrides[i].step_delay_us);
+            }
+            else
+            {
+                printf("DRIVER");
+            }
+            printf("\tsequence delay: ");
+            if (stepper_delay_overrides[i].sequence_delay_us != 0)
+            {
+                printf("%d us", stepper_delay_overrides[i].sequence_delay_us);
+            }
+            else
+            {
+                printf("DRIVER");
+            }
+            printf("\n");
+        }
+        return ERROR_OK;
+    }
+    if (argc != 3)
+        return ERR_CLI_EINVAL;
+    stepper_id_t id = strtol(argv[0], NULL, 0);
+    if (id >= MAX_STEPPER_IDS)
+        return -EINVAL;
+    const stepper_motor_t *stepper = &target->steppers[id];
+    if (!stepper->routed)
+        return -ENOTSUP;
+    stepper_delay_overrides[id].step_delay_us = strtol(argv[1], NULL, 0);
+    stepper_delay_overrides[id].sequence_delay_us = strtol(argv[2], NULL, 0);
+    return ERROR_OK;
+}
+CLI_FUNCTION(cli_step_conf, "step_conf", "override driver config times: <id> <step delay us> <sequence delay us>");
 
 static int cli_step_calibrate(int argc, const char **argv)
 {
