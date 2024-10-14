@@ -1,6 +1,6 @@
 //*****************************************************************************
 //
-// Copyright (C) 2019 Texas Instruments Incorporated - http://www.ti.com/
+// Copyright (C) 2021 Texas Instruments Incorporated - http://www.ti.com/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -44,7 +44,7 @@
 #ifndef __MSP430FR59941
 #define __MSP430FR59941
 
-#define __MSP430_HEADER_VERSION__ 1208
+#define __MSP430_HEADER_VERSION__ 1212
 
 #define __MSP430_HAS_MSP430XV2_CPU__  /* CPU type */
 #define __MSP430FR5XX_6XX_FAMILY__
@@ -3564,7 +3564,7 @@ sfr_b(CSCTL6_H);
  DIO Registers
 *****************************************************************************/
 
-#define __MSP430_HAS_DIO__                    /* Definition to show that module is available */
+#define __MSP430_HAS_DIO__ 9                  /* Definition to show that module is available */
 #define __MSP430_BASEADDRESS_DIO__ 0x0200
 #define DIO_BASE               __MSP430_BASEADDRESS_DIO__
 #define __MSP430_HAS_PORTA_R__                /* Definition to show that port is available */
@@ -3579,6 +3579,9 @@ sfr_b(CSCTL6_H);
 #define __MSP430_HAS_PORTD_R__                /* Definition to show that port is available */
 #define __MSP430_BASEADDRESS_PORTD_R__ 0x260
 #define PD_BASE                __MSP430_BASEADDRESS_PORTD_R__
+#define __MSP430_HAS_PORTE_R__                /* Definition to show that port is available */
+#define __MSP430_BASEADDRESS_PORTE_R__ 0x280
+#define PE_BASE                __MSP430_BASEADDRESS_PORTE_R__
 #define __MSP430_HAS_PORTJ_R__                /* Definition to show that port is available */
 #define __MSP430_BASEADDRESS_PORTJ_R__ 0x320
 #define PJ_BASE                __MSP430_BASEADDRESS_PORTJ_R__
@@ -3606,6 +3609,9 @@ sfr_b(CSCTL6_H);
 #define __MSP430_HAS_PORT8_R__                /* Definition to show that port is available */
 #define __MSP430_BASEADDRESS_PORT8_R__ 0x260
 #define P8_BASE                __MSP430_BASEADDRESS_PORT8_R__
+#define __MSP430_HAS_PORT9_R__                /* Definition to show that port is available */
+#define __MSP430_BASEADDRESS_PORT9_R__ 0x280
+#define P9_BASE                __MSP430_BASEADDRESS_PORT9_R__
 #define __MSP430_HAS_PASEL0__                 /* Define for DriverLib */
 #define __MSP430_HAS_PASEL1__                 /* Define for DriverLib */
 #define __MSP430_HAS_PBSEL0__                 /* Define for DriverLib */
@@ -3614,6 +3620,8 @@ sfr_b(CSCTL6_H);
 #define __MSP430_HAS_PCSEL1__                 /* Define for DriverLib */
 #define __MSP430_HAS_PDSEL0__                 /* Define for DriverLib */
 #define __MSP430_HAS_PDSEL1__                 /* Define for DriverLib */
+#define __MSP430_HAS_PESEL0__                 /* Define for DriverLib */
+#define __MSP430_HAS_PESEL1__                 /* Define for DriverLib */
 #define __MSP430_HAS_PJSEL0__                 /* Define for DriverLib */
 #define __MSP430_HAS_PJSEL1__                 /* Define for DriverLib */
 #define __MSP430_HAS_P1SEL0__                 /* Define for DriverLib */
@@ -3632,6 +3640,8 @@ sfr_b(CSCTL6_H);
 #define __MSP430_HAS_P8SEL0__                 /* Define for DriverLib */
 #define __MSP430_HAS_P7SEL1__                 /* Define for DriverLib */
 #define __MSP430_HAS_P8SEL1__                 /* Define for DriverLib */
+#define __MSP430_HAS_P9SEL0__                 /* Define for DriverLib */
+#define __MSP430_HAS_P9SEL1__                 /* Define for DriverLib */
 
 sfr_w(PAIN);                                  /* Port A Input */
 sfr_b(PAIN_L);
@@ -3777,6 +3787,39 @@ sfr_b(PDIFG_H);
 sfr_w(P8IV);                                  /* Port 8 Interrupt Vector Register */
 sfr_b(P8IV_L);
 sfr_b(P8IV_H);
+sfr_w(PEIN);                                  /* Port E Input */
+sfr_b(PEIN_L);
+sfr_b(PEIN_H);
+sfr_w(PEOUT);                                 /* Port E Output */
+sfr_b(PEOUT_L);
+sfr_b(PEOUT_H);
+sfr_w(PEDIR);                                 /* Port E Direction */
+sfr_b(PEDIR_L);
+sfr_b(PEDIR_H);
+sfr_w(PEREN);                                 /* Port E Resistor Enable */
+sfr_b(PEREN_L);
+sfr_b(PEREN_H);
+sfr_w(PESEL0);                                /* Port E Select 0 */
+sfr_b(PESEL0_L);
+sfr_b(PESEL0_H);
+sfr_w(PESEL1);                                /* Port E Select 1 */
+sfr_b(PESEL1_L);
+sfr_b(PESEL1_H);
+sfr_w(P9IV);                                  /* Port 9 Interrupt Vector Register */
+sfr_b(P9IV_L);
+sfr_b(P9IV_H);
+sfr_w(PESELC);                                /* Port E Complement Select */
+sfr_b(PESELC_L);
+sfr_b(PESELC_H);
+sfr_w(PEIES);                                 /* Port E Interrupt Edge Select */
+sfr_b(PEIES_L);
+sfr_b(PEIES_H);
+sfr_w(PEIE);                                  /* Port E Interrupt Enable */
+sfr_b(PEIE_L);
+sfr_b(PEIE_H);
+sfr_w(PEIFG);                                 /* Port E Interrupt Flag */
+sfr_b(PEIFG_L);
+sfr_b(PEIFG_H);
 sfr_w(PJIN);                                  /* Port J Input */
 sfr_b(PJIN_L);
 sfr_b(PJIN_H);
@@ -3958,6 +4001,26 @@ sfr_b(P7IFG);                                 /* Port 7 Interrupt Flag */
 
 sfr_b(P8IFG);                                 /* Port 8 Interrupt Flag */
 
+sfr_b(P9IN);                                  /* Port 9 Input */
+
+sfr_b(P9OUT);                                 /* Port 9 Output */
+
+sfr_b(P9DIR);                                 /* Port 9 Direction */
+
+sfr_b(P9REN);                                 /* Port 9 Resistor Enable */
+
+sfr_b(P9SEL0);                                /* Port 9 Select 0 */
+
+sfr_b(P9SEL1);                                /* Port 9 Select 1 */
+
+sfr_b(P9SELC);                                /* Port 9 Complement Select */
+
+sfr_b(P9IES);                                 /* Port 9 Interrupt Edge Select */
+
+sfr_b(P9IE);                                  /* Port 9 Interrupt Enable */
+
+sfr_b(P9IFG);                                 /* Port 9 Interrupt Flag */
+
 
 /* DIO Register Offsets */
 #define OFS_PAIN                         (0x0000)
@@ -4104,6 +4167,39 @@ sfr_b(P8IFG);                                 /* Port 8 Interrupt Flag */
 #define OFS_P8IV                         (0x001E)
 #define OFS_P8IV_L                       OFS_P8IV
 #define OFS_P8IV_H                       OFS_P8IV+1
+#define OFS_PEIN                         (0x0000)
+#define OFS_PEIN_L                       OFS_PEIN
+#define OFS_PEIN_H                       OFS_PEIN+1
+#define OFS_PEOUT                        (0x0002)
+#define OFS_PEOUT_L                      OFS_PEOUT
+#define OFS_PEOUT_H                      OFS_PEOUT+1
+#define OFS_PEDIR                        (0x0004)
+#define OFS_PEDIR_L                      OFS_PEDIR
+#define OFS_PEDIR_H                      OFS_PEDIR+1
+#define OFS_PEREN                        (0x0006)
+#define OFS_PEREN_L                      OFS_PEREN
+#define OFS_PEREN_H                      OFS_PEREN+1
+#define OFS_PESEL0                       (0x000A)
+#define OFS_PESEL0_L                     OFS_PESEL0
+#define OFS_PESEL0_H                     OFS_PESEL0+1
+#define OFS_PESEL1                       (0x000C)
+#define OFS_PESEL1_L                     OFS_PESEL1
+#define OFS_PESEL1_H                     OFS_PESEL1+1
+#define OFS_P9IV                         (0x000E)
+#define OFS_P9IV_L                       OFS_P9IV
+#define OFS_P9IV_H                       OFS_P9IV+1
+#define OFS_PESELC                       (0x0016)
+#define OFS_PESELC_L                     OFS_PESELC
+#define OFS_PESELC_H                     OFS_PESELC+1
+#define OFS_PEIES                        (0x0018)
+#define OFS_PEIES_L                      OFS_PEIES
+#define OFS_PEIES_H                      OFS_PEIES+1
+#define OFS_PEIE                         (0x001A)
+#define OFS_PEIE_L                       OFS_PEIE
+#define OFS_PEIE_H                       OFS_PEIE+1
+#define OFS_PEIFG                        (0x001C)
+#define OFS_PEIFG_L                      OFS_PEIFG
+#define OFS_PEIFG_H                      OFS_PEIFG+1
 #define OFS_PJIN                         (0x0000)
 #define OFS_PJIN_L                       OFS_PJIN
 #define OFS_PJIN_H                       OFS_PJIN+1
@@ -4205,6 +4301,16 @@ sfr_b(P8IFG);                                 /* Port 8 Interrupt Flag */
 #define OFS_P8IE                         (0x001B)
 #define OFS_P7IFG                        (0x001C)
 #define OFS_P8IFG                        (0x001D)
+#define OFS_P9IN                         (0x0000)
+#define OFS_P9OUT                        (0x0003)
+#define OFS_P9DIR                        (0x0005)
+#define OFS_P9REN                        (0x0007)
+#define OFS_P9SEL0                       (0x000B)
+#define OFS_P9SEL1                       (0x000D)
+#define OFS_P9SELC                       (0x0017)
+#define OFS_P9IES                        (0x0019)
+#define OFS_P9IE                         (0x001B)
+#define OFS_P9IFG                        (0x001D)
 
 /* DIO Control Bits */
 
@@ -4607,6 +4713,56 @@ sfr_b(P8IFG);                                 /* Port 8 Interrupt Flag */
 #define P8IV__P8IFG7                     (0x0010)        /* Interrupt Source: Port 8.7 interrupt; Interrupt Flag: P8IFG7; 
                                                             Interrupt Priority: Lowest */
 #define P8IV__P8IFG7_L                   (0x0010)
+
+/* P9IV Control Bits */
+#define P9IV0                            (0x0001)        /* Port 9 interrupt vector value */
+#define P9IV0_L                          (0x0001)
+#define P9IV1                            (0x0002)        /* Port 9 interrupt vector value */
+#define P9IV1_L                          (0x0002)
+#define P9IV2                            (0x0004)        /* Port 9 interrupt vector value */
+#define P9IV2_L                          (0x0004)
+#define P9IV3                            (0x0008)        /* Port 9 interrupt vector value */
+#define P9IV3_L                          (0x0008)
+#define P9IV4                            (0x0010)        /* Port 9 interrupt vector value */
+#define P9IV4_L                          (0x0010)
+#define P9IV_0                           (0x0000)        /* No interrupt pending */
+#define P9IV_2                           (0x0002)        /* Interrupt Source: Port 9.0 interrupt; Interrupt Flag: P9IFG0; 
+                                                            Interrupt Priority: Highest */
+#define P9IV_2_L                         (0x0002)
+#define P9IV_4                           (0x0004)        /* Interrupt Source: Port 9.1 interrupt; Interrupt Flag: P9IFG1 */
+#define P9IV_4_L                         (0x0004)
+#define P9IV_6                           (0x0006)        /* Interrupt Source: Port 9.2 interrupt; Interrupt Flag: P9IFG2 */
+#define P9IV_6_L                         (0x0006)
+#define P9IV_8                           (0x0008)        /* Interrupt Source: Port 9.3 interrupt; Interrupt Flag: P9IFG3 */
+#define P9IV_8_L                         (0x0008)
+#define P9IV_10                          (0x000a)        /* Interrupt Source: Port 9.4 interrupt; Interrupt Flag: P9IFG4 */
+#define P9IV_10_L                        (0x000a)
+#define P9IV_12                          (0x000c)        /* Interrupt Source: Port 9.5 interrupt; Interrupt Flag: P9IFG5 */
+#define P9IV_12_L                        (0x000c)
+#define P9IV_14                          (0x000e)        /* Interrupt Source: Port 9.6 interrupt; Interrupt Flag: P9IFG6 */
+#define P9IV_14_L                        (0x000e)
+#define P9IV_16                          (0x0010)        /* Interrupt Source: Port 9.7 interrupt; Interrupt Flag: P9IFG7; 
+                                                            Interrupt Priority: Lowest */
+#define P9IV_16_L                        (0x0010)
+#define P9IV__NONE                       (0x0000)        /* No interrupt pending */
+#define P9IV__P9IFG0                     (0x0002)        /* Interrupt Source: Port 9.0 interrupt; Interrupt Flag: P9IFG0; 
+                                                            Interrupt Priority: Highest */
+#define P9IV__P9IFG0_L                   (0x0002)
+#define P9IV__P9IFG1                     (0x0004)        /* Interrupt Source: Port 9.1 interrupt; Interrupt Flag: P9IFG1 */
+#define P9IV__P9IFG1_L                   (0x0004)
+#define P9IV__P9IFG2                     (0x0006)        /* Interrupt Source: Port 9.2 interrupt; Interrupt Flag: P9IFG2 */
+#define P9IV__P9IFG2_L                   (0x0006)
+#define P9IV__P9IFG3                     (0x0008)        /* Interrupt Source: Port 9.3 interrupt; Interrupt Flag: P9IFG3 */
+#define P9IV__P9IFG3_L                   (0x0008)
+#define P9IV__P9IFG4                     (0x000a)        /* Interrupt Source: Port 9.4 interrupt; Interrupt Flag: P9IFG4 */
+#define P9IV__P9IFG4_L                   (0x000a)
+#define P9IV__P9IFG5                     (0x000c)        /* Interrupt Source: Port 9.5 interrupt; Interrupt Flag: P9IFG5 */
+#define P9IV__P9IFG5_L                   (0x000c)
+#define P9IV__P9IFG6                     (0x000e)        /* Interrupt Source: Port 9.6 interrupt; Interrupt Flag: P9IFG6 */
+#define P9IV__P9IFG6_L                   (0x000e)
+#define P9IV__P9IFG7                     (0x0010)        /* Interrupt Source: Port 9.7 interrupt; Interrupt Flag: P9IFG7; 
+                                                            Interrupt Priority: Lowest */
+#define P9IV__P9IFG7_L                   (0x0010)
 
 
 /*****************************************************************************
@@ -11675,7 +11831,6 @@ sfr_b(UCB3IV_H);
 ************************************************************/
 
 #define __MSP430_HAS_TLV__                    /* Definition to show that Module is available */
-#define TLV_BASE               __MSP430_BASEADDRESS_TLV__
 
 #define TLV_START              (0x1A08)       /* Start Address of the TLV structure */
 #define TLV_END                (0x1AFF)       /* End Address of the TLV structure */

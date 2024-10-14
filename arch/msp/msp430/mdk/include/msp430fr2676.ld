@@ -1,5 +1,5 @@
 /* ============================================================================ */
-/* Copyright (c) 2015, Texas Instruments Incorporated                           */
+/* Copyright (c) 2021, Texas Instruments Incorporated                           */
 /*  All rights reserved.                                                        */
 /*                                                                              */
 /*  Redistribution and use in source and binary forms, with or without          */
@@ -31,39 +31,38 @@
 /* ============================================================================ */
 
 /* This file supports MSP430FR2676 devices. */
+/* Version: 1.212 */
 /* Default linker script, for normal executables */
-
-/* 1.208 */
 
 OUTPUT_ARCH(msp430)
 ENTRY(_start)
 
 MEMORY {
-  TINYRAM          : ORIGIN = 0x6, LENGTH = 0x001A
-  BSL0             : ORIGIN = 0x1000, LENGTH = 0x0800
-  TLVMEM           : ORIGIN = 0x1A00, LENGTH = 0x0200
-  BOOTCODE         : ORIGIN = 0x1C00, LENGTH = 0x0400
-  ROMLIB           : ORIGIN = 0xC0000, LENGTH = 0x4000
-  BSL1             : ORIGIN = 0xFFC00, LENGTH = 0x0400
-  RAM              : ORIGIN = 0x2000, LENGTH = 0x2000
-  INFOMEM          : ORIGIN = 0x1800, LENGTH = 0x0200
-  ROM (rx)         : ORIGIN = 0x8000, LENGTH = 0x7F80 /* END=0xFF7F, size 32640 */
+  TINYRAM          : ORIGIN = 0x0006, LENGTH = 0x001A /* END=0x001F, size 26 */
+  BSL0             : ORIGIN = 0x1000, LENGTH = 0x0800 /* END=0x17FF, size 2048 */
+  TLVMEM           : ORIGIN = 0x1A00, LENGTH = 0x0200 /* END=0x1BFF, size 512 */
+  BOOTCODE         : ORIGIN = 0x1C00, LENGTH = 0x0400 /* END=0x1FFF, size 1024 */
+  ROMLIB           : ORIGIN = 0xC0000, LENGTH = 0x4000 /* END=0xC3FFF, size 16384 */
+  BSL1             : ORIGIN = 0xFFC00, LENGTH = 0x0400 /* END=0xFFFFF, size 1024 */
+  RAM              : ORIGIN = 0x2000, LENGTH = 0x2000 /* END=0x3FFF, size 8192 */
+  INFOMEM          : ORIGIN = 0x1800, LENGTH = 0x0200 /* END=0x19FF, size 512 */
+  FRAM (rx)        : ORIGIN = 0x8000, LENGTH = 0x7F80 /* END=0xFF7F, size 32640 */
   HIFRAM (rxw)     : ORIGIN = 0x00010000, LENGTH = 0x00007FFF
   JTAGSIGNATURE    : ORIGIN = 0xFF80, LENGTH = 0x0004
   BSLSIGNATURE     : ORIGIN = 0xFF84, LENGTH = 0x0004
   BSLCONFIGURATIONSIGNATURE : ORIGIN = 0xFF88, LENGTH = 0x0002
   BSLCONFIGURATION : ORIGIN = 0xFF8A, LENGTH = 0x0002
   BSLI2CADDRESS    : ORIGIN = 0xFFA0, LENGTH = 0x0002
-  VECT0           : ORIGIN = 0xFFA2, LENGTH = 0x0002
-  VECT1           : ORIGIN = 0xFFA4, LENGTH = 0x0002
-  VECT2           : ORIGIN = 0xFFA6, LENGTH = 0x0002
-  VECT3           : ORIGIN = 0xFFA8, LENGTH = 0x0002
-  VECT4           : ORIGIN = 0xFFAA, LENGTH = 0x0002
-  VECT5           : ORIGIN = 0xFFAC, LENGTH = 0x0002
-  VECT6           : ORIGIN = 0xFFAE, LENGTH = 0x0002
-  VECT7           : ORIGIN = 0xFFB0, LENGTH = 0x0002
-  VECT8           : ORIGIN = 0xFFB2, LENGTH = 0x0002
-  VECT9           : ORIGIN = 0xFFB4, LENGTH = 0x0002
+  VECT0            : ORIGIN = 0xFFA2, LENGTH = 0x0002
+  VECT1            : ORIGIN = 0xFFA4, LENGTH = 0x0002
+  VECT2            : ORIGIN = 0xFFA6, LENGTH = 0x0002
+  VECT3            : ORIGIN = 0xFFA8, LENGTH = 0x0002
+  VECT4            : ORIGIN = 0xFFAA, LENGTH = 0x0002
+  VECT5            : ORIGIN = 0xFFAC, LENGTH = 0x0002
+  VECT6            : ORIGIN = 0xFFAE, LENGTH = 0x0002
+  VECT7            : ORIGIN = 0xFFB0, LENGTH = 0x0002
+  VECT8            : ORIGIN = 0xFFB2, LENGTH = 0x0002
+  VECT9            : ORIGIN = 0xFFB4, LENGTH = 0x0002
   VECT10           : ORIGIN = 0xFFB6, LENGTH = 0x0002
   VECT11           : ORIGIN = 0xFFB8, LENGTH = 0x0002
   VECT12           : ORIGIN = 0xFFBA, LENGTH = 0x0002
@@ -111,25 +110,25 @@ SECTIONS
   .bslconfig          : {} > BSLCONFIGURATION
   .bsli2caddress      : {} > BSLI2CADDRESS
 
-  __interrupt_vector_0   : { KEEP (*(__interrupt_vector_0  )) } > VECT0
-  __interrupt_vector_1   : { KEEP (*(__interrupt_vector_1  )) } > VECT1
-  __interrupt_vector_2   : { KEEP (*(__interrupt_vector_2  )) } > VECT2
-  __interrupt_vector_3   : { KEEP (*(__interrupt_vector_3  )) } > VECT3
-  __interrupt_vector_4   : { KEEP (*(__interrupt_vector_4  )) } > VECT4
-  __interrupt_vector_5   : { KEEP (*(__interrupt_vector_5  )) } > VECT5
-  __interrupt_vector_6   : { KEEP (*(__interrupt_vector_6  )) } > VECT6
-  __interrupt_vector_7   : { KEEP (*(__interrupt_vector_7  )) } > VECT7
-  __interrupt_vector_8   : { KEEP (*(__interrupt_vector_8  )) } > VECT8
-  __interrupt_vector_9   : { KEEP (*(__interrupt_vector_9  )) } > VECT9
-  __interrupt_vector_10   : { KEEP (*(__interrupt_vector_10  )) } > VECT10
-  __interrupt_vector_11   : { KEEP (*(__interrupt_vector_11  )) } > VECT11
-  __interrupt_vector_12   : { KEEP (*(__interrupt_vector_12  )) } > VECT12
-  __interrupt_vector_13   : { KEEP (*(__interrupt_vector_13  )) } > VECT13
-  __interrupt_vector_14   : { KEEP (*(__interrupt_vector_14  )) } > VECT14
-  __interrupt_vector_15   : { KEEP (*(__interrupt_vector_15  )) } > VECT15
-  __interrupt_vector_16   : { KEEP (*(__interrupt_vector_16  )) } > VECT16
-  __interrupt_vector_17   : { KEEP (*(__interrupt_vector_17  )) } > VECT17
-  __interrupt_vector_18   : { KEEP (*(__interrupt_vector_18  )) } > VECT18
+  __interrupt_vector_0   : { KEEP (*(__interrupt_vector_0 )) } > VECT0
+  __interrupt_vector_1   : { KEEP (*(__interrupt_vector_1 )) } > VECT1
+  __interrupt_vector_2   : { KEEP (*(__interrupt_vector_2 )) } > VECT2
+  __interrupt_vector_3   : { KEEP (*(__interrupt_vector_3 )) } > VECT3
+  __interrupt_vector_4   : { KEEP (*(__interrupt_vector_4 )) } > VECT4
+  __interrupt_vector_5   : { KEEP (*(__interrupt_vector_5 )) } > VECT5
+  __interrupt_vector_6   : { KEEP (*(__interrupt_vector_6 )) } > VECT6
+  __interrupt_vector_7   : { KEEP (*(__interrupt_vector_7 )) } > VECT7
+  __interrupt_vector_8   : { KEEP (*(__interrupt_vector_8 )) } > VECT8
+  __interrupt_vector_9   : { KEEP (*(__interrupt_vector_9 )) } > VECT9
+  __interrupt_vector_10  : { KEEP (*(__interrupt_vector_10)) } > VECT10
+  __interrupt_vector_11  : { KEEP (*(__interrupt_vector_11)) } > VECT11
+  __interrupt_vector_12  : { KEEP (*(__interrupt_vector_12)) } > VECT12
+  __interrupt_vector_13  : { KEEP (*(__interrupt_vector_13)) } > VECT13
+  __interrupt_vector_14  : { KEEP (*(__interrupt_vector_14)) } > VECT14
+  __interrupt_vector_15  : { KEEP (*(__interrupt_vector_15)) } > VECT15
+  __interrupt_vector_16  : { KEEP (*(__interrupt_vector_16)) } > VECT16
+  __interrupt_vector_17  : { KEEP (*(__interrupt_vector_17)) } > VECT17
+  __interrupt_vector_18  : { KEEP (*(__interrupt_vector_18)) } > VECT18
   __interrupt_vector_19  : { KEEP (*(__interrupt_vector_19)) KEEP (*(__interrupt_vector_captivate)) } > VECT19
   __interrupt_vector_20  : { KEEP (*(__interrupt_vector_20)) KEEP (*(__interrupt_vector_ecomp0)) } > VECT20
   __interrupt_vector_21  : { KEEP (*(__interrupt_vector_21)) KEEP (*(__interrupt_vector_port6)) } > VECT21
@@ -157,13 +156,18 @@ SECTIONS
   __interrupt_vector_43  : { KEEP (*(__interrupt_vector_43)) KEEP (*(__interrupt_vector_timer0_a0)) } > VECT43
   __interrupt_vector_44  : { KEEP (*(__interrupt_vector_44)) KEEP (*(__interrupt_vector_unmi)) } > VECT44
   __interrupt_vector_45  : { KEEP (*(__interrupt_vector_45)) KEEP (*(__interrupt_vector_sysnmi)) } > VECT45
-  __reset_vector         : { KEEP (*(__interrupt_vector_46)) KEEP (*(__interrupt_vector_reset)) KEEP (*(.resetvec)) } > RESETVEC
+  __reset_vector :
+  {
+    KEEP (*(__interrupt_vector_46))
+    KEEP (*(__interrupt_vector_reset))
+    KEEP (*(.resetvec))
+  } > RESETVEC
 
   .lower.rodata :
   {
     . = ALIGN(2);
     *(.lower.rodata.* .lower.rodata)
-  } > ROM
+  } > FRAM
 
   .rodata :
   {
@@ -171,29 +175,15 @@ SECTIONS
     *(.plt)
     *(.rodata .rodata.* .gnu.linkonce.r.* .const .const:*)
     *(.rodata1)
-	/* Note: By default we do not have this line:
-
-         *(.either.rodata.*) *(.either.rodata)
-
-       defined here, or anywhere else in this script.  This is deliberate.
-       The algorithm in the linker that automatically places rodata into
-       either the .rodata or the .upper.rodata sections relies upon the
-       fact that the .either.rodata section is not defined, and that the
-       .upper.rodata section is defined.  If the .upper.rodata is not
-       defined in this script then the line above should be restored so that
-       code compiled with -mdata-region=either enabled will still work.
-
-       The same reasoning applies to the absence of definitions for the
-       .either.text, .either.data and .either.bss sections as well.  */
-
     KEEP (*(.gcc_except_table)) *(.gcc_except_table.*)
-  } > ROM
+  } > FRAM
 
-  /* Note: Separate .rodata section for sections which are
+  /* Note: This is a separate .rodata section for sections which are
      read only but which older linkers treat as read-write.
      This prevents older linkers from marking the entire .rodata
      section as read-write.  */
-  .rodata2 : {
+  .rodata2 :
+  {
     . = ALIGN(2);
     PROVIDE (__preinit_array_start = .);
     KEEP (*(.preinit_array))
@@ -210,7 +200,8 @@ SECTIONS
     PROVIDE (__fini_array_end = .);
     . = ALIGN(2);
     *(.eh_frame_hdr)
-    KEEP (*(.eh_frame))	
+    KEEP (*(.eh_frame))
+
     /* gcc uses crtbegin.o to find the start of the constructors, so
        we make sure it is first.  Because this is a wildcard, it
        doesn't matter if the user does not actually link against
@@ -231,10 +222,15 @@ SECTIONS
     KEEP (*(EXCLUDE_FILE (*crtend*.o ) .dtors))
     KEEP (*(SORT(.dtors.*)))
     KEEP (*(.dtors))
-  } > ROM
-  
-  /* This section contains data that is not initialised during load
-     or application reset. */
+  } > FRAM
+
+  .upper.rodata :
+  {
+    *(.upper.rodata.* .upper.rodata)
+  } > HIFRAM
+
+  /* This section contains data that is initialised during load
+     but not on application reset.  */
   .persistent :
   {
     . = ALIGN(2);
@@ -242,19 +238,7 @@ SECTIONS
     *(.persistent)
     . = ALIGN(2);
     PROVIDE (__persistent_end = .);
-  } > ROM
-  
-  .upper.rodata :
-  {
-    /* Note: If this section is not defined then please add:
-
-           *(.either.rodata.*) *(.either.rodata)
-
-       to the definition of the .rodata section above.  This
-       will allow code compiled with -mdata-region=either to
-       work properly.  */
-    *(.upper.rodata.* .upper.rodata)
-  } > HIFRAM
+  } > FRAM
 
   .tinyram : {} > TINYRAM
 
@@ -263,12 +247,11 @@ SECTIONS
     . = ALIGN(2);
     PROVIDE (__datastart = .);
     *(.lower.data.* .lower.data)
-  } > RAM AT> ROM
+  } > RAM AT> FRAM
 
   .data :
   {
     . = ALIGN(2);
-    PROVIDE (__datastart = .);
 
     KEEP (*(.jcr))
     *(.data.rel.ro.local) *(.data.rel.ro*)
@@ -286,15 +269,12 @@ SECTIONS
     . = ALIGN(2);
     *(.sdata .sdata.* .gnu.linkonce.s.* D_2 D_1)
 
-    /* See the note in .rodata section about why we do not have this line here:
-
-        *(.either.data.* .either.data)
-    */
     . = ALIGN(2);
+
     _edata = .;
     PROVIDE (edata = .);
     PROVIDE (__dataend = .);
-  } > RAM AT> ROM
+  } > RAM AT> FRAM
 
   /* Note that crt0 assumes this is a multiple of two; all the
      start/stop symbols are also assumed word-aligned.  */
@@ -309,7 +289,7 @@ SECTIONS
     __high_datastart = .;
     *(.upper.data.* .upper.data)
     __high_dataend = .;
-  } > HIFRAM AT> ROM
+  } > HIFRAM AT> FRAM
 
   __rom_highdatacopysize = SIZEOF(.upper.data) - 2;
   __rom_highdatastart = LOADADDR(.upper.data) + 2;
@@ -324,19 +304,25 @@ SECTIONS
   .bss :
   {
     . = ALIGN(2);
-    PROVIDE (__bssstart = .);
     *(.dynbss)
     *(.sbss .sbss.*)
     *(.bss .bss.* .gnu.linkonce.b.*)
-    /* See the note in .rodata section about why we do not have this line here:
-
-        *(.either.bss.* .either.bss)
-    */
     . = ALIGN(2);
     *(COMMON)
     PROVIDE (__bssend = .);
   } > RAM
   PROVIDE (__bsssize = SIZEOF(.lower.bss) + SIZEOF(.bss));
+
+  .upper.bss :
+  {
+    . = ALIGN(2);
+    __high_bssstart = .;
+    *(.upper.bss.* .upper.bss)
+    . = ALIGN(2);
+    __high_bssend = .;
+  } > HIFRAM
+  __high_bsssize = SIZEOF(.upper.bss);
+
   /* This section contains data that is not initialised during load
      or application reset.  */
   .noinit (NOLOAD) :
@@ -348,21 +334,6 @@ SECTIONS
     PROVIDE (__noinit_end = .);
   } > RAM
 
-  .upper.bss :
-  {
-    /* Note - if this section is not going to be defined then please
-       add this line back into the definition of the .bss section above:
-
-         *(.either.bss.* .either.bss)
-    */
-    . = ALIGN(2);
-    __high_bssstart = .;
-    *(.upper.bss.* .upper.bss)
-    . = ALIGN(2);
-    __high_bssend = .;
-  } > HIFRAM
-  __high_bsssize = SIZEOF(.upper.bss);
-
   /* We create this section so that "end" will always be in the
      RAM region (matching .stack below), even if the .bss
      section is empty.  */
@@ -371,7 +342,7 @@ SECTIONS
     . = ALIGN(2);
     __heap_start__ = .;
     _end = __heap_start__;
-    PROVIDE (end = .); 
+    PROVIDE (end = .);
     KEEP (*(.heap))
     _end = .;
     PROVIDE (end = .);
@@ -385,6 +356,7 @@ SECTIONS
   /* WARNING: Do not place anything in RAM here.
      The heap section must be the last section in RAM and the stack
      section must be placed at the very end of the RAM region.  */
+
   .stack (ORIGIN (RAM) + LENGTH(RAM)) :
   {
     PROVIDE (__stack = .);
@@ -395,7 +367,7 @@ SECTIONS
   {
     . = ALIGN(2);
     *(.lower.text.* .lower.text)
-  } > ROM
+  } > FRAM
 
   .text :
   {
@@ -405,15 +377,10 @@ SECTIONS
     KEEP (*(SORT(.crt_*)))
 
     . = ALIGN(2);
-    *(.lower.text.* .lower.text)
+    KEEP (*(.lowtext))
 
     . = ALIGN(2);
     *(.text .stub .text.* .gnu.linkonce.t.* .text:*)
-    /* See the note in .rodata section about why we do not have this line here:
-
-        *(.either.text.* .either.text)
-
-    */
 
     KEEP (*(.text.*personality*))
     /* .gnu.warning sections are handled specially by elf32.em.  */
@@ -426,23 +393,15 @@ SECTIONS
     KEEP (*(.init))
     KEEP (*(.fini))
     KEEP (*(.tm_clone_table))
-  } > ROM
+  } > FRAM
 
   .upper.text :
   {
-    /* Note - if this section is not going to be included in the script
-       then please add this line back into the definition of the .text
-       section above:
-
-         *(.either.text.* .either.text)
-    */
     . = ALIGN(2);
     *(.upper.text.* .upper.text)
   } > HIFRAM
 
-  /* MSP430 INFO FLASH MEMORY SEGMENTS */
-  .info (NOLOAD) : {} > INFOMEM
-
+  .info (NOLOAD) : {} > INFOMEM              /* MSP430 INFO FLASH MEMORY SEGMENTS */
 
   /* The rest are all not normally part of the runtime image.  */
 
@@ -494,6 +453,7 @@ SECTIONS
 
   /DISCARD/ : { *(.note.GNU-stack) }
 }
+
 
 /****************************************************************************/
 /* Include peripherals memory map                                           */

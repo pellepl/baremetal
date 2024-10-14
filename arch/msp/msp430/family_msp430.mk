@@ -8,6 +8,10 @@ ifeq "$(PROC)" "msp430g2553"
 CFLAGS += -D__MSP430G2553__
 CFLAGS += -mmcu=$(PROC)
 msp_link_type := 430
+else ifeq "$(PROC)" "msp430f4132"
+CFLAGS += -D__MSP430F4132__
+CFLAGS += -mmcu=$(PROC)
+msp_link_type := 430
 else
 $(error PROC is not defined correctly for arch $(ARCH), family $(FAMILY))
 endif
@@ -27,7 +31,8 @@ INCLUDE += $(mdk_dir)
 LDFLAGS += --library-path=$(mdk_dir)
 
 msp_lib_path := $(dir $(shell find $(TOOLCHAIN_DIR)/lib -name "libgcc.a" | grep "$(msp_link_type)/libgcc.a" | head -n 1))
-OBJFILES_EXTRA_FIRST += $(msp_crt0_o)
+#OBJFILES_EXTRA_FIRST += $(msp_crt0_o)
+NO_LINK_FILE := 1
 
 LIBS += $(foreach path,$(dir $(msp_crt0_o)) $(msp_lib_path),-L$(path))
 LIBS += -lmul_none

@@ -1,6 +1,6 @@
 //*****************************************************************************
 //
-// Copyright (C) 2019 Texas Instruments Incorporated - http://www.ti.com/
+// Copyright (C) 2021 Texas Instruments Incorporated - http://www.ti.com/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -44,7 +44,7 @@
 #ifndef __MSP430FR5043
 #define __MSP430FR5043
 
-#define __MSP430_HEADER_VERSION__ 1208
+#define __MSP430_HEADER_VERSION__ 1212
 
 #define __MSP430_HAS_MSP430XV2_CPU__  /* CPU type */
 #define __MSP430FR5XX_6XX_FAMILY__
@@ -3612,9 +3612,6 @@ sfr_b(CSCTL6_H);
 #define __MSP430_HAS_PORT9_R__                /* Definition to show that port is available */
 #define __MSP430_BASEADDRESS_PORT9_R__ 0x280
 #define P9_BASE                __MSP430_BASEADDRESS_PORT9_R__
-#define __MSP430_HAS_PORT10_R__                /* Definition to show that port is available */
-#define __MSP430_BASEADDRESS_PORT10_R__ 0x280
-#define P10_BASE                __MSP430_BASEADDRESS_PORT10_R__
 #define __MSP430_HAS_PASEL0__                 /* Define for DriverLib */
 #define __MSP430_HAS_PASEL1__                 /* Define for DriverLib */
 #define __MSP430_HAS_PBSEL0__                 /* Define for DriverLib */
@@ -3644,9 +3641,7 @@ sfr_b(CSCTL6_H);
 #define __MSP430_HAS_P7SEL1__                 /* Define for DriverLib */
 #define __MSP430_HAS_P8SEL1__                 /* Define for DriverLib */
 #define __MSP430_HAS_P9SEL0__                 /* Define for DriverLib */
-#define __MSP430_HAS_P10SEL0__                 /* Define for DriverLib */
 #define __MSP430_HAS_P9SEL1__                 /* Define for DriverLib */
-#define __MSP430_HAS_P10SEL1__                 /* Define for DriverLib */
 
 sfr_w(PAIN);                                  /* Port A Input */
 sfr_b(PAIN_L);
@@ -4008,43 +4003,23 @@ sfr_b(P8IFG);                                 /* Port 8 Interrupt Flag */
 
 sfr_b(P9IN);                                  /* Port 9 Input */
 
-sfr_b(P10IN);                                 /* Port 10 Input */
-
 sfr_b(P9OUT);                                 /* Port 9 Output */
-
-sfr_b(P10OUT);                                /* Port 10 Output */
 
 sfr_b(P9DIR);                                 /* Port 9 Direction */
 
-sfr_b(P10DIR);                                /* Port 10 Direction */
-
 sfr_b(P9REN);                                 /* Port 9 Resistor Enable */
-
-sfr_b(P10REN);                                /* Port 10 Resistor Enable */
 
 sfr_b(P9SEL0);                                /* Port 9 Select 0 */
 
-sfr_b(P10SEL0);                               /* Port 10 Select 0 */
-
 sfr_b(P9SEL1);                                /* Port 9 Select 1 */
-
-sfr_b(P10SEL1);                               /* Port 10 Select 1 */
 
 sfr_b(P9SELC);                                /* Port 9 Complement Select */
 
-sfr_b(P10SELC);                               /* Port 10 Complement Select */
-
 sfr_b(P9IES);                                 /* Port 9 Interrupt Edge Select */
-
-sfr_b(P10IES);                                /* Port 10 Interrupt Edge Select */
 
 sfr_b(P9IE);                                  /* Port 9 Interrupt Enable */
 
-sfr_b(P10IE);                                 /* Port 10 Interrupt Enable */
-
 sfr_b(P9IFG);                                 /* Port 9 Interrupt Flag */
-
-sfr_b(P10IFG);                                /* Port 10 Interrupt Flag */
 
 
 /* DIO Register Offsets */
@@ -4327,25 +4302,15 @@ sfr_b(P10IFG);                                /* Port 10 Interrupt Flag */
 #define OFS_P7IFG                        (0x001C)
 #define OFS_P8IFG                        (0x001D)
 #define OFS_P9IN                         (0x0000)
-#define OFS_P10IN                        (0x0000)
-#define OFS_P9OUT                        (0x0002)
-#define OFS_P10OUT                       (0x0003)
-#define OFS_P9DIR                        (0x0004)
-#define OFS_P10DIR                       (0x0005)
-#define OFS_P9REN                        (0x0006)
-#define OFS_P10REN                       (0x0007)
-#define OFS_P9SEL0                       (0x000A)
-#define OFS_P10SEL0                      (0x000B)
-#define OFS_P9SEL1                       (0x000C)
-#define OFS_P10SEL1                      (0x000D)
-#define OFS_P9SELC                       (0x0016)
-#define OFS_P10SELC                      (0x0017)
-#define OFS_P9IES                        (0x0018)
-#define OFS_P10IES                       (0x0019)
-#define OFS_P9IE                         (0x001A)
-#define OFS_P10IE                        (0x001B)
-#define OFS_P9IFG                        (0x001C)
-#define OFS_P10IFG                       (0x001D)
+#define OFS_P9OUT                        (0x0003)
+#define OFS_P9DIR                        (0x0005)
+#define OFS_P9REN                        (0x0007)
+#define OFS_P9SEL0                       (0x000B)
+#define OFS_P9SEL1                       (0x000D)
+#define OFS_P9SELC                       (0x0017)
+#define OFS_P9IES                        (0x0019)
+#define OFS_P9IE                         (0x001B)
+#define OFS_P9IFG                        (0x001D)
 
 /* DIO Control Bits */
 
@@ -6056,6 +6021,54 @@ sfr_b(HSPLLUSSXTLCTL_H);
 #define PLLM4_H                          (0x0040)
 #define PLLM5                            (0x8000)        /* PLL Multiplier */
 #define PLLM5_H                          (0x0080)
+#define PLLM_16                          (0x4000)        /* */
+#define PLLM_16_H                        (0x0040)
+#define PLLM_17                          (0x4400)        /* */
+#define PLLM_17_H                        (0x0044)
+#define PLLM_18                          (0x4800)        /* */
+#define PLLM_18_H                        (0x0048)
+#define PLLM_19                          (0x4c00)        /* */
+#define PLLM_19_H                        (0x004c)
+#define PLLM_20                          (0x5000)        /* */
+#define PLLM_20_H                        (0x0050)
+#define PLLM_21                          (0x5400)        /* */
+#define PLLM_21_H                        (0x0054)
+#define PLLM_22                          (0x5800)        /* */
+#define PLLM_22_H                        (0x0058)
+#define PLLM_23                          (0x5c00)        /* */
+#define PLLM_23_H                        (0x005c)
+#define PLLM_24                          (0x6000)        /* */
+#define PLLM_24_H                        (0x0060)
+#define PLLM_25                          (0x6400)        /* */
+#define PLLM_25_H                        (0x0064)
+#define PLLM_26                          (0x6800)        /* */
+#define PLLM_26_H                        (0x0068)
+#define PLLM_27                          (0x6c00)        /* */
+#define PLLM_27_H                        (0x006c)
+#define PLLM_28                          (0x7000)        /* */
+#define PLLM_28_H                        (0x0070)
+#define PLLM_29                          (0x7400)        /* */
+#define PLLM_29_H                        (0x0074)
+#define PLLM_30                          (0x7800)        /* */
+#define PLLM_30_H                        (0x0078)
+#define PLLM_31                          (0x7c00)        /* */
+#define PLLM_31_H                        (0x007c)
+#define PLLM_32                          (0x8000)        /* */
+#define PLLM_32_H                        (0x0080)
+#define PLLM_33                          (0x8400)        /* */
+#define PLLM_33_H                        (0x0084)
+#define PLLM_34                          (0x8800)        /* */
+#define PLLM_34_H                        (0x0088)
+#define PLLM_35                          (0x8c00)        /* */
+#define PLLM_35_H                        (0x008c)
+#define PLLM_36                          (0x9000)        /* */
+#define PLLM_36_H                        (0x0090)
+#define PLLM_37                          (0x9400)        /* */
+#define PLLM_37_H                        (0x0094)
+#define PLLM_38                          (0x9800)        /* */
+#define PLLM_38_H                        (0x0098)
+#define PLLM_39                          (0x9c00)        /* */
+#define PLLM_39_H                        (0x009c)
 #define PLL_LOCK                         (0x0001)        /* PLL Lock Status */
 #define PLL_LOCK_L                       (0x0001)
 #define PLL_LOCK_0                       (0x0000)        /* PLL is not running or not locked */
@@ -6089,12 +6102,21 @@ sfr_b(HSPLLUSSXTLCTL_H);
                                                             the oscillator clock, so total time can be calculated as Time 
                                                             = 512x 1/Oscillator Clock Frequency. */
 #define OSCTYPE_1_H                      (0x0002)
+#define OSCTYPE__XTAL                    (0x0000)        /* Gating Counter Length: 4096. It is recommended to use this 
+                                                            configuration for crystal resonators.  Note: the counter 
+                                                            counts the oscillator clock, so total time can be calculated 
+                                                            as Time = 4096 x 1/Oscillator Clock Frequency. */
+#define OSCTYPE__CERAMIC                 (0x0200)        /* Gating Counter Length: 512. It is recommended to use this 
+                                                            configuration for ceramic resonators. Note: the counter counts
+                                                            the oscillator clock, so total time can be calculated as Time 
+                                                            = 512x 1/Oscillator Clock Frequency. */
+#define OSCTYPE__CERAMIC_H               (0x0002)
 #define OSCSTATE                         (0x0002)        /* Oscillator Status Bit. */
 #define OSCSTATE_L                       (0x0002)
 #define OSCSTATE_0                       (0x0000)        /* Oscillator is either not enabled or in the middle of start-up 
                                                             transition. */
-#define OSCSTATE_1                       (0x0002)        /* Oscillator is fully stabilized and the start-up time has 
-                                                            passed. */
+#define OSCSTATE_1                       (0x0002)        /* Oscillator has started but is not stable yet. Wait for 
+                                                            sufficient time for stabilization. */
 #define OSCSTATE_1_L                     (0x0002)
 
 
@@ -14221,7 +14243,6 @@ sfr_b(UCB1IV_H);
 ************************************************************/
 
 #define __MSP430_HAS_TLV__                    /* Definition to show that Module is available */
-#define TLV_BASE               __MSP430_BASEADDRESS_TLV__
 
 #define TLV_START              (0x1A08)       /* Start Address of the TLV structure */
 #define TLV_END                (0x1AFF)       /* End Address of the TLV structure */

@@ -196,8 +196,10 @@ asm: $(target).elf
 
 LDFLAGS += -Map=$(target).map
 
+ifndef NO_LINK_FILE
 ifneq "$(LINKER_FILE)" ""
 LDFLAGS += --script=$(LINKER_FILE)
+endif
 endif
 
 ifeq "$(GCC_AS_LD)" "1"

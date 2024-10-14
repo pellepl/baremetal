@@ -1,6 +1,6 @@
 //*****************************************************************************
 //
-// Copyright (C) 2019 Texas Instruments Incorporated - http://www.ti.com/
+// Copyright (C) 2021 Texas Instruments Incorporated - http://www.ti.com/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -44,7 +44,7 @@
 #ifndef __MSP430FR6037
 #define __MSP430FR6037
 
-#define __MSP430_HEADER_VERSION__ 1208
+#define __MSP430_HEADER_VERSION__ 1212
 
 #define __MSP430_HAS_MSP430XV2_CPU__  /* CPU type */
 #define __MSP430FR5XX_6XX_FAMILY__
@@ -3612,9 +3612,6 @@ sfr_b(CSCTL6_H);
 #define __MSP430_HAS_PORT9_R__                /* Definition to show that port is available */
 #define __MSP430_BASEADDRESS_PORT9_R__ 0x280
 #define P9_BASE                __MSP430_BASEADDRESS_PORT9_R__
-#define __MSP430_HAS_PORT10_R__                /* Definition to show that port is available */
-#define __MSP430_BASEADDRESS_PORT10_R__ 0x280
-#define P10_BASE                __MSP430_BASEADDRESS_PORT10_R__
 #define __MSP430_HAS_PASEL0__                 /* Define for DriverLib */
 #define __MSP430_HAS_PASEL1__                 /* Define for DriverLib */
 #define __MSP430_HAS_PBSEL0__                 /* Define for DriverLib */
@@ -3644,9 +3641,7 @@ sfr_b(CSCTL6_H);
 #define __MSP430_HAS_P7SEL1__                 /* Define for DriverLib */
 #define __MSP430_HAS_P8SEL1__                 /* Define for DriverLib */
 #define __MSP430_HAS_P9SEL0__                 /* Define for DriverLib */
-#define __MSP430_HAS_P10SEL0__                 /* Define for DriverLib */
 #define __MSP430_HAS_P9SEL1__                 /* Define for DriverLib */
-#define __MSP430_HAS_P10SEL1__                 /* Define for DriverLib */
 
 sfr_w(PAIN);                                  /* Port A Input */
 sfr_b(PAIN_L);
@@ -4008,41 +4003,21 @@ sfr_b(P8IFG);                                 /* Port 8 Interrupt Flag */
 
 sfr_b(P9IN);                                  /* Port 9 Input */
 
-sfr_b(P10IN);                                 /* Port 10 Input */
-
 sfr_b(P9OUT);                                 /* Port 9 Output */
-
-sfr_b(P10OUT);                                /* Port 10 Output */
 
 sfr_b(P9DIR);                                 /* Port 9 Direction */
 
-sfr_b(P10DIR);                                /* Port 10 Direction */
-
 sfr_b(P9REN);                                 /* Port 9 Resistor Enable */
-
-sfr_b(P10REN);                                /* Port 10 Resistor Enable */
 
 sfr_b(P9SEL0);                                /* Port 9 Select 0 */
 
-sfr_b(P10SEL0);                               /* Port 10 Select 0 */
-
 sfr_b(P9SEL1);                                /* Port 9 Select 1 */
-
-sfr_b(P10SEL1);                               /* Port 10 Select 1 */
 
 sfr_b(P9SELC);                                /* Port 9 Complement Select */
 
-sfr_b(P10SELC);                               /* Port 10 Complement Select */
-
 sfr_b(P9IES);                                 /* Port 9 Interrupt Edge Select */
 
-sfr_b(P10IES);                                /* Port 10 Interrupt Edge Select */
-
 sfr_b(P9IE);                                  /* Port 9 Interrupt Enable */
-
-sfr_b(P10IE);                                 /* Port 10 Interrupt Enable */
-
-sfr_b(P10IFG);                                /* Port 10 Interrupt Flag */
 
 sfr_b(P9IFG);                                 /* Port 9 Interrupt Flag */
 
@@ -4327,25 +4302,15 @@ sfr_b(P9IFG);                                 /* Port 9 Interrupt Flag */
 #define OFS_P7IFG                        (0x001C)
 #define OFS_P8IFG                        (0x001D)
 #define OFS_P9IN                         (0x0000)
-#define OFS_P10IN                        (0x0000)
-#define OFS_P9OUT                        (0x0002)
-#define OFS_P10OUT                       (0x0003)
-#define OFS_P9DIR                        (0x0004)
-#define OFS_P10DIR                       (0x0005)
-#define OFS_P9REN                        (0x0006)
-#define OFS_P10REN                       (0x0007)
-#define OFS_P9SEL0                       (0x000A)
-#define OFS_P10SEL0                      (0x000B)
-#define OFS_P9SEL1                       (0x000C)
-#define OFS_P10SEL1                      (0x000D)
-#define OFS_P9SELC                       (0x0016)
-#define OFS_P10SELC                      (0x0017)
-#define OFS_P9IES                        (0x0018)
-#define OFS_P10IES                       (0x0019)
-#define OFS_P9IE                         (0x001A)
-#define OFS_P10IE                        (0x001B)
-#define OFS_P10IFG                       (0x001D)
-#define OFS_P9IFG                        (0x001C)
+#define OFS_P9OUT                        (0x0003)
+#define OFS_P9DIR                        (0x0005)
+#define OFS_P9REN                        (0x0007)
+#define OFS_P9SEL0                       (0x000B)
+#define OFS_P9SEL1                       (0x000D)
+#define OFS_P9SELC                       (0x0017)
+#define OFS_P9IES                        (0x0019)
+#define OFS_P9IE                         (0x001B)
+#define OFS_P9IFG                        (0x001D)
 
 /* DIO Control Bits */
 
@@ -13072,7 +13037,6 @@ sfr_b(UCB1IV_H);
 ************************************************************/
 
 #define __MSP430_HAS_TLV__                    /* Definition to show that Module is available */
-#define TLV_BASE               __MSP430_BASEADDRESS_TLV__
 
 #define TLV_START              (0x1A08)       /* Start Address of the TLV structure */
 #define TLV_END                (0x1AFF)       /* End Address of the TLV structure */
