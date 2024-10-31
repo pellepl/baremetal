@@ -210,6 +210,8 @@ _ldflags:=$(LDFLAGS)
 _ldflags_late:=$(LDFLAGS_LATE)
 endif
 
+-include apps/$(APP)/$(APP)-target.mk
+
 $(target).elf: $(objfiles) $(asobjfiles)
 	@$(ECHO) "LD\t$@"
 	$(v)$(XLD) $(_ldflags) -o $@ $(OBJFILES_EXTRA_FIRST) $(objfiles) $(asobjfiles) $(OBJFILES_EXTRA_LAST) $(LIBS) $(_ldflags_late)

@@ -6,7 +6,7 @@
 # If DEVICE_FILTER is defined, only devices whose id has a substring match are operated on.
 # If DEVICE_FILE is defined, only devices whose id are listed in given file (one id per line) are operated on.
 
-TI_VID_PID := "2047:0013"
+TI_VID_PID := "2047:0010"
 
 MSPDEBUG ?= mspdebug
 MSPDEBUG_DRIVER ?= tilib
