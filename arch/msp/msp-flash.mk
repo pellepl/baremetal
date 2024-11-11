@@ -6,7 +6,7 @@
 # If DEVICE_FILTER is defined, only devices whose id has a substring match are operated on.
 # If DEVICE_FILE is defined, only devices whose id are listed in given file (one id per line) are operated on.
 
-TI_VID_PID := "2047:0010"
+TI_VID_PID := "2047:0014"
 
 MSPDEBUG ?= mspdebug
 MSPDEBUG_DRIVER ?= tilib
@@ -57,7 +57,7 @@ msp-reset: .prereq-devs
 msp-flash: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
 	@echo "Flashing $< to $(MSP_DEVICES)"
 	$(call _parallel, \
-			$(MSPDEBUG) $(MSPDEBUG_DRIVER) -s $$arg "prog $(realpath $<)" \
+			$(MSPDEBUG) $(MSPDEBUG_DRIVER) -s $$arg "$(msp-flash-pre-command)" "prog $(realpath $<)" "$(msp-flash-post-command)" \
 		  ,$(MSP_DEVICES),60)
 
 # Flashes stm devices with given file.
