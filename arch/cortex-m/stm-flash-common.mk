@@ -44,6 +44,12 @@ define list_stlink_devices
 $(shell lsusb -d $(OPENOCD_VID_PID) -v 2> /dev/null | grep -oP "iSerial\s*[0-9]\s\K.*" | tr -d '\n' | od -t x1 -w100 | grep -o "\ [0-9a-f][0-9a-f]" | sed -r 's/\s[c-f][0-9a-f]/ 3f/g' | sed -r 's/\s[8-f][0-9a-f]//g' | tr -d '\n' | sed -r 's/\s/\\x/g')
 endef
 
+ifndef DEVICE_SINGLE
+DEVICE_SERIAL_ARG := -c "hla_serial $$arg"
+else
+DEVICE_SERIAL_ARG :=
+endif
+
 _filter = $(foreach v,$(2),$(if $(findstring $(1),$(v)),$(v),))
 
 # Lists all connected ST-LINK devices
@@ -76,7 +82,7 @@ stm-reset: .prereq-devs
 	@echo "Resetting $(STM_DEVICES)"
 	$(call _parallel, \
 				$(OPENOCD) -f $(OPENOCD_INTERFACE_FILE) \
-					-c "hla_serial $$arg" \
+					$(DEVICE_SERIAL_ARG) \
 					-f $(OPENOCD_TARGET_FILE) \
 					-c "gdb_port $(GDB_PORT)" \
 					-c "telnet_port $(TELNET_PORT)" \
@@ -91,7 +97,7 @@ stm-flash: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
 	@echo "Flashing $< to $(STM_DEVICES)"
 	$(call _parallel, \
 			$(OPENOCD) -f $(OPENOCD_INTERFACE_FILE) \
-					-c "hla_serial $$arg" \
+					$(DEVICE_SERIAL_ARG) \
 					-f $(OPENOCD_TARGET_FILE) \
 					-c "gdb_port $(GDB_PORT)" \
 					-c "telnet_port $(TELNET_PORT)" \
@@ -112,7 +118,7 @@ stm-flash-file: .prereq-devs
 	fi
 	$(call _parallel, \
 			$(OPENOCD) -f $(OPENOCD_INTERFACE_FILE) \
-					-c "hla_serial $$arg" \
+					$(DEVICE_SERIAL_ARG) \
 					-f $(OPENOCD_TARGET_FILE) \
 					-c "gdb_port $(GDB_PORT)" \
 					-c "telnet_port $(TELNET_PORT)" \
@@ -128,7 +134,7 @@ stm-erase-all: .prereq-devs
 	@echo "Erasing $(STM_DEVICES)"
 	$(call _parallel, \
 			$(OPENOCD) -f $(OPENOCD_INTERFACE_FILE) \
-					-c "hla_serial $$arg" \
+					$(DEVICE_SERIAL_ARG) \
 					-f $(OPENOCD_TARGET_FILE) \
 					-c "gdb_port $(GDB_PORT)" \
 					-c "telnet_port $(TELNET_PORT)" \
@@ -168,7 +174,8 @@ stm-debug-bare: .prereq-devs
 rightparen:=)
 
 .prereq-devs: .prereq-prog
-ifdef DEVICE_FILE
+ifndef DEVICE_SINGLE
+  ifdef DEVICE_FILE
 	$(eval STM_DEVICES := $(shell \
 	   ids="$$(shell lsusb -d $(OPENOCD_VID_PID) -v 2> /dev/null | grep -oP 'iSerial\s*[0-9]\s\K.*' | tr -d '\n' | od -t x1 -w100 | grep -o '\ [0-9a-f][0-9a-f]' | sed -r 's/\s[c-f][0-9a-f]/ 3f/g' | sed -r 's/\s[8-f][0-9a-f]//g' | tr -d '\n' | sed -r 's/\s/\\x/g')"; \
            file_ids="$$(cat $(DEVICE_FILE))"; \
@@ -181,7 +188,7 @@ ifdef DEVICE_FILE
 		echo "*** ERROR: No devices selected using device id file \"$(DEVICE_FILE)\""; \
 		exit 1; \
 	fi
-else ifdef DEVICE
+  else ifdef DEVICE
 	$(eval STM_DEVICES := $(call _filter,$(DEVICE),$(list_stlink_devices)))
 	@if [ $(words $(STM_DEVICES)) -gt 1 ]; then \
 		echo "*** ERROR: Ambiguous device id \"$(DEVICE)\", found multiple devices: $(STM_DEVICES)"; \
@@ -192,29 +199,32 @@ else ifdef DEVICE
 		exit 1; \
 	fi
 	$(eval STM_DEVICE_FIRST := $(word 1, $(STM_DEVICES)))
-  ifndef GDB_PORT
+    ifndef GDB_PORT
 	$(eval gdb_port_nbr := $(call unique_number,$(strip $(STM_DEVICE_FIRST))))
 	$(eval GDB_PORT := 3$(gdb_port_nbr))
 	$(info Auto GDB_PORT: $(GDB_PORT))
-  endif
-  ifndef TELNET_PORT
+    endif
+    ifndef TELNET_PORT
 	$(eval telnet_port_nbr := $(call unique_number,$(strip $(STM_DEVICE_FIRST))))
 	$(eval TELNET_PORT := 4$(telnet_port_nbr))
 	$(info Auto TELNET_PORT: $(TELNET_PORT))
-  endif
-else ifdef DEVICE_FILTER
+    endif
+  else ifdef DEVICE_FILTER
 	$(eval STM_DEVICES := $(call _filter,$(DEVICE_FILTER),$(list_stlink_devices)))
 	@if [ $(words $(STM_DEVICES)) -eq 0 ]; then \
 		echo "*** ERROR: No devices selected using device filter \"$(DEVICE_FILTER)\""; \
 		exit 1; \
 	fi
-else
+  else
 	$(eval STM_DEVICES := $(list_stlink_devices))
 	@if [ $(words $(STM_DEVICES)) -eq 0 ]; then \
 		echo "*** ERROR: No devices connected"; \
 		exit 1; \
 	fi
-endif
+  endif
+else # DEVICE_SINGLE
+	$(eval STM_DEVICES := DEVICE_SINGLE)
+endif # DEVICE_SINGLE
 	$(eval STM_DEVICE_FIRST ?= $(word 1, $(STM_DEVICES)))
 	$(eval GDB_PORT ?= 3333)
 	$(eval TELNET_PORT ?= 4444)
