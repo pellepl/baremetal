@@ -16,7 +16,7 @@ else ifeq "$(PROC)" "stm32f103x6"
 CFLAGS += -DSTM32F103x6
 proc-cc-flags += $(cc-flags-nofpu)
 else ifeq "$(PROC)" "stm32f103x8"
-CFLAGS += -DSTM32F103x8
+CFLAGS += -DSTM32F103x6
 proc-cc-flags += $(cc-flags-nofpu)
 else ifeq "$(PROC)" "stm32f103xB"
 CFLAGS += -DSTM32F103xB
