@@ -8,6 +8,8 @@
 #include "board_common.h"
 
 int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
+    // disable stdout buffer
+    setvbuf(stdout, NULL, _IONBF, 0);
     return 0;
 }
 
