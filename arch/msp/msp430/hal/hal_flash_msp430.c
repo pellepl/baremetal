@@ -14,7 +14,7 @@ int flash_get_sectors_for_type(flash_type_t type, uint32_t *sector, uint32_t *nu
     return -1;
 }
 
-int flash_get_sector_for_address(uint32_t address, uint32_t *sector, uint32_t *offset, uint32_t *sector_size) {
+int flash_get_sector_for_address(const void *address, uint32_t *sector, uint32_t *offset, uint32_t *sector_size) {
     return -1;
 }
 

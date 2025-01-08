@@ -29,8 +29,9 @@ int flash_get_sectors_for_type(flash_type_t type, uint32_t *sector, uint32_t *nu
     return 0;
 }
 
-int flash_get_sector_for_address(uint32_t address, uint32_t *sector, uint32_t *offset, uint32_t *sector_size) {
+int flash_get_sector_for_address(const void *v_address, uint32_t *sector, uint32_t *offset, uint32_t *sector_size) {
     if (!sector || !offset || !sector_size) return -1;
+    uint32_t address = (uint32_t)(intptr_t)v_address;
     if (address >= FLASH_UICR_ADDR_START && address < FLASH_UICR_ADDR_END) {
         *sector = NRF_FLASH_SECTOR_UICR;
         *offset = address - FLASH_UICR_ADDR_START;

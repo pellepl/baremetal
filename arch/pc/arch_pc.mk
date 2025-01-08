@@ -15,4 +15,6 @@ CFLAGS += -ffunction-sections -fdata-sections
 LDFLAGS += --gc-sections
 endif
 
+CFLAGS += -I/usr/include
+
 -include $(arch_dir)/pc-flash.mk

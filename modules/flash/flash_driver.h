@@ -63,7 +63,7 @@ int flash_get_sectors_for_type(flash_type_t type, uint32_t *sector, uint32_t *nu
  * Sets sector, offset in sector, and sector length for corresponding given address.
  * @return 0 on success, -1 if no such address or sector exists
  */
-int flash_get_sector_for_address(uint32_t address, uint32_t *sector, uint32_t *offset, uint32_t *sector_size);
+int flash_get_sector_for_address(const void *address, uint32_t *sector, uint32_t *offset, uint32_t *sector_size);
 /** Returns size of given sector */
 int flash_get_sector_size(uint32_t sector);
 /**
