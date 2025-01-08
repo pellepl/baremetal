@@ -38,11 +38,11 @@ int flash_get_sectors_for_type(flash_type_t type, uint32_t *sector, uint32_t *nu
 }
 
 int flash_get_sector_for_address(const void *address, uint32_t *sector, uint32_t *offset, uint32_t *sector_size) {
-    if (address < mem && address >= mem + sizeof(mem)) {
+    if ((intptr_t)address < (intptr_t)mem && (intptr_t)address >= (intptr_t)(mem + sizeof(mem))) {
         return ERR_FLASH_OTHER;
     }
-    *sector = (intptr_t)(address - (intptr_t)mem) / FLASH_SANDBOX_SECTOR_SIZE;
-    *offset = (intptr_t)(address - (intptr_t)mem) % FLASH_SANDBOX_SECTOR_SIZE;
+    *sector = ((intptr_t)address - (intptr_t)mem) / FLASH_SANDBOX_SECTOR_SIZE;
+    *offset = ((intptr_t)address - (intptr_t)mem) % FLASH_SANDBOX_SECTOR_SIZE;
     *sector_size = FLASH_SANDBOX_SECTOR_SIZE;
     return 0;
 }
@@ -88,9 +88,9 @@ int flash_write(uint32_t sector, uint32_t offset, const uint8_t *data, uint32_t 
     if (offset > FLASH_SANDBOX_SECTOR_SIZE)
         return 0;
     int remaining_size = FLASH_SANDBOX_SECTOR_SIZE - offset;
-    if (length > remaining_size) 
+    if (length > (uint32_t)remaining_size) 
         length = remaining_size;
-    for (int i = 0; i < length; i++) {
+    for (uint32_t i = 0; i < length; i++) {
         mem[sector * FLASH_SANDBOX_SECTOR_SIZE + offset + i] &= data[i];
     }
     return length;
@@ -103,7 +103,7 @@ int flash_read(uint32_t sector, uint32_t offset, uint8_t *data, uint32_t length)
     if (offset > FLASH_SANDBOX_SECTOR_SIZE)
         return 0;
     int remaining_size = FLASH_SANDBOX_SECTOR_SIZE - offset;
-    if (length > remaining_size) 
+    if (length > (uint32_t)remaining_size) 
         length = remaining_size;
     memcpy(data, mem + sector * FLASH_SANDBOX_SECTOR_SIZE + offset, length);
     return length;
