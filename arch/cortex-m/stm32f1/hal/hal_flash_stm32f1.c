@@ -185,8 +185,8 @@ int flash_get_sector_for_address(const void *v_address, uint32_t *sector, uint32
     if (!sector || !offset || !sector_size) return -1;
     uint32_t address = (uint32_t)(intptr_t)v_address;
     if (address >= FLASH_BASE && address < FLASH_BASE + _sector_size * _sector_size) {
-        *sector = STM_FLASH_SECTOR_CODE0;
-        *offset = address - FLASH_BASE;
+        *sector = STM_FLASH_SECTOR_CODE0 + ((intptr_t)address - FLASH_BASE) / _sector_size;
+        *offset = ((intptr_t)address - FLASH_BASE) % _sector_size;
         *sector_size = _sector_size;
         return 0;
     } else if (address >= OB_BASE && address < OB_BASE+16) {
