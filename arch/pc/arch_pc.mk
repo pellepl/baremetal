@@ -17,4 +17,6 @@ endif
 
 CFLAGS += -I/usr/include
 
+CFLAGS += -DARCH_PC=1
+
 -include $(arch_dir)/pc-flash.mk
