@@ -46,8 +46,10 @@ endef
 
 ifndef DEVICE_SINGLE
 DEVICE_SERIAL_ARG := -c "hla_serial $$arg"
+DEVICE_SERIAL_FIRST := -c "hla_serial $(STM_DEVICE_FIRST)"
 else
 DEVICE_SERIAL_ARG :=
+DEVICE_SERIAL_FIRST :=
 endif
 
 _filter = $(foreach v,$(2),$(if $(findstring $(1),$(v)),$(v),))
@@ -149,7 +151,7 @@ stm-erase-all: .prereq-devs
 stm-connect: .prereq-devs
 	@echo "Connecting to $(STM_DEVICE_FIRST)"
 	$(OPENOCD) -f $(OPENOCD_INTERFACE_FILE) \
-	           -c "hla_serial $(STM_DEVICE_FIRST)" \
+	           $(DEVICE_SERIAL_FIRST) \
 			   -f $(OPENOCD_TARGET_FILE) \
 	           -c "gdb_port $(GDB_PORT)" \
 	           -c "telnet_port $(TELNET_PORT)" \
