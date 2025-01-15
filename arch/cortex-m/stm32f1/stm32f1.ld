@@ -10,6 +10,7 @@ SECTIONS
   /* The startup code goes first into FLASH */
   .isr_vector :
   {
+    isr_vector_address = .;
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);

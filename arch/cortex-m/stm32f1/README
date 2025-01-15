@@ -12,4 +12,9 @@ Makeflags:
     uart_irq_rxchar_stm32f7 from interrupt context. A weak implementation
     doing nothing is default.
 
+  NO_STM32_TEMPLATE_SYSTEM_FILE
+    By default, the MDKs STM32F1xx/Source/Templates/system_stm32f1xx.c is
+    included in source files for this family. Define this to avoid that and
+    implement your own SystemInit function.
+
 See stm-flash.mk for convenience targets for flashing, debugging etc.

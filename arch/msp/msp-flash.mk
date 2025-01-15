@@ -87,12 +87,12 @@ msp-connect: .prereq-devs
 msp-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
 	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb \
 		-ex "file ${TARGET_DIR}/$(TARGETNAME).elf" \
-		-ex "target remote localhost:$(GDB_PORT)" 
+		-ex "target remote localhost:$(GDB_PORT)"
 
 # Starts a bare debug session - nrf-connect must have been issued first.
 msp-debug-bare: .prereq-devs
 	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb \
-		-ex "target remote localhost:$(GDB_PORT)" 
+		-ex "target remote localhost:$(GDB_PORT)"
 
 rightparen:=)
 

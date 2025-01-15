@@ -6,7 +6,9 @@ mdk_dir := $(family_dir)/mdk
 cc-flags-nofpu = -mfloat-abi=soft
 cc-flags-fpu = -mfloat-abi=hard
 
+ifndef NO_STM32_TEMPLATE_SYSTEM_FILE
 CFILES += $(mdk_dir)/STM32F1xx/Source/Templates/system_stm32f1xx.c
+endif
 INCLUDE += $(mdk_dir)/STM32F1xx/Include
 
 ifeq "$(PROC)" "stm32f103x4"
