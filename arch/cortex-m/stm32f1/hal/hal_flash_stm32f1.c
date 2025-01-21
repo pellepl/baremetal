@@ -107,7 +107,13 @@ int flash_get_address_for_sector(uint32_t sector, void **address) {
 int flash_init(void) {
     volatile uint16_t *FLASH_SIZE = (volatile uint16_t *)0x1ffff7e0; // in kB
     uint32_t size = *FLASH_SIZE;
+    #if STMF10x_MEDIUM_DENSITY || STM10x_LOW_DENSITY
+    _sector_size = 1024;
+    #elif STMF10x_HIGH_DENSITY || STM10x_CONNECTIVITY
+    _sector_size = 2048;
+    #else
     _sector_size = size >= 128 ? 2048 : 1024;
+    #endif
     _sectors = size * 1024 / _sector_size;
     #if 0 // won't work without debugger
     volatile uint32_t *DBGMCU_IDCODE = (volatile uint32_t *)0xe0042000;
