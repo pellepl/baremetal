@@ -298,6 +298,10 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
 
         uint32_t baudrate;
         switch (config->baudrate) {
+            case UART_BAUDRATE_600:     baudrate = 600; break;
+            case UART_BAUDRATE_1200:    baudrate = 1200; break;
+            case UART_BAUDRATE_2400:    baudrate = 2400; break;
+            case UART_BAUDRATE_4800:    baudrate = 4800; break;
             case UART_BAUDRATE_9600:    baudrate = 9600; break;
             case UART_BAUDRATE_57600:   baudrate = 57600; break;
             case UART_BAUDRATE_460800:  baudrate = 460800; break;

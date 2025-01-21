@@ -73,6 +73,10 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
     }
 
     switch (config->baudrate) {
+        case UART_BAUDRATE_600:     u->BAUDRATE = 0x00027000; break;
+        case UART_BAUDRATE_1200:    u->BAUDRATE = 0x0004F000; break;
+        case UART_BAUDRATE_2400:    u->BAUDRATE = 0x0009D000; break;
+        case UART_BAUDRATE_4800:    u->BAUDRATE = 0x0013B000; break;
         case UART_BAUDRATE_9600:    u->BAUDRATE = 0x00275000; break;
         case UART_BAUDRATE_57600:   u->BAUDRATE = 0x00EBF000; break;
         case UART_BAUDRATE_115200:  u->BAUDRATE = 0x01D7E000; break;

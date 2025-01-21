@@ -20,7 +20,11 @@
 
 typedef struct {
     enum uart_config_baudrate {
-        UART_BAUDRATE_9600 = 0,
+        UART_BAUDRATE_600 = 0,
+        UART_BAUDRATE_1200,
+        UART_BAUDRATE_2400,
+        UART_BAUDRATE_4800,
+        UART_BAUDRATE_9600,
         UART_BAUDRATE_57600,
         UART_BAUDRATE_115200,
         UART_BAUDRATE_460800,
