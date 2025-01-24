@@ -23,7 +23,7 @@ static int cli_flash_list(int argc, const char **argv) {
     }
     return 0;
 }
-CLI_FUNCTION(cli_flash_list, "flash_list");
+CLI_FUNCTION(cli_flash_list, "flash_list", ": lists flash areas");
 
 static int cli_flash_read(int argc, const char **argv) {
     if (argc != 3) {
@@ -45,7 +45,7 @@ static int cli_flash_read(int argc, const char **argv) {
     }
     return res;
 }
-CLI_FUNCTION(cli_flash_read, "flash_read");
+CLI_FUNCTION(cli_flash_read, "flash_read", "<sector>,<offset>,<length>: reads flash");
 
 static int cli_flash_write(int argc, const char **argv) {
     if (argc < 3) {
@@ -71,7 +71,7 @@ static int cli_flash_write(int argc, const char **argv) {
 
     return res;
 }
-CLI_FUNCTION(cli_flash_write, "flash_write");
+CLI_FUNCTION(cli_flash_write, "flash_write", "<sector>,<offset>,... : writes flash");
 
 static int cli_flash_erase(int argc, const char **argv) {
     if (argc != 1) {
@@ -84,6 +84,6 @@ static int cli_flash_erase(int argc, const char **argv) {
 
     return res;
 }
-CLI_FUNCTION(cli_flash_erase, "flash_erase");
+CLI_FUNCTION(cli_flash_erase, "flash_erase", "<sector>: erase flash");
 
 #endif

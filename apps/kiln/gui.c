@@ -1020,4 +1020,4 @@ static int cli_graph_fake(int argc, const char **argv) {
     }
     return 0;
 }
-CLI_FUNCTION(cli_graph_fake, "graph_fake");
+CLI_FUNCTION(cli_graph_fake, "graph_fake", ": fake data to graph");

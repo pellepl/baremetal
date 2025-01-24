@@ -13,9 +13,9 @@ CFLAGS += -DCONFIG_TICK_TIMER_STM32_HW_TIM=4 -DCONFIG_TICK_TIMER_STM32_PRESCALER
 CONFIG_CRYSTAL_TEST := 1
 CONFIG_RINGBUFFER := 1
 
-CFILES += $(wildcard source/$(APP)/*.c)
-CFILES += $(wildcard source/$(APP)/ui/*.c)
-CFILES += source/$(APP)/fonts/fonts.c
-INCLUDE += source/$(APP)
+CFILES += $(wildcard apps/$(APP)/*.c)
+CFILES += $(wildcard apps/$(APP)/ui/*.c)
+CFILES += apps/$(APP)/fonts/fonts.c
+INCLUDE += apps/$(APP)
 CFLAGS += -DHAL_NOR_MODULE_ENABLED
-LDFLAGS_LATE += --script=source/$(APP)/kiln.ld
+LDFLAGS_LATE += --script=apps/$(APP)/kiln.ld

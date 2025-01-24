@@ -1,6 +1,6 @@
 #ifndef _RTC_H_
 #define _RTC_H_
-#include "types.h"
+#include "bmtypes.h"
 
 #ifndef CONFIG_RTC_CLOCK_HZ
 #define CONFIG_RTC_CLOCK_HZ 32768

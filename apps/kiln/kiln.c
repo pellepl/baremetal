@@ -62,25 +62,25 @@ static int cli_help(int argc, const char **argv) {
     }
     return 0;
 }
-CLI_FUNCTION(cli_help, "help");
+CLI_FUNCTION(cli_help, "help", ": lists commands");
 
 static int cli_reset(int argc, const char **argv) {
     sys_reset();
     return 0;
 }
-CLI_FUNCTION(cli_reset, "reset");
+CLI_FUNCTION(cli_reset, "reset", ": resets target");
 
 static int cli_hang(int argc, const char **argv) {
     while(1);
     return 0;
 }
-CLI_FUNCTION(cli_hang, "hang");
+CLI_FUNCTION(cli_hang, "hang", ": hangs system, test watchdog");
 
 static int cli_crash(int argc, const char **argv) {
     sys_force_dump();
     return 0;
 }
-CLI_FUNCTION(cli_crash, "crash");
+CLI_FUNCTION(cli_crash, "crash", ": crashes system");
 
 static void cli_cb(const char *func_name, int res) {
     switch (res) {

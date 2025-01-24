@@ -122,10 +122,10 @@ static int cli_thermo_set_multi(int argc, const char **argv) {
     printf("thermo multiplier %d\n", thermo_multi);
     return 0;
 }
-CLI_FUNCTION(cli_thermo_set_multi, "tmult");
+CLI_FUNCTION(cli_thermo_set_multi, "tmult", "<mul>: set thermo multiplier");
 static int cli_thermo_set_offs(int argc, const char **argv) {
     thermoc_set_offset(atoi(argv[0]));
     printf("thermo offset %d\n", thermo_offs);
     return 0;
 }
-CLI_FUNCTION(cli_thermo_set_offs, "toffs");
+CLI_FUNCTION(cli_thermo_set_offs, "toffs", "<offs>: set thermo offset");

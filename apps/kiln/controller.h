@@ -1,7 +1,7 @@
 #ifndef _CONTROLLER_H
 #define _CONTROLLER_H
 
-#include "types.h"
+#include "bmtypes.h"
 
 #ifndef CTRL_CYCLES
 #define CTRL_CYCLES     10

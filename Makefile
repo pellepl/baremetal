@@ -1,4 +1,4 @@
 APP ?= kiln
 BOARD ?= hy-stm32
-include source/$(APP)/$(APP).mk
+include apps/$(APP)/$(APP).mk
 include main.mk

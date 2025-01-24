@@ -206,7 +206,7 @@ static int cli_settings_list(int argc, const char **argv) {
     }
     return 0;
 }
-CLI_FUNCTION(cli_settings_list, "cfg_ls");
+CLI_FUNCTION(cli_settings_list, "cfg_ls", ": lists settings");
 
 static int cli_settings_set(int argc, const char **argv) {
     if (argc < 2) {
@@ -223,5 +223,5 @@ static int cli_settings_set(int argc, const char **argv) {
 
     return 0;
 }
-CLI_FUNCTION(cli_settings_set, "cfg_set");
+CLI_FUNCTION(cli_settings_set, "cfg_set", "<id> <val>: sets setting");
 

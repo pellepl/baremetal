@@ -14,7 +14,7 @@ static int cli_format(int argc, const char **argv) {
     }
     return nvmtnv_format(atoi(argv[0]), atoi(argv[1]), atoi(argv[2]));
 }
-CLI_FUNCTION(cli_format, "nvm_format");
+CLI_FUNCTION(cli_format, "nvm_format", "<start_sector> <sectors> <val_size>: formats tnv area");
 
 static int cli_mount(int argc, const char **argv) {
     if (argc != 1) {
@@ -23,7 +23,7 @@ static int cli_mount(int argc, const char **argv) {
     }
     return nvmtnv_mount(atoi(argv[0]));
 }
-CLI_FUNCTION(cli_mount, "nvm_mount");
+CLI_FUNCTION(cli_mount, "nvm_mount", "<start_sector>: mount tnva area");
 
 static int cli_write(int argc, const char **argv) {
     if (argc != 2) {
@@ -32,7 +32,7 @@ static int cli_write(int argc, const char **argv) {
     }
     return nvmtnv_write(atoi(argv[0]), (const uint8_t *)argv[1], strlen(argv[1]));
 }
-CLI_FUNCTION(cli_write, "nvm_write");
+CLI_FUNCTION(cli_write, "nvm_write", "<tag> <string>: writes tag");
 
 static int cli_read(int argc, const char **argv) {
     if (argc != 1) {
@@ -45,7 +45,7 @@ static int cli_read(int argc, const char **argv) {
     fprint_mem(UART_STD, buf, res);
     return 0;
 }
-CLI_FUNCTION(cli_read, "nvm_read");
+CLI_FUNCTION(cli_read, "nvm_read", "<tag>: reads tag");
 
 static int cli_delete(int argc, const char **argv) {
     if (argc != 1) {
@@ -54,6 +54,6 @@ static int cli_delete(int argc, const char **argv) {
     }
     return nvmtnv_delete(atoi(argv[0]));
 }
-CLI_FUNCTION(cli_delete, "nvm_delete");
+CLI_FUNCTION(cli_delete, "nvm_delete", "<tag>: deletes tag");
 
 #endif

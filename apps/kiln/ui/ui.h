@@ -1,7 +1,7 @@
 #ifndef _UI_H
 #define _UI_H
 
-#include "types.h"
+#include "bmtypes.h"
 #include "timer.h"
 #include "rtc.h"
 

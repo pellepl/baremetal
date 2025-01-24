@@ -1,4 +1,4 @@
-#include "types.h"
+#include "bmtypes.h"
 #include "disp.h"
 #include "minio.h"
 #include "fonts/fonts.h"

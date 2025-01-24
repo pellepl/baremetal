@@ -1,7 +1,7 @@
 #ifndef _SETTINGS_H_
 #define _SETTINGS_H_
 
-#include "types.h"
+#include "bmtypes.h"
 
 typedef enum {
     SETTING_ID = 0,

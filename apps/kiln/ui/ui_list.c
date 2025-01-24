@@ -1,4 +1,4 @@
-#include "types.h"
+#include "bmtypes.h"
 #include "disp.h"
 #include "fonts/fonts.h"
 #include "minio.h"
@@ -175,9 +175,9 @@ static void list_paint(ui_component_t *ui, void *ctx, ui_info_t *i) {
             if (c->get_item_fn) {
                 const char *strl, *strc, *strr;
                 c->get_item_fn(ix, &strl, &strc, &strr);
-                if (strl) disp_draw_string(strl, txl + 2, ty + 1, c->font, UI_ALIGNH_LEFT, alignv, fg, bg1);
-                if (strc) disp_draw_string(strc, txc + 2, ty + 1, c->font, UI_ALIGNH_CENTER, alignv, fg, bg1);
-                if (strr) disp_draw_string(strr, txr + 2, ty + 1, c->font, UI_ALIGNH_RIGHT, alignv, fg, bg1);
+                if (strl) disp_draw_string(strl, txl + 2, ty + 1, c->font, DISP_STR_ALIGN_LEFT_TOP, alignv, fg, bg1);
+                if (strc) disp_draw_string(strc, txc + 2, ty + 1, c->font, DISP_STR_ALIGN_CENTER, alignv, fg, bg1);
+                if (strr) disp_draw_string(strr, txr + 2, ty + 1, c->font, DISP_STR_ALIGN_RIGHT_BOTTOM, alignv, fg, bg1);
             } else {
                 char str[12];
                 snprintf(str, sizeof(str)-1, "ix %d", ix);

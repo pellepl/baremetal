@@ -1,5 +1,5 @@
 #include "minio.h"
-#include "types.h"
+#include "bmtypes.h"
 #include "stm32f1xx_ll_rtc.h"
 #include "stm32f1xx_ll_bus.h"
 #include "stm32f1xx_ll_rcc.h"
@@ -337,7 +337,7 @@ static int cli_rtc_tick(int argc, const char **argv) {
     }
     return 0;
 }
-CLI_FUNCTION(cli_rtc_tick, "rtc_tick");
+CLI_FUNCTION(cli_rtc_tick, "rtc_tick", "(<hi>) (<lo>): sets or shows  rtc tick");
 static int cli_rtc_alarm_tick(int argc, const char **argv) {
     if (argc == 0) {
         uint64_t t = rtc_get_alarm_tick();
@@ -350,7 +350,7 @@ static int cli_rtc_alarm_tick(int argc, const char **argv) {
     }
     return 0;
 }
-CLI_FUNCTION(cli_rtc_alarm_tick, "rtc_alarm_tick");
+CLI_FUNCTION(cli_rtc_alarm_tick, "rtc_alarm_tick", "(<hi>) (<lo>): sets or shows alarm tick");
 
 static int cli_rtc_date(int argc, const char **argv) {
     if (argc == 0) {
@@ -373,4 +373,4 @@ static int cli_rtc_date(int argc, const char **argv) {
     }
     return 0;
 }
-CLI_FUNCTION(cli_rtc_date, "rtc_date");
+CLI_FUNCTION(cli_rtc_date, "rtc_date", "(<year> <month> <day> <h> <m> <s> <millis>): sets and shows rtc data");

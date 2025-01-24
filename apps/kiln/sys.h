@@ -1,7 +1,7 @@
 #ifndef _SYS_H_
 #define _SYS_H_
 
-#include "types.h"
+#include "bmtypes.h"
 
 typedef enum {
     RR_LOW_POWER = 0,
