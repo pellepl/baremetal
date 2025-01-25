@@ -394,7 +394,7 @@ static int view_kiln_event_fn(ui_component_t *ui, ui_event_t *event, ui_info_t *
         settings_set_val(SETTING_UI_KILN_TEMP, (void*)gui_kiln_temp);
         view_kiln_update_gui(gui_kiln_power);
     } else if (event->source == &kiln_pow_slider.comp) {
-        printf("ui event kiln pow slider\n");
+        printf("ui event kiln pow slider type %d\n", event->type);
         if (event->type == EVENT_CB_SLIDER_ADJUST) {
             kiln_pow_label.colfg = COL_INPUT_BG;
         } else {

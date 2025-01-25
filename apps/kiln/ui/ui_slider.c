@@ -53,7 +53,7 @@ static int slider_event(ui_component_t *ui, ui_event_t *event, ui_info_t *i) {
         } else {
             __ui_set_flag_state(ui, UI_STATE_HIGHLIGHTED, 0);
         }
-    } else {
+    } else if (event->type != EVENT_REPAINT) {
         if (ui->state & UI_STATE_PRESSED) {
             __ui_set_flag_state(ui, UI_STATE_PRESSED, 0);
             ui_slider_t *c = (ui_slider_t *)ui;
