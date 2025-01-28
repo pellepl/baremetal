@@ -1,3 +1,5 @@
+#include <stddef.h>
+#include <stdbool.h>
 #include "board.h"
 #include "kiln.h"
 #include "ui/ui.h"
@@ -15,9 +17,12 @@
 #include "cli.h"
 #include "sys.h"
 
+#define SLEEP_TIMEOUT_S 60
 #define VIEW_HISTORY_LEN    5
 #define BEEP_TIM_PRESC      1000
 #define TITLE_H     40
+
+static bool gui_sleeping = false;
 
 static ui_panel_t main_panel;
 static ui_button_t back_button;
@@ -46,7 +51,7 @@ static int32_t gui_temp_graph_last_time;
 static int32_t gui_kiln_temp = 20;
 static int32_t gui_kiln_power = 0;
 
-static char gui_attention = 0;
+static bool gui_attention = false;
 
 #define _str(x) __str(x)
 #define __str(x) #x
@@ -919,17 +924,18 @@ void gui_init(void) {
 }
 
 void gui_set_attention(kiln_attention_t att) {
-    gui_attention |= 1;
+    gui_attention |= true;
 }
 
 static uint32_t gui_second = 0;
+static uint32_t idle_second = 0;
 void gui_loop(void) {
     static uint32_t gui_graph_thermo_sum = 0;
     static uint32_t gui_graph_thermo_div = 0;
     static uint32_t gui_ctrl_thermo_sum = 0;
     static uint32_t gui_ctrl_thermo_div = 0;
     ui_event_t *ui_event;
-    int repaint = 0;
+    bool repaint = false;
     while ((ui_event = ui_pop_event())) {
         switch (ui_event->type) {
             case EVENT_BEEP:
@@ -937,6 +943,14 @@ void gui_loop(void) {
             break;
             case EVENT_SECOND: {
                 gui_second++;
+                idle_second++;
+                if (idle_second >= SLEEP_TIMEOUT_S && !gui_sleeping) {
+                    gui_sleeping = true;
+                    disp_set_light(0x00);
+                    ui_repaint(NULL);
+                    repaint = true;
+                }
+
                 ctrl_second_callback(gui_second);
                 int32_t now = (int32_t)ui_event->time;
                 if (now - gui_temp_graph_last_time >=
@@ -954,7 +968,7 @@ void gui_loop(void) {
                     repaint = 1;
                 }
                 update_title_status();
-                gui_attention = ctrl_is_panicking();
+                gui_attention = ctrl_is_panicking() != 0;
             }
             break;
             case EVENT_THERMO: {
@@ -964,12 +978,8 @@ void gui_loop(void) {
                 gui_graph_thermo_div++;
                 gui_ctrl_thermo_sum += temp;
                 gui_ctrl_thermo_div++;
-                gui_attention |= thermo_error;
+                gui_attention |= (thermo_error) != 0;
             }            
-            break;
-            default:
-            ui_handle_event(ui_event);
-            repaint = 1;
             break;
             case EVENT_KILN_ON:
             ui_set_enabled(&ibuttons[2].comp, 0);
@@ -988,7 +998,7 @@ void gui_loop(void) {
                     gui_melody(tune_kiln_on_manual_f, tune_kiln_on_manual_t, sizeof(tune_kiln_on_manual_f)/sizeof(tune_kiln_on_manual_f[0]));
                 }
             }
-            repaint = 1;
+            repaint = true;
             break;
             case EVENT_KILN_OFF:
             ibuttons[1].comp.state &= ~UI_STATE_ACTIVE;
@@ -997,7 +1007,7 @@ void gui_loop(void) {
             static const uint16_t tune_kiln_off_f[] = {784, 650};
             static const uint16_t tune_kiln_off_t[] = {110, 110};
             gui_melody(tune_kiln_off_f, tune_kiln_off_t, sizeof(tune_kiln_off_f)/sizeof(tune_kiln_off_f[0]));
-            repaint = 1;
+            repaint = true;
             break;
             case EVENT_PANIC:
             ibuttons[1].comp.state &= ~UI_STATE_ACTIVE;
@@ -1007,11 +1017,30 @@ void gui_loop(void) {
             ui_set_enabled(&ibuttons[2].comp, 1);
             ui_set_enabled(&ibuttons[3].comp, 0);
             break;
+            default:
+            if (!gui_sleeping) {
+                ui_handle_event(ui_event);
+                repaint = true;
+            }
+            break;
+        } // switch event type
+
+        if (ui_event->type != EVENT_SECOND && 
+            ui_event->type != EVENT_REPAINT && 
+            ui_event->type != EVENT_THERMO) {
+            idle_second = 0;
+            if (gui_sleeping) {
+                gui_sleeping = false;
+                disp_set_light(0xff);
+                ui_repaint(NULL);
+                repaint = true;
+            }
         }
         
         ui_free_event(ui_event);
+
     }
-    if (repaint) ui_paint(0);
+    if (repaint) ui_paint(NULL);
 }
 
 static int cli_graph_fake(int argc, const char **argv) {
@@ -1021,3 +1050,20 @@ static int cli_graph_fake(int argc, const char **argv) {
     return 0;
 }
 CLI_FUNCTION(cli_graph_fake, "graph_fake", ": fake data to graph");
+
+static int cli_gui_sleep(int argc, const char **argv) {
+    disp_set_light(0);
+    ui_repaint(NULL);
+    ui_post_event(ui_new_event(EVENT_REPAINT));
+    return 0;
+}
+CLI_FUNCTION(cli_gui_sleep, "gui_sleep", ": sleep");
+
+static int cli_gui_wup(int argc, const char **argv) {
+    disp_set_light(0xff);
+    ui_repaint(NULL);
+    ui_post_event(ui_new_event(EVENT_REPAINT));
+    return 0;
+}
+CLI_FUNCTION(cli_gui_wup, "gui_wup", ": wakeup");
+

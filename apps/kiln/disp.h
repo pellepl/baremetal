@@ -20,6 +20,7 @@ void disp_set_clip_d(int16_t x0, int16_t y0, int16_t x1, int16_t y1);
 void disp_set_clip(disp_clip_t *clip);
 void disp_get_clip(disp_clip_t *clip);
 void disp_fill(int16_t x, int16_t y, int w, int h, uint32_t color);
+void disp_set_light(uint8_t light);
 void disp_clear(uint32_t color);
 void disp_draw_pixel(int16_t x0, int16_t y0, uint32_t col);
 void disp_draw_line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint32_t col, uint8_t thickness);

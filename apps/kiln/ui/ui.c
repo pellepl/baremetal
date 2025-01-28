@@ -1,4 +1,5 @@
-#include "bmtypes.h"
+#include <stddef.h>
+#include <stdint.h>
 #include "disp.h"
 #include "minio.h"
 #include "ui.h"
@@ -136,6 +137,10 @@ int ui_set_enabled(ui_component_t *c, int e) {
     return 0;
 }
 int ui_repaint(ui_component_t *c) {
+    if (c == NULL) {
+        ASSERT(main_panel);
+        c = &main_panel->comp;
+    }
     c->state |= UI_STATE_REPAINT;
     ui_component_t *child = c->children;
     while (child) {
