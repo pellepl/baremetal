@@ -3,25 +3,30 @@
 
 #include "spi_sw.h"
 
-#define TOUCH_SPATIAL_FILTER_LEN        9
-#define TOUCH_RELEASE_COOLDOWN          500
+#define TOUCH_SPATIAL_FILTER_LEN 9
+#define TOUCH_RELEASE_COOLDOWN 500
 
-typedef struct {
+typedef struct
+{
     uint16_t x;
     uint16_t y;
 } touch_coordinate_t;
 
-typedef struct {
+typedef struct
+{
     volatile int touch_pressed_irq_flag;
     touch_coordinate_t last_raw_touch;
     int needs_calibration;
-    struct {
+    struct
+    {
         uint16_t minx, maxx, miny, maxy;
     } limits;
     uint8_t xy_filter_ix;
-    union {
+    union
+    {
         touch_coordinate_t calib[5];
-        struct {
+        struct
+        {
             uint16_t x[TOUCH_SPATIAL_FILTER_LEN];
             uint16_t y[TOUCH_SPATIAL_FILTER_LEN];
             uint32_t lpx, lpy;

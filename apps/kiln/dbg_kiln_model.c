@@ -1,7 +1,8 @@
 #include "dbg_kiln_model.h"
 #include "minio.h"
 
-static struct {
+static struct
+{
     float temp;
     float temp_ambient;
     float energy; // wattsecond
@@ -10,7 +11,8 @@ static struct {
     float C_heat_dissipation;
 } model;
 
-float model_tick(float power, float dt) {
+float model_tick(float power, float dt)
+{
     float dtemp = model.temp - model.temp_ambient;
     model.energy += power * dt;
     float energy_heat = model.energy * model.C_energy_heat_transfer;
@@ -23,11 +25,13 @@ float model_tick(float power, float dt) {
     return model.temp;
 }
 
-float model_temp(void) {
+float model_temp(void)
+{
     return model.temp;
 }
 
-void model_init(void) {
+void model_init(void)
+{
     model.temp = model.temp_ambient = 20;
     model.energy = 0;
 

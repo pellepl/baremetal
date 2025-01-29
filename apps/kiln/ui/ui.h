@@ -5,20 +5,21 @@
 #include "timer.h"
 #include "rtc.h"
 
-#define UI_STATE_VISIBLE        (1<<0)
-#define UI_STATE_ENABLED        (1<<1)
-#define UI_STATE_ACTIVE         (1<<2)
-#define UI_STATE_FOCUSED        (1<<3)
-#define UI_STATE_HIGHLIGHTED    (1<<4)
-#define UI_STATE_PRESSED        (1<<5)
-#define UI_STATE_REPAINT        (1<<6)
-#define UI_STATE_TRANSLATING    (1<<7)
+#define UI_STATE_VISIBLE (1 << 0)
+#define UI_STATE_ENABLED (1 << 1)
+#define UI_STATE_ACTIVE (1 << 2)
+#define UI_STATE_FOCUSED (1 << 3)
+#define UI_STATE_HIGHLIGHTED (1 << 4)
+#define UI_STATE_PRESSED (1 << 5)
+#define UI_STATE_REPAINT (1 << 6)
+#define UI_STATE_TRANSLATING (1 << 7)
 
 #ifndef UI_EVENT_POOL
-#define UI_EVENT_POOL           8
+#define UI_EVENT_POOL 8
 #endif
 
-typedef enum {
+typedef enum
+{
     EVENT_REPAINT = 0,
     EVENT_CLOSE,
     EVENT_CLOSE_APPLY,
@@ -48,37 +49,43 @@ typedef enum {
     _EVENT_CB_MAX,
 } ui_event_type_t;
 
-typedef enum {
+typedef enum
+{
     UI_ALIGNV_TOP = 0,
     UI_ALIGNV_CENTER,
     UI_ALIGNV_BOTTOM,
 } ui_align_v_t;
 
-typedef enum {
+typedef enum
+{
     UI_ALIGNH_LEFT = 0,
     UI_ALIGNH_CENTER,
     UI_ALIGNH_RIGHT,
 } ui_align_h_t;
 
-#define UI_STATE_ALIGNV__MASK   (3<<28)
-#define UI_STATE_ALIGNV_TOP     (UI_ALIGNV_TOP<<28)
-#define UI_STATE_ALIGNV_CENTER  (UI_ALIGNV_CENTER<<28)
-#define UI_STATE_ALIGNV_BOTTOM  (UI_ALIGNV_BOTTOM<<28)
-#define UI_STATE_ALIGNH__MASK   (3<<30)
-#define UI_STATE_ALIGNH_LEFT    (UI_ALIGNH_LEFT<<30)
-#define UI_STATE_ALIGNH_CENTER  (UI_ALIGNH_CENTER<<30)
-#define UI_STATE_ALIGNH_RIGHT   (UI_ALIGNH_RIGHT<<30)
+#define UI_STATE_ALIGNV__MASK (3 << 28)
+#define UI_STATE_ALIGNV_TOP (UI_ALIGNV_TOP << 28)
+#define UI_STATE_ALIGNV_CENTER (UI_ALIGNV_CENTER << 28)
+#define UI_STATE_ALIGNV_BOTTOM (UI_ALIGNV_BOTTOM << 28)
+#define UI_STATE_ALIGNH__MASK (3 << 30)
+#define UI_STATE_ALIGNH_LEFT (UI_ALIGNH_LEFT << 30)
+#define UI_STATE_ALIGNH_CENTER (UI_ALIGNH_CENTER << 30)
+#define UI_STATE_ALIGNH_RIGHT (UI_ALIGNH_RIGHT << 30)
 
 struct ui_component;
 
-typedef struct ui_event {
+typedef struct ui_event
+{
     ui_event_type_t type;
-    union {
-        struct {
-            uint16_t x,y;
+    union
+    {
+        struct
+        {
+            uint16_t x, y;
         };
-        struct {
-            uint16_t freq,time;
+        struct
+        {
+            uint16_t freq, time;
         } beep;
         uint32_t time, value;
     };
@@ -89,7 +96,8 @@ typedef struct ui_event {
     int _posted;
 } ui_event_t;
 
-typedef struct {
+typedef struct
+{
     uint16_t x;
     uint16_t y;
 } ui_info_t;
@@ -97,12 +105,14 @@ typedef struct {
 typedef void (*paint_fn_t)(struct ui_component *ui, void *ctx, ui_info_t *info);
 typedef int (*event_fn_t)(struct ui_component *ui, ui_event_t *event, ui_info_t *info);
 
-typedef struct ui_component {
-    union {
+typedef struct ui_component
+{
+    union
+    {
         uint32_t state;
         tick_t ___align;
     };
-    uint16_t x,y,w,h;
+    uint16_t x, y, w, h;
     struct ui_component *next;
     struct ui_component *prev;
     struct ui_component *children;
@@ -113,18 +123,22 @@ typedef struct ui_component {
     const char *_type;
 } ui_component_t;
 
-typedef struct {
+typedef struct
+{
     ui_component_t comp;
 } ui_panel_t;
 
-typedef struct {
+typedef struct
+{
     ui_component_t comp;
     event_fn_t cb;
     void *user;
 } ui_callbackable_t;
 
-typedef struct {
-    union {
+typedef struct
+{
+    union
+    {
         ui_component_t comp;
         ui_callbackable_t call;
     };
@@ -135,8 +149,10 @@ typedef struct {
     uint32_t colbg2;
 } ui_button_t;
 
-typedef struct {
-    union {
+typedef struct
+{
+    union
+    {
         ui_component_t comp;
         ui_callbackable_t call;
     };
@@ -151,8 +167,10 @@ typedef struct {
     uint16_t track_w;
 } ui_slider_t;
 
-typedef struct {
-    union {
+typedef struct
+{
+    union
+    {
         ui_component_t comp;
         ui_callbackable_t call;
     };
@@ -160,8 +178,10 @@ typedef struct {
     uint32_t colfg;
 } ui_ibutton_t;
 
-typedef struct {
-    union {
+typedef struct
+{
+    union
+    {
         ui_component_t comp;
         ui_callbackable_t call;
     };
@@ -184,8 +204,10 @@ typedef struct {
     ui_button_t b_down;
 } ui_list_t;
 
-typedef struct {
-    union {
+typedef struct
+{
+    union
+    {
         ui_component_t comp;
         ui_callbackable_t call;
     };
@@ -195,8 +217,10 @@ typedef struct {
     uint32_t colfg, colbg;
 } ui_label_t;
 
-typedef struct {
-    union {
+typedef struct
+{
+    union
+    {
         ui_component_t comp;
         ui_callbackable_t call;
     };
@@ -205,8 +229,10 @@ typedef struct {
     ui_button_t buttons[12];
 } ui_keypad_t;
 
-typedef struct {
-    union {
+typedef struct
+{
+    union
+    {
         ui_component_t comp;
         ui_callbackable_t call;
     };
@@ -214,8 +240,10 @@ typedef struct {
     ui_button_t buttons[2];
 } ui_confirm_t;
 
-typedef struct {
-    union {
+typedef struct
+{
+    union
+    {
         ui_component_t comp;
         ui_callbackable_t call;
     };
@@ -229,24 +257,24 @@ typedef struct {
 
 void ui_panel_init(ui_panel_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
-void ui_button_init(ui_button_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h, 
+void ui_button_init(ui_button_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
                     const char *text, event_fn_t callback, void *user,
                     uint8_t font, uint32_t colfg, uint32_t colbg1, uint32_t colbg2);
 int button_event(ui_component_t *ui, ui_event_t *event, ui_info_t *i);
 
-void ui_ibutton_init(ui_ibutton_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h, 
-                    uint8_t icon, event_fn_t callback, void *user,
-                    uint32_t colfg);
+void ui_ibutton_init(ui_ibutton_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
+                     uint8_t icon, event_fn_t callback, void *user,
+                     uint32_t colfg);
 
-void ui_list_init(ui_list_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h, 
+void ui_list_init(ui_list_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
                   uint32_t items,
                   void (*get_item_fn)(uint32_t ix, const char **str_left, const char **str_center, const char **str_right),
                   void (*paint_item_fn)(uint32_t ix, int16_t x, int16_t y, uint16_t w, uint16_t h),
                   event_fn_t callback, void *user,
                   uint8_t font, uint32_t colfg, uint32_t colbg1, uint32_t colbg2);
-                  
+
 void ui_label_init(ui_label_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
-                    const char *text, uint8_t font, uint32_t colfg, uint32_t colbg);
+                   const char *text, uint8_t font, uint32_t colfg, uint32_t colbg);
 void ui_label_set_text(ui_label_t *ui, const char *text);
 
 void ui_keypad_init(ui_keypad_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
@@ -254,23 +282,23 @@ void ui_keypad_init(ui_keypad_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_
 void ui_keypad_set_value(ui_keypad_t *ui, int32_t val);
 
 void ui_confirm_init(ui_confirm_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
-                    event_fn_t callback, void *user, 
-                    const char *hdr, const char *txt1,const char *txt2,const char *txt3);
+                     event_fn_t callback, void *user,
+                     const char *hdr, const char *txt1, const char *txt2, const char *txt3);
 
 void ui_graph_init(ui_graph_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
-                    event_fn_t callback, void *user, 
-                    int16_t *buf, uint16_t buf_size,
-                    uint32_t colfg, uint32_t colbg);
+                   event_fn_t callback, void *user,
+                   int16_t *buf, uint16_t buf_size,
+                   uint32_t colfg, uint32_t colbg);
 void ui_graph_add(ui_graph_t *c, int16_t value);
 void ui_graph_clear(ui_graph_t *c);
 int16_t ui_graph_get_past(ui_graph_t *c, uint16_t indices_in_past);
 
-void ui_slider_init(ui_slider_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h, 
-                    event_fn_t cb, void *user, 
+void ui_slider_init(ui_slider_t *ui, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
+                    event_fn_t cb, void *user,
                     int min, int max, int initial, int hori_else_veri,
                     const char *text, int font,
                     uint32_t colfg, uint32_t colbg1, uint32_t colbg2);
-                    
+
 int ui_add(ui_component_t *parent, ui_component_t *child);
 int ui_remove(ui_component_t *c);
 int ui_set_visible(ui_component_t *c, int e);
@@ -295,31 +323,31 @@ int __ui_is_event_within(ui_component_t *ui, ui_event_t *event, ui_info_t *info)
 int __ui_set_flag_state(ui_component_t *c, uint32_t flag, int e);
 uint32_t __ui_colfade(uint32_t a, uint32_t b, uint8_t x);
 
-#define COL_BG                  0xff01010f
-#define COL_TITLE_FG            0xff222222
-#define COL_TITLE_BG            0xffcccccc
-#define COL_INFO_PRIO1          0xffffee88
-#define COL_INFO_PRIO2          0xffdddddd
-#define COL_BUTTON_FG           0xffffffff
-#define COL_BUTTON_BG1          0xff6666aa
-#define COL_BUTTON_BG2          0xff111155
-#define COL_BUTTON_COMMIT_FG    COL_BUTTON_FG
-#define COL_BUTTON_COMMIT_BG1   0xff66aa66
-#define COL_BUTTON_COMMIT_BG2   0xff115511
-#define COL_BUTTON_CANCEL_FG    COL_BUTTON_FG
-#define COL_BUTTON_CANCEL_BG1   0xffaa6666
-#define COL_BUTTON_CANCEL_BG2   0xff551111
-#define COL_SLIDER_FG           COL_BUTTON_FG
-#define COL_SLIDER_BG1          COL_BUTTON_BG1
-#define COL_SLIDER_BG2          COL_BUTTON_BG2
-#define COL_LIST_FG             0xffffffff
-#define COL_LIST_BG1            0xff333399
-#define COL_LIST_BG2            0xff111155
-#define COL_DISABLED_FG         0xff444444
-#define COL_DISABLED_BG1        0xff999999
-#define COL_DISABLED_BG2        0xff666666
-#define COL_INPUT_BG            0xffffffff
-#define COL_INPUT_FG            0xff000000
-#define COL_INPUT_ERROR_FG      0xffff0000
+#define COL_BG 0xff01010f
+#define COL_TITLE_FG 0xff222222
+#define COL_TITLE_BG 0xffcccccc
+#define COL_INFO_PRIO1 0xffffee88
+#define COL_INFO_PRIO2 0xffdddddd
+#define COL_BUTTON_FG 0xffffffff
+#define COL_BUTTON_BG1 0xff6666aa
+#define COL_BUTTON_BG2 0xff111155
+#define COL_BUTTON_COMMIT_FG COL_BUTTON_FG
+#define COL_BUTTON_COMMIT_BG1 0xff66aa66
+#define COL_BUTTON_COMMIT_BG2 0xff115511
+#define COL_BUTTON_CANCEL_FG COL_BUTTON_FG
+#define COL_BUTTON_CANCEL_BG1 0xffaa6666
+#define COL_BUTTON_CANCEL_BG2 0xff551111
+#define COL_SLIDER_FG COL_BUTTON_FG
+#define COL_SLIDER_BG1 COL_BUTTON_BG1
+#define COL_SLIDER_BG2 COL_BUTTON_BG2
+#define COL_LIST_FG 0xffffffff
+#define COL_LIST_BG1 0xff333399
+#define COL_LIST_BG2 0xff111155
+#define COL_DISABLED_FG 0xff444444
+#define COL_DISABLED_BG1 0xff999999
+#define COL_DISABLED_BG2 0xff666666
+#define COL_INPUT_BG 0xffffffff
+#define COL_INPUT_FG 0xff000000
+#define COL_INPUT_ERROR_FG 0xffff0000
 
 #endif

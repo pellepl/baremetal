@@ -186,9 +186,9 @@ static uint32_t rbg32_to_rgb16(uint32_t rgb)
         return 0;
     if (light == 0xff)
         return (((rgb) & 0xf80000) >> 8 | ((rgb) & 0xfc00) >> 5 | ((rgb) & 0xf8) >> 3);
-    return ((((rgb >> 16) & 0xff) * light) & 0b1111100000000000) | 
-           (((((rgb >> 8)  & 0xff) * light) >> 5) & 0b0000011111100000) | 
-           ((((rgb  & 0xff) * light) >> 11) & 0b0000000000011111);
+    return ((((rgb >> 16) & 0xff) * light) & 0b1111100000000000) |
+           (((((rgb >> 8) & 0xff) * light) >> 5) & 0b0000011111100000) |
+           ((((rgb & 0xff) * light) >> 11) & 0b0000000000011111);
 }
 
 static inline void _lgdp4532_cmd_wr(uint16_t reg)

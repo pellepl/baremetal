@@ -3,7 +3,8 @@
 
 #include "timer.h"
 
-typedef struct {
+typedef struct
+{
     int16_t temperature;
     int16_t temperature_junction;
     char is_new;

@@ -7,8 +7,10 @@
 #include "cli.h"
 #include "minio.h"
 
-static int cli_format(int argc, const char **argv) {
-    if (argc != 3) {
+static int cli_format(int argc, const char **argv)
+{
+    if (argc != 3)
+    {
         printf("<start_sector> <sectors> <val_size>\n");
         return -1;
     }
@@ -16,8 +18,10 @@ static int cli_format(int argc, const char **argv) {
 }
 CLI_FUNCTION(cli_format, "nvm_format", "<start_sector> <sectors> <val_size>: formats tnv area");
 
-static int cli_mount(int argc, const char **argv) {
-    if (argc != 1) {
+static int cli_mount(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
         printf("<start_sector>\n");
         return -1;
     }
@@ -25,8 +29,10 @@ static int cli_mount(int argc, const char **argv) {
 }
 CLI_FUNCTION(cli_mount, "nvm_mount", "<start_sector>: mount tnva area");
 
-static int cli_write(int argc, const char **argv) {
-    if (argc != 2) {
+static int cli_write(int argc, const char **argv)
+{
+    if (argc != 2)
+    {
         printf("<tag> <string>\n");
         return -1;
     }
@@ -34,21 +40,26 @@ static int cli_write(int argc, const char **argv) {
 }
 CLI_FUNCTION(cli_write, "nvm_write", "<tag> <string>: writes tag");
 
-static int cli_read(int argc, const char **argv) {
-    if (argc != 1) {
+static int cli_read(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
         printf("<tag>\n");
         return -1;
     }
     uint8_t buf[255];
     int res = nvmtnv_read(atoi(argv[0]), buf, sizeof(buf));
-    if (res < 0) return res;
+    if (res < 0)
+        return res;
     fprint_mem(UART_STD, buf, res);
     return 0;
 }
 CLI_FUNCTION(cli_read, "nvm_read", "<tag>: reads tag");
 
-static int cli_delete(int argc, const char **argv) {
-    if (argc != 1) {
+static int cli_delete(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
         printf("<tag>\n");
         return -1;
     }

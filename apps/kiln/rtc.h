@@ -7,25 +7,27 @@
 #endif
 
 #ifndef CONFIG_RTC_PRESCALER
- // this gives a tick resolution of 1/1024 seconds for a 32768 Hz clock
+// this gives a tick resolution of 1/1024 seconds for a 32768 Hz clock
 #define CONFIG_RTC_PRESCALER 32
 #endif
 
-#define RTC_TICKS_PER_SEC   (CONFIG_RTC_CLOCK_HZ/CONFIG_RTC_PRESCALER)
+#define RTC_TICKS_PER_SEC (CONFIG_RTC_CLOCK_HZ / CONFIG_RTC_PRESCALER)
 
-#define RTC_TICK_TO_MS(t)   (((t)*1000)/RTC_TICKS_PER_SEC)
-#define RTC_MS_TO_TICK(ms)  (((ms)*RTC_TICKS_PER_SEC)/1000)
-#define RTC_TICK_TO_S(t)    ((t)/RTC_TICKS_PER_SEC)
-#define RTC_S_TO_TICK(s)    ((s)*RTC_TICKS_PER_SEC)
+#define RTC_TICK_TO_MS(t) (((t) * 1000) / RTC_TICKS_PER_SEC)
+#define RTC_MS_TO_TICK(ms) (((ms) * RTC_TICKS_PER_SEC) / 1000)
+#define RTC_TICK_TO_S(t) ((t) / RTC_TICKS_PER_SEC)
+#define RTC_S_TO_TICK(s) ((s) * RTC_TICKS_PER_SEC)
 
-typedef struct {
+typedef struct
+{
   uint8_t hour;
   uint8_t minute;
   uint8_t second;
   uint16_t millisecond;
 } rtc_time_t;
 
-typedef struct {
+typedef struct
+{
   uint16_t year;
   uint8_t month;
   uint8_t year_day;
@@ -33,7 +35,8 @@ typedef struct {
   uint8_t week_day;
 } rtc_date_t;
 
-typedef struct {
+typedef struct
+{
   rtc_date_t date;
   rtc_time_t time;
 } rtc_datetime_t;

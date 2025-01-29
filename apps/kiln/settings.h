@@ -3,7 +3,8 @@
 
 #include "bmtypes.h"
 
-typedef enum {
+typedef enum
+{
     SETTING_ID = 0,
     SETTING_TOUCH_CALIB,
     SETTING_FACTORY,
@@ -30,7 +31,8 @@ typedef enum {
     SETTING_UI_RESET,
 } setting_t;
 
-typedef enum {
+typedef enum
+{
     UNIT_DECIMAL,
     UNIT_INTEGER,
     UNIT_BOOLEAN,
@@ -44,7 +46,8 @@ typedef enum {
     UNIT_HOURS,
 } setting_unit_t;
 
-typedef struct {
+typedef struct
+{
     setting_t id;
     const char *ui_name;
     setting_unit_t unit;
@@ -53,7 +56,7 @@ typedef struct {
     void *def_value;
 } user_setting_t;
 
-#define SETTINGS_TEMP_GRAPH_LEN_MAX         (3600)
+#define SETTINGS_TEMP_GRAPH_LEN_MAX (3600)
 
 uint32_t settings_count(void);
 const user_setting_t *settings_get(uint32_t ix);

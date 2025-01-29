@@ -1,11 +1,11 @@
 #ifndef __FONTS_H_
 #define __FONTS_H_
 
+#define FONT_BIG_ICONS 7
+#define FONT_SMALL_ICONS 8
 
-#define FONT_BIG_ICONS      7
-#define FONT_SMALL_ICONS    8
-
-typedef struct {
+typedef struct
+{
     unsigned char width;
     unsigned char height;
     unsigned char advance;

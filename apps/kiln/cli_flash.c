@@ -1,23 +1,28 @@
 /* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
 /* MIT License (see ./LICENSE) */
 
-#if CONFIG_FLASH==1
+#if CONFIG_FLASH == 1
 
 #include "flash_driver.h"
 #include "cli.h"
 #include "minio.h"
 #include "cpu.h"
 
-static int cli_flash_list(int argc, const char **argv) {
+static int cli_flash_list(int argc, const char **argv)
+{
     uint32_t sector;
     uint32_t num_sectors;
-    for (flash_type_t t = 0; t < _FLASH_TYPE_CNT; t++) {
+    for (flash_type_t t = 0; t < _FLASH_TYPE_CNT; t++)
+    {
         int res = flash_get_sectors_for_type(t, &sector, &num_sectors);
-        if (res) continue;
+        if (res)
+            continue;
         uint32_t size = 0;
-        for (uint32_t i = 0; i < num_sectors; i++) {
+        for (uint32_t i = 0; i < num_sectors; i++)
+        {
             res = flash_get_sector_size(sector);
-            if (res > 0) size += res;
+            if (res > 0)
+                size += res;
         }
         printf("%d\tstart sector:%08x\t%d sectors\t%d bytes total\n", t, sector, num_sectors, size);
     }
@@ -25,8 +30,10 @@ static int cli_flash_list(int argc, const char **argv) {
 }
 CLI_FUNCTION(cli_flash_list, "flash_list", ": lists flash areas");
 
-static int cli_flash_read(int argc, const char **argv) {
-    if (argc != 3) {
+static int cli_flash_read(int argc, const char **argv)
+{
+    if (argc != 3)
+    {
         printf("[<sector>,<offset>,<length>]\n");
         return ERR_CLI_EINVAL;
     }
@@ -38,7 +45,8 @@ static int cli_flash_read(int argc, const char **argv) {
 
     int res = flash_read(sector, offset, buf, length);
 
-    if (res >= 0) {
+    if (res >= 0)
+    {
         fprint_mem(UART_STD, buf, res);
         printf("read %d bytes\n", res);
         res = 0;
@@ -47,24 +55,28 @@ static int cli_flash_read(int argc, const char **argv) {
 }
 CLI_FUNCTION(cli_flash_read, "flash_read", "<sector>,<offset>,<length>: reads flash");
 
-static int cli_flash_write(int argc, const char **argv) {
-    if (argc < 3) {
+static int cli_flash_write(int argc, const char **argv)
+{
+    if (argc < 3)
+    {
         printf("[<sector>,<offset>,...]\n");
         return ERR_CLI_EINVAL;
     }
     uint32_t sector = atoi(argv[0]);
     uint32_t offset = atoi(argv[1]);
-    uint32_t length = argc-2;
+    uint32_t length = argc - 2;
 
     uint8_t buf[length];
 
-    for (int i = 2; i < argc; i++) {
-        buf[i-2] = strtol(argv[i], 0, 16);
+    for (int i = 2; i < argc; i++)
+    {
+        buf[i - 2] = strtol(argv[i], 0, 16);
     }
 
     int res = flash_write(sector, offset, buf, length);
 
-    if (res >= 0) {
+    if (res >= 0)
+    {
         printf("wrote %d bytes\n", res);
         res = 0;
     }
@@ -73,8 +85,10 @@ static int cli_flash_write(int argc, const char **argv) {
 }
 CLI_FUNCTION(cli_flash_write, "flash_write", "<sector>,<offset>,... : writes flash");
 
-static int cli_flash_erase(int argc, const char **argv) {
-    if (argc != 1) {
+static int cli_flash_erase(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
         printf("[<sector>]\n");
         return ERR_CLI_EINVAL;
     }

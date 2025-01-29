@@ -4,10 +4,11 @@
 #include "bmtypes.h"
 
 #ifndef CTRL_CYCLES
-#define CTRL_CYCLES     10
+#define CTRL_CYCLES 10
 #endif
 
-typedef enum {
+typedef enum
+{
     CONTROL_OFF = 0,
     CONTROL_MANUAL,
     CONTROL_PROGRAM

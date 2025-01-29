@@ -3,7 +3,8 @@
 
 #include "bmtypes.h"
 
-typedef enum {
+typedef enum
+{
     RR_LOW_POWER = 0,
     RR_WWDG,
     RR_IWDG,
