@@ -298,3 +298,8 @@ int ctrl_is_panicking(void)
 {
     return ctrl.panic;
 }
+
+int ctrl_is_enabled(void)
+{
+    return ctrl.state != CONTROL_OFF;
+}

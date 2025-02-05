@@ -215,6 +215,7 @@ typedef struct
     uint8_t max_font;
     uint8_t font;
     uint32_t colfg, colbg;
+    uint16_t offs_x, offs_y;
 } ui_label_t;
 
 typedef struct
@@ -349,5 +350,6 @@ uint32_t __ui_colfade(uint32_t a, uint32_t b, uint8_t x);
 #define COL_INPUT_BG 0xffffffff
 #define COL_INPUT_FG 0xff000000
 #define COL_INPUT_ERROR_FG 0xffff0000
+#define COL_IDLE_FG 0xff888888
 
 #endif

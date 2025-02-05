@@ -43,6 +43,8 @@ static ui_label_t kiln_pow_label;
 static ui_slider_t kiln_pow_slider;
 static ui_button_t kiln_stop_button;
 
+static ui_label_t idle_label;
+
 static int16_t t_buf[SETTINGS_TEMP_GRAPH_LEN_MAX];
 
 static timer_t beep_timer;
@@ -52,6 +54,12 @@ static int32_t gui_kiln_temp = 20;
 static int32_t gui_kiln_power = 0;
 
 static bool gui_attention = false;
+
+static int32_t gui_graph_thermo_sum = 0;
+static uint32_t gui_graph_thermo_div = 0;
+static int32_t gui_ctrl_thermo = 0;
+static int32_t gui_ctrl_thermo_sum = 0;
+static uint32_t gui_ctrl_thermo_div = 0;
 
 #define _str(x) __str(x)
 #define __str(x) #x
@@ -67,7 +75,8 @@ typedef struct
         VIEW_TEMP,
         VIEW_KILN,
         VIEW_PROGRAM,
-        VIEW_INFO
+        VIEW_INFO,
+        VIEW_IDLE,
     } type;
     uint32_t instance;
     uint32_t index;
@@ -111,6 +120,7 @@ static void gui_hide_all(void)
     ui_set_visible(&kiln_pow_slider.comp, 0);
     ui_set_visible(&kiln_pow_label.comp, 0);
     ui_set_visible(&kiln_stop_button.comp, 0);
+    ui_set_visible(&idle_label.comp, 0);
 }
 
 static void sequencer_next(void)
@@ -659,6 +669,29 @@ static view_t view_info = {
     .view_teardown = view_info_teardown,
     .event_fn = 0};
 
+///////////////////////////////////////////////////////////////// IDLE VIEW
+
+static void view_idle_setup(uint32_t instance, uint32_t index, int recall)
+{
+    disp_clear(COL_BG);
+    ui_set_visible(&back_button.comp, 0);
+    ui_set_visible(&title.comp, 0);
+    ui_set_visible(&title_stat1.comp, 0);
+    ui_set_visible(&title_stat2.comp, 0);
+    ui_set_visible(&idle_label.comp, 1);
+}
+static void view_idle_teardown(uint32_t instance, uint32_t index, int remember)
+{
+    ui_set_visible(&idle_label.comp, 0);
+    ui_set_visible(&title_stat1.comp, 1);
+    ui_set_visible(&title_stat2.comp, 1);
+}
+static view_t view_idle = {
+    .type = VIEW_IDLE,
+    .view_setup = view_idle_setup,
+    .view_teardown = view_idle_teardown,
+    .event_fn = 0};
+
 ///////////////////////////////////////////////////////////////////////// COMMON
 
 static int8_t view_history_ix = -1;
@@ -1035,6 +1068,12 @@ void gui_init(void)
                        COL_SLIDER_FG, COL_SLIDER_BG1, COL_SLIDER_BG2);
     }
 
+    { // idle
+        ui_label_init(&idle_label, 0, 0, w, h, "",
+                      6, COL_IDLE_FG, COL_BG);
+        ui_set_alignment(&idle_label.comp, UI_ALIGNH_LEFT, UI_ALIGNV_TOP);
+    }
+
     ui_add(&main_panel.comp, &back_button.comp);
     ui_add(&main_panel.comp, &title.comp);
     ui_add(&main_panel.comp, &title_stat1.comp);
@@ -1054,6 +1093,9 @@ void gui_init(void)
     ui_add(&main_panel.comp, &kiln_pow_label.comp);
     ui_add(&main_panel.comp, &kiln_pow_slider.comp);
     ui_add(&main_panel.comp, &kiln_stop_button.comp);
+
+    ui_add(&main_panel.comp, &idle_label.comp);
+
     gui_hide_all();
 
     gui_view_open(&view_main, 0, 0);
@@ -1074,14 +1116,18 @@ void gui_set_attention(kiln_attention_t att)
     gui_attention |= true;
 }
 
+static void stringify_ctrl_temperature(char *dst, uint32_t size_n, const char *attention_string) {
+    if (gui_attention) {
+        snprintf(dst, size_n, attention_string);
+    } else {
+        snprintf(dst, size_n, "%d`C", gui_ctrl_thermo);
+    }
+}
+
 static uint32_t gui_second = 0;
 static uint32_t idle_second = 0;
 void gui_loop(void)
 {
-    static uint32_t gui_graph_thermo_sum = 0;
-    static uint32_t gui_graph_thermo_div = 0;
-    static uint32_t gui_ctrl_thermo_sum = 0;
-    static uint32_t gui_ctrl_thermo_div = 0;
     ui_event_t *ui_event;
     bool repaint = false;
     while ((ui_event = ui_pop_event()))
@@ -1093,16 +1139,20 @@ void gui_loop(void)
             break;
         case EVENT_SECOND:
         {
+
             gui_second++;
             idle_second++;
-            if (idle_second >= SLEEP_TIMEOUT_S && !gui_sleeping)
+            
+            if (gui_ctrl_thermo_div > 0) {
+                gui_ctrl_thermo = (gui_ctrl_thermo_sum + gui_ctrl_thermo_div / 2) / gui_ctrl_thermo_div;
+            }
+            gui_ctrl_thermo_div = gui_ctrl_thermo_sum = 0; 
+
+            if (idle_second >= (uint32_t)settings_get_val_for_id(SETTING_SCREEN_TIMEOUT) && !gui_sleeping)
             {
                 gui_sleeping = true;
-                disp_set_light(0x00);
-                ui_repaint(NULL);
-                repaint = true;
+                gui_view_open(&view_idle, 0, 0);
             }
-
             ctrl_second_callback(gui_second);
             int32_t now = (int32_t)ui_event->time;
             if (now - gui_temp_graph_last_time >=
@@ -1116,12 +1166,24 @@ void gui_loop(void)
             }
             if (kiln_temp_labels[0].comp.state & UI_STATE_VISIBLE)
             {
-                char str[32] = {0};
-                snprintf(str, sizeof(str) - 1, "%d`C", (gui_ctrl_thermo_sum + gui_ctrl_thermo_div / 2) / gui_ctrl_thermo_div);
-                ui_label_set_text(&kiln_temp_labels[0], str);
-                gui_ctrl_thermo_div = gui_ctrl_thermo_sum = 0;
-                repaint = 1;
+                char temp_str[32] = {0};
+                stringify_ctrl_temperature(temp_str, sizeof(temp_str), "N/A");
+                ui_label_set_text(&kiln_temp_labels[0], temp_str);
+                repaint = true;
             }
+            if (gui_sleeping)
+            {
+                if ((idle_second & 3) == 0)
+                {
+                    idle_label.offs_x = (idle_label.offs_x + 97) % (disp_width() - 32*6);
+                    idle_label.offs_y = (idle_label.offs_y + 77) % (disp_height() - 32);
+                }
+                char temp_str[32] = {0};
+                stringify_ctrl_temperature(temp_str, sizeof(temp_str), "ATTENTION");
+                ui_label_set_text(&idle_label, temp_str);
+                repaint = true;
+            }
+
             update_title_status();
             gui_attention = ctrl_is_panicking() != 0;
         }
@@ -1194,8 +1256,7 @@ void gui_loop(void)
             if (gui_sleeping)
             {
                 gui_sleeping = false;
-                disp_set_light(0xff);
-                ui_repaint(NULL);
+                gui_view_close();
                 repaint = true;
             }
         }

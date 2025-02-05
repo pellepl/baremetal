@@ -94,6 +94,7 @@ void thermoc_init(void)
     thermo_event.is_static = 1;
     thermo_multi = 1;
     thermo_offs = 0;
+    last_therm_spled = timer_now();
 }
 
 tick_t thermoc_ticks_since_sample(void)

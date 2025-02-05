@@ -67,6 +67,9 @@ static void label_paint(ui_component_t *ui, void *ctx, ui_info_t *i)
         break;
     }
 
+    x += c->offs_x;
+    y += c->offs_y;
+
     disp_draw_string(str, x + 1, y + 1, font, alignh, alignv, fg, bg);
     disp_set_clip(&old_clip);
 }

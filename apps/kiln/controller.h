@@ -17,6 +17,7 @@ typedef enum
 void ctrl_init(void);
 void ctrl_panic(void);
 int ctrl_is_panicking(void);
+int ctrl_is_enabled(void);
 void ctrl_stop(void);
 void ctrl_elements_off(void);
 void ctrl_manual_set_temp(float temp);
