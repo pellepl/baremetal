@@ -198,7 +198,8 @@ LDFLAGS += -Map=$(target).map
 
 ifndef NO_LINK_FILE
 ifneq "$(LINKER_FILE)" ""
-LDFLAGS += --script=$(LINKER_FILE)
+#LDFLAGS += --script=$(LINKER_FILE)
+LDFLAGS_LATE += --script=$(LINKER_FILE)
 endif
 endif
 
