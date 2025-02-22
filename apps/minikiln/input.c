@@ -1,9 +1,23 @@
 #include "minio.h"
+#include "board.h"
 #include "stm32f1xx_ll_bus.h"
 #include "stm32f1xx_ll_exti.h"
 #include "stm32f1xx_ll_gpio.h"
 #include "stm32f1xx_ll_tim.h"
 #include "input.h"
+#include "events.h"
+#include "sys.h"
+
+static struct
+{
+    uint32_t button_mask;
+    uint32_t button_press_timestamp[_INPUT_BUTTON_COUNT];
+    event_t ev_hw_button;
+    event_t ev_button;
+    event_t ev_scroll;
+    int16_t rot_prev;
+    int acc_rot;
+} me;
 
 static void rotary_init(void)
 {
@@ -68,15 +82,67 @@ void input_init(void)
     buttons_init();
 }
 
-int16_t input_rot_read(void)
+static int16_t input_rot_read(void)
 {
     return (int16_t)LL_TIM_GetCounter(TIM2);
 }
 
-void input_rot_reset(void)
+void input_handle_rotary(void)
 {
-    LL_TIM_SetCounter(TIM2, 0);
+    int16_t rot = input_rot_read();
+    me.acc_rot += rot - me.rot_prev;
+    me.rot_prev = rot;
+    if (me.acc_rot / INPUT_ROTARY_DIVISOR != 0)
+    {
+        event_add(&me.ev_scroll, EVENT_UI_SCRL, (void *)(int)(me.acc_rot / INPUT_ROTARY_DIVISOR));
+        me.acc_rot -= INPUT_ROTARY_DIVISOR * (me.acc_rot / INPUT_ROTARY_DIVISOR);
+    }
 }
+
+static void input_event(uint32_t type, void *arg)
+{
+    switch (type)
+    {
+    case EVENT_BUTTON_PRESS:
+    {
+        input_button_t but = (input_button_t)arg;
+        if (but >= _INPUT_BUTTON_COUNT)
+            break;
+        me.button_mask |= 1 << but;
+        me.button_press_timestamp[but] = sys_get_up_second();
+        break;
+    }
+    case EVENT_BUTTON_RELEASE:
+    {
+        input_button_t but = (input_button_t)arg;
+        if (but >= _INPUT_BUTTON_COUNT)
+            break;
+        if (me.button_mask & (1 << but))
+        {
+            me.button_mask &= ~(1 << but);
+            event_add(&me.ev_button, EVENT_UI_PRESS, (void *)but);
+        }
+    }
+    case EVENT_SECOND_TICK:
+    {
+        uint32_t now_s = (uint32_t)arg;
+        if (me.button_mask == 0)
+            break;
+        for (int i = 0; i < _INPUT_BUTTON_COUNT; i++)
+        {
+            if (me.button_mask & (1 << i) && now_s - me.button_press_timestamp[i] > INPUT_LONG_PRESS_SEC)
+            {
+                me.button_mask &= ~(1 << i);
+                event_add(&me.ev_button, EVENT_UI_PRESSHOLD, i);
+            }
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
+EVENT_HANDLER(input_event);
 
 void TIM2_IRQHandler(void);
 void TIM2_IRQHandler(void)
@@ -94,15 +160,18 @@ void TIM2_IRQHandler(void)
 }
 
 void EXTI4_IRQHandler(void);
-void EXTI4_IRQHandler(void) {
-    if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_4)) {
+void EXTI4_IRQHandler(void)
+{
+    if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_4))
+    {
         LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_4);
-        if (LL_GPIO_IsInputPinSet(GPIOA, LL_GPIO_PIN_4)) {
-            // Rising edge detected
-            printf("release\n");
-        } else {
-            // Falling edge detected
-            printf("press\n");
+        if (LL_GPIO_IsInputPinSet(GPIOA, LL_GPIO_PIN_4))
+        {
+            event_add_specific(&me.ev_hw_button, EVENT_BUTTON_RELEASE, INPUT_BUTTON_ROTARY, input_event);
+        }
+        else
+        {
+            event_add_specific(&me.ev_hw_button, EVENT_BUTTON_PRESS, INPUT_BUTTON_ROTARY, input_event);
         }
     }
 }

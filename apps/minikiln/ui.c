@@ -34,9 +34,11 @@ static void repaint_timer_cb(timer_t *timer)
     event_add(&me.ev_repaint, EVENT_UI_DISP_UPDATE, NULL);
 }
 
-static void disp_command_done_cb(void) {
+static void disp_command_done_cb(void)
+{
     me.ongoing_disp_command = false;
-    if (me.pending_disp_command) {
+    if (me.pending_disp_command)
+    {
         me.pending_disp_command = false;
         event_add(&me.ev_repaint, EVENT_UI_DISP_UPDATE, NULL);
     }
@@ -65,7 +67,8 @@ static void disp_update_done_cb(int err)
 static void ui_disp_update(void)
 {
     me.ctx.tick = timer_now() / DISP_TRANSFER_TICKS;
-    if (me.ongoing_disp_command) {
+    if (me.ongoing_disp_command)
+    {
         me.pending_disp_command = true;
         return;
     }
@@ -169,12 +172,21 @@ void ui_active(void)
 
 static void ui_event(uint32_t type, void *arg)
 {
+    if (type == EVENT_UI_BACK || type == EVENT_UI_PRESS || type == EVENT_UI_PRESSHOLD || type == EVENT_UI_SCRL)
+    {
+        ui_active();
+    }
     switch (type)
     {
     case EVENT_UI_BACK:
+        break;
     case EVENT_UI_PRESS:
+        printf("pressed %d\n", (uint32_t)arg);
+        break;
+    case EVENT_UI_PRESSHOLD:
+        printf("longpressed %d\n", (uint32_t)arg);
+        break;
     case EVENT_UI_SCRL:
-        ui_active();
         break;
 
     case EVENT_SECOND_TICK:

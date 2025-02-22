@@ -15,3 +15,4 @@ typedef struct event {
 void event_init(event_func_t generic_event_handler);
 bool event_execute_one(void);
 void event_add(event_t *e, uint32_t type, void *arg);
+void event_add_specific(event_t *e, uint32_t type, void *arg, event_func_t fn);

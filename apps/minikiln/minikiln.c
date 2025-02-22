@@ -163,8 +163,6 @@ static void event_handler(uint32_t event, void *arg)
     }
 }
 
-static event_t event_scroll;
-
 int main(void)
 {
     cpu_init();
@@ -229,15 +227,7 @@ int main(void)
             ringbuffer_get(&uart_ringbuffer, 0, rx_len);
         }
 
-        static int16_t rotation_prev = 0;
-        static int acc_rot = 0;
-        int16_t rotation = input_rot_read();
-        acc_rot += rotation - rotation_prev;
-        rotation_prev = rotation;
-        if (acc_rot / INPUT_ROTARY_DIVISOR != 0) {
-            event_add(&event_scroll, EVENT_UI_SCRL, (void *)(int)(acc_rot / INPUT_ROTARY_DIVISOR));
-            acc_rot -= INPUT_ROTARY_DIVISOR * (acc_rot / INPUT_ROTARY_DIVISOR);
-        }
+        input_handle_rotary();
 
         while (event_execute_one())
             ;

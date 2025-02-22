@@ -49,13 +49,14 @@ bool event_execute_one(void)
     return had_ev;
 }
 
-void event_add(event_t *e, uint32_t type, void *arg)
+void event_add_specific(event_t *e, uint32_t type, void *arg, event_func_t fn)
 {
     cpu_interrupt_disable();
     if (!e->_posted)
     {
         e->_posted = true;
         e->_next = NULL;
+        e->fn = fn;
         e->type = type;
         e->arg = arg;
         if (me.head == NULL && me.tail == NULL)
@@ -69,6 +70,11 @@ void event_add(event_t *e, uint32_t type, void *arg)
         }
     }
     cpu_interrupt_enable();
+}
+
+void event_add(event_t *e, uint32_t type, void *arg)
+{
+    event_add_specific(e, type, arg, NULL);
 }
 
 void event_init(event_func_t generic_event_handler)
