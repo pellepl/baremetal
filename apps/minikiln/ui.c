@@ -19,6 +19,7 @@ static struct
     volatile bool pending_disp_command;
     const ui_view_t *view_active;
     const ui_view_t *view_inactive;
+    int anim_view_dx; // if <0 move to -DISP_W, if >0 move to +DISP_W
     ui_tick_t next_paint_update;
     event_t ev_scrl;
     event_t ev_press;
@@ -106,15 +107,41 @@ static void ui_disp_update(void)
     ui_tick_t paint_update = UI_TICK_NEVER;
     if (me.view_inactive)
     {
-        ui_tick_t pu = me.view_inactive->paint(&me.ctx);
+        gfx_ctx_t lctx = me.ctx;
+        gfx_ctx_move(&lctx, me.anim_view_dx, 0);
+        ui_tick_t pu = me.view_inactive->paint(&lctx);
         if (pu < paint_update)
             paint_update = pu;
     }
     if (me.view_active)
     {
-        ui_tick_t pu = me.view_active->paint(&me.ctx);
+        gfx_ctx_t lctx = me.ctx;
+        if (me.anim_view_dx != 0)
+            gfx_ctx_move(&lctx, me.anim_view_dx < 0 ? (me.anim_view_dx + DISP_W) : (me.anim_view_dx - DISP_W), 0);
+        ui_tick_t pu = me.view_active->paint(&lctx);
         if (pu < paint_update)
             paint_update = pu;
+    }
+    if (me.anim_view_dx != 0)
+    {
+        paint_update = 0;
+        if (me.anim_view_dx < 0)
+        {
+            me.anim_view_dx = ui_move_towards(me.anim_view_dx, -DISP_W);
+        }
+        if (me.anim_view_dx > 0)
+        {
+            me.anim_view_dx = ui_move_towards(me.anim_view_dx, DISP_W);
+        }
+        if (me.anim_view_dx == DISP_W || me.anim_view_dx == -DISP_W)
+        {
+            me.anim_view_dx = 0;
+            if (me.view_inactive && me.view_inactive->exit)
+            {
+                me.view_inactive->exit();
+            }
+            me.view_inactive = NULL;
+        }
     }
     me.next_paint_update = paint_update;
     me.ongoing_disp_command = true;
@@ -128,6 +155,8 @@ void ui_trigger_update(void)
 
 void ui_set_view(const ui_view_t *v)
 {
+    if (v == me.view_active)
+        return;
     if (me.view_active && me.view_active->exit)
     {
         me.view_active->exit();
@@ -138,6 +167,19 @@ void ui_set_view(const ui_view_t *v)
     }
     me.view_active = v;
     ui_trigger_update();
+}
+
+void ui_goto_view(const ui_view_t *v, bool back)
+{
+    if (v == me.view_active)
+        return;
+    if (v->enter)
+    {
+        v->enter();
+    }
+    me.view_inactive = me.view_active;
+    me.view_active = v;
+    me.anim_view_dx = ui_move_towards(0, back ? DISP_W : -DISP_W);
 }
 
 int ui_move_towards(int current, int target)
@@ -156,6 +198,16 @@ int ui_move_towards(int current, int target)
 void ui_init(void)
 {
     me.disp_enabled = true;
+
+    const ui_view_t *view = UI_VIEWS_START;
+    const ui_view_t *view_end = UI_VIEWS_END;
+    while (view < view_end)
+    {
+        if (view->init)
+            view->init();
+        view++;
+    }
+
     ui_set_view(&view_menu);
 }
 
@@ -166,13 +218,17 @@ void ui_active(void)
     {
         me.inactivate = false;
         me.activate = true;
+        if (me.view_active && me.view_active->enter)
+        {
+            me.view_active->enter();
+        }
         ui_trigger_update();
     }
 }
 
 static void ui_event(uint32_t type, void *arg)
 {
-    if (type == EVENT_UI_BACK || type == EVENT_UI_PRESS || type == EVENT_UI_PRESSHOLD || type == EVENT_UI_SCRL)
+    if (type == EVENT_UI_BACK || type == EVENT_UI_CLICK || type == EVENT_UI_PRESSHOLD || type == EVENT_UI_SCRL)
     {
         ui_active();
     }
@@ -180,7 +236,7 @@ static void ui_event(uint32_t type, void *arg)
     {
     case EVENT_UI_BACK:
         break;
-    case EVENT_UI_PRESS:
+    case EVENT_UI_CLICK:
         printf("pressed %d\n", (uint32_t)arg);
         break;
     case EVENT_UI_PRESSHOLD:
@@ -221,7 +277,7 @@ static int cli_ui_ev_scrl(int argc, const char **argv)
 CLI_FUNCTION(cli_ui_ev_scrl, "ev_scrl", "");
 static int cli_ui_ev_press(int argc, const char **argv)
 {
-    event_add(&me.ev_press, EVENT_UI_PRESS, (void *)(argc == 0 ? 1 : strtol(argv[0], NULL, 0)));
+    event_add(&me.ev_press, EVENT_UI_CLICK, (void *)(argc == 0 ? 1 : strtol(argv[0], NULL, 0)));
     return 0;
 }
 CLI_FUNCTION(cli_ui_ev_press, "ev_press", "");

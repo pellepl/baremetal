@@ -3,6 +3,12 @@
 #include <stdint.h>
 #include "disp.h"
 
+typedef enum {
+    GFX_COL_SET,
+    GFX_COL_CLR,
+    GFX_COL_XOR
+} gfx_color_t;
+
 typedef struct
 {
     int x0, x1, y0, y1;
@@ -43,13 +49,14 @@ typedef struct gl4_font
 } gfx_font_t;
 
 void gfx_ctx_init(gfx_ctx_t *ctx);
-void gfx_fill(const gfx_ctx_t *ctx, const gfx_area_t *a, int color);
-void gfx_vline(const gfx_ctx_t *ctx, int x, int y0, int y1, int color);
-void gfx_hline(const gfx_ctx_t *ctx, int x0, int x1, int y, int color);
-void gfx_plot(const gfx_ctx_t *ctx, int x, int y, int color);
+void gfx_fill(const gfx_ctx_t *ctx, const gfx_area_t *a, gfx_color_t c);
+void gfx_vline(const gfx_ctx_t *ctx, int x, int y0, int y1, gfx_color_t c);
+void gfx_hline(const gfx_ctx_t *ctx, int x0, int x1, int y, gfx_color_t c);
+void gfx_plot(const gfx_ctx_t *ctx, int x, int y, gfx_color_t c);
 /** glyphs are only clipped every 8th pixel vertically */
-void gfx_glyph(const gfx_ctx_t *ctx, const gfx_font_t *font, gfx_codepoint_t glyph, int x, int y);
+void gfx_glyph(const gfx_ctx_t *ctx, const gfx_font_t *font, gfx_codepoint_t glyph, int x, int y, gfx_color_t c);
 /** glyphs are only clipped every 8th pixel vertically */
-void gfx_string(const gfx_ctx_t *ctx, const gfx_font_t *font, const char *str, int x, int y);
+void gfx_string(const gfx_ctx_t *ctx, const gfx_font_t *font, const char *str, int x, int y, gfx_color_t c);
 int gfx_string_width(const gfx_font_t *font, const char *str);
+void gfx_ctx_move(gfx_ctx_t *ctx, int dx, int dy);
 void gfx_init(void);

@@ -16,5 +16,11 @@ SECTIONS {
     KEEP(*(.event_cb*))
     __event_cb_end = .;
 }
+.ui_uiew : {
+    . = ALIGN(4);
+    __ui_views_start = .;
+    KEEP(*(.ui_view*))
+    __ui_views_end = .;
+}
 
 } INSERT AFTER .rodata;

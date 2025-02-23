@@ -23,7 +23,7 @@ static const gfx_glyph_t *get_glyph(const gfx_font_t *font, gfx_codepoint_t glyp
     return NULL;
 }
 
-static void draw_glyph(const gfx_ctx_t *ctx, const gfx_font_t *font, const gfx_glyph_t *g, int x, int y)
+static void draw_glyph(const gfx_ctx_t *ctx, const gfx_font_t *font, const gfx_glyph_t *g, int x, int y, gfx_color_t c)
 {
     if (x >= ctx->clip.x1)
         return;
@@ -55,7 +55,20 @@ static void draw_glyph(const gfx_ctx_t *ctx, const gfx_font_t *font, const gfx_g
             if (y + gy * 8 >= ctx->clip.y1)
                 break;
             if (y + gy * 8 >= ctx->clip.y0)
-                addr[gx + gy * ctx->stride] |= t32 & 0xff;
+            {
+                switch (c)
+                {
+                case GFX_COL_SET:
+                    addr[gx + gy * ctx->stride] |= t32 & 0xff;
+                    break;
+                case GFX_COL_CLR:
+                    addr[gx + gy * ctx->stride] &= ~(t32 & 0xff);
+                    break;
+                case GFX_COL_XOR:
+                    addr[gx + gy * ctx->stride] ^= t32 & 0xff;
+                    break;
+                }
+            }
             t32 >>= 8;
             if (gy == 3)
                 t32 |= t32_rem;
@@ -63,15 +76,15 @@ static void draw_glyph(const gfx_ctx_t *ctx, const gfx_font_t *font, const gfx_g
     }
 }
 
-void gfx_glyph(const gfx_ctx_t *ctx, const gfx_font_t *font, gfx_codepoint_t glyph, int x, int y)
+void gfx_glyph(const gfx_ctx_t *ctx, const gfx_font_t *font, gfx_codepoint_t glyph, int x, int y, gfx_color_t c)
 {
     const gfx_glyph_t *g = get_glyph(font, glyph);
     if (g == NULL)
         return;
-    draw_glyph(ctx, font, g, x, y);
+    draw_glyph(ctx, font, g, x, y, c);
 }
 
-void gfx_string(const gfx_ctx_t *ctx, const gfx_font_t *font, const char *str, int x, int y)
+void gfx_string(const gfx_ctx_t *ctx, const gfx_font_t *font, const char *str, int x, int y, gfx_color_t c)
 {
     if (str == NULL)
         return;
@@ -81,16 +94,16 @@ void gfx_string(const gfx_ctx_t *ctx, const gfx_font_t *font, const char *str, i
         return;
     if (y + font->max_height < ctx->clip.y0)
         return;
-    gfx_codepoint_t c;
-    while ((c = *str++) != 0)
+    gfx_codepoint_t cp;
+    while ((cp = *str++) != 0)
     {
-        const gfx_glyph_t *g = get_glyph(font, c);
+        const gfx_glyph_t *g = get_glyph(font, cp);
         if (g == NULL)
             continue;
 
         if (x + g->width >= ctx->clip.x0)
         {
-            draw_glyph(ctx, font, g, x, y);
+            draw_glyph(ctx, font, g, x, y, c);
         }
         x += g->width;
         if (x >= ctx->clip.x1)
@@ -112,7 +125,7 @@ int gfx_string_width(const gfx_font_t *font, const char *str)
     return res;
 }
 
-void gfx_fill(const gfx_ctx_t *ctx, const gfx_area_t *a, int color)
+void gfx_fill(const gfx_ctx_t *ctx, const gfx_area_t *a, gfx_color_t c)
 {
     int x0 = a->x0;
     int y0 = a->y0;
@@ -151,32 +164,73 @@ void gfx_fill(const gfx_ctx_t *ctx, const gfx_area_t *a, int color)
     if (page_start == page_end)
     {
         uint8_t bp = bp_vline_start & bp_vline_end;
-        if (color)
+        switch (c)
+        {
+        case GFX_COL_SET:
             for (int x = x0; x <= x1; x++)
                 addr[x] |= bp;
-        else
+            break;
+        case GFX_COL_CLR:
             for (int x = x0; x <= x1; x++)
                 addr[x] &= ~bp;
+            break;
+        case GFX_COL_XOR:
+            for (int x = x0; x <= x1; x++)
+                addr[x] ^= bp;
+            break;
+        }
         return;
     }
-    if (color)
+    switch (c)
+    {
+    case GFX_COL_SET:
         for (int x = x0; x <= x1; x++)
             addr[x] |= bp_vline_start;
-    else
+        break;
+    case GFX_COL_CLR:
         for (int x = x0; x <= x1; x++)
             addr[x] &= ~bp_vline_start;
+        break;
+    case GFX_COL_XOR:
+        for (int x = x0; x <= x1; x++)
+            addr[x] ^= bp_vline_start;
+        break;
+    }
     addr += ctx->stride;
-    for (uint8_t page = page_start + 1; page < page_end; page++, addr += ctx->stride)
-        memset(&addr[x0], color ? 0xff : 0x00, x1 - x0 + 1);
-    if (color)
+    switch (c)
+    {
+    case GFX_COL_SET:
+        for (uint8_t page = page_start + 1; page < page_end; page++, addr += ctx->stride)
+            memset(&addr[x0], 0xff, x1 - x0 + 1);
+        break;
+    case GFX_COL_CLR:
+        for (uint8_t page = page_start + 1; page < page_end; page++, addr += ctx->stride)
+            memset(&addr[x0], 0x00, x1 - x0 + 1);
+        break;
+    case GFX_COL_XOR:
+        for (uint8_t page = page_start + 1; page < page_end; page++, addr += ctx->stride)
+            for (int xx = x0; xx <= x1; xx++)
+                addr[xx] ^= 0xff;
+        break;
+    }
+    switch (c)
+    {
+    case GFX_COL_SET:
         for (int x = x0; x <= x1; x++)
             addr[x] |= bp_vline_end;
-    else
+        break;
+    case GFX_COL_CLR:
         for (int x = x0; x <= x1; x++)
             addr[x] &= ~bp_vline_end;
+        break;
+    case GFX_COL_XOR:
+        for (int x = x0; x <= x1; x++)
+            addr[x] ^= bp_vline_end;
+        break;
+    }
 }
 
-void gfx_vline(const gfx_ctx_t *ctx, int x, int y0, int y1, int color)
+void gfx_vline(const gfx_ctx_t *ctx, int x, int y0, int y1, gfx_color_t c)
 {
     if (x < ctx->clip.x0 || x >= ctx->clip.x1)
         return;
@@ -200,30 +254,63 @@ void gfx_vline(const gfx_ctx_t *ctx, int x, int y0, int y1, int color)
     if (page_start == page_end)
     {
         uint8_t bp = bp_vline_start & bp_vline_end;
-        if (color)
+        switch (c)
+        {
+        case GFX_COL_SET:
             *addr |= bp;
-        else
+            break;
+        case GFX_COL_CLR:
             *addr &= ~bp;
+            break;
+        case GFX_COL_XOR:
+            *addr ^= bp;
+            break;
+        }
         return;
     }
-    if (color)
+    switch (c)
+    {
+    case GFX_COL_SET:
         *addr |= bp_vline_start;
-    else
+        break;
+    case GFX_COL_CLR:
         *addr &= ~bp_vline_start;
+        break;
+    case GFX_COL_XOR:
+        *addr ^= bp_vline_start;
+        break;
+    }
     addr += ctx->stride;
-    if (color)
+    switch (c)
+    {
+    case GFX_COL_SET:
         for (uint8_t page = page_start + 1; page < page_end; page++, addr += ctx->stride)
             *addr = 0xff;
-    else
+        break;
+    case GFX_COL_CLR:
         for (uint8_t page = page_start + 1; page < page_end; page++, addr += ctx->stride)
             *addr = 0x00;
-    if (color)
+        break;
+    case GFX_COL_XOR:
+        for (uint8_t page = page_start + 1; page < page_end; page++, addr += ctx->stride)
+            *addr ^= 0xff;
+        break;
+    }
+    switch (c)
+    {
+    case GFX_COL_SET:
         *addr |= bp_vline_end;
-    else
+        break;
+    case GFX_COL_CLR:
         *addr &= ~bp_vline_end;
+        break;
+    case GFX_COL_XOR:
+        *addr ^= bp_vline_end;
+        break;
+    }
 }
 
-void gfx_hline(const gfx_ctx_t *ctx, int x0, int x1, int y, int color)
+void gfx_hline(const gfx_ctx_t *ctx, int x0, int x1, int y, gfx_color_t c)
 {
     if (y < ctx->clip.y0 || y >= ctx->clip.y1)
         return;
@@ -242,24 +329,39 @@ void gfx_hline(const gfx_ctx_t *ctx, int x0, int x1, int y, int color)
 
     uint8_t bp = 1 << (y & 7);
     uint8_t *addr = &ctx->buf[(y / 8) * ctx->stride];
-    if (color)
-        for (int x = x0; x <= x1; x++)
+    for (int x = x0; x <= x1; x++)
+        switch (c)
+        {
+        case GFX_COL_SET:
             addr[x] |= bp;
-    else
-        for (int x = x0; x <= x1; x++)
-            *addr &= ~bp;
+            break;
+        case GFX_COL_CLR:
+            addr[x] &= ~bp;
+            break;
+        case GFX_COL_XOR:
+            addr[x] ^= bp;
+            break;
+        }
 }
 
-void gfx_plot(const gfx_ctx_t *ctx, int x, int y, int color)
+void gfx_plot(const gfx_ctx_t *ctx, int x, int y, gfx_color_t c)
 {
     if (x < ctx->clip.x0 || x >= ctx->clip.x1 || y < ctx->clip.y0 || y >= ctx->clip.y1)
         return;
     uint8_t bp = 1 << (y & 7);
     uint8_t *addr = &ctx->buf[x + (y / 8) * ctx->stride];
-    if (color)
+    switch (c)
+    {
+    case GFX_COL_SET:
         *addr |= bp;
-    else
+        break;
+    case GFX_COL_CLR:
         *addr &= ~bp;
+        break;
+    case GFX_COL_XOR:
+        *addr ^= bp;
+        break;
+    }
 }
 
 void gfx_ctx_init(gfx_ctx_t *ctx)
@@ -269,6 +371,18 @@ void gfx_ctx_init(gfx_ctx_t *ctx)
         .x0 = 0, .y0 = 0, .x1 = DISP_W, .y1 = DISP_H};
     ctx->stride = DISP_W;
     memset(ctx->buf, 0, DISP_W * DISP_H / 8);
+}
+
+void gfx_ctx_move(gfx_ctx_t *ctx, int dx, int dy)
+{
+    ctx->buf += dx;
+    ctx->clip.x0 -= dx;
+    ctx->clip.x1 -= dx;
+
+    dy &= ~7;
+    ctx->buf += (dy / 8) * ctx->stride;
+    ctx->clip.y0 -= dy;
+    ctx->clip.y1 -= dy;
 }
 
 void gfx_init(void)

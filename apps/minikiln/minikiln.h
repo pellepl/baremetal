@@ -24,7 +24,6 @@
 #define PIN_THERMOC_CS PORTA(1)
 #define PIN_THERMOC_MISO PORTC(3)
 
-
 #define PIN_UART_TX PORTA(2)
 #define PIN_UART_RX PORTA(3)
 

@@ -1,41 +1,38 @@
 #include "minio.h"
 #include "ui.h"
 #include "ui_list.h"
-#include "ui_scrolltext.h"
-#include "font_roboto_extrabold_30.h"
+#include "ui_views.h"
 
 static struct
 {
     ui_list_t list;
-    ui_scrolltext_t scrl;
 } me;
 
 static const ui_listitem_t items[] = {
     (ui_listitem_t){.string = "Settings"},
-    (ui_listitem_t){.string = "Calibration"},
-    (ui_listitem_t){.string = "Kiln"},
-    (ui_listitem_t){.string = "Temperature"},
-    (ui_listitem_t){.string = "Set time"},
-    (ui_listitem_t){.string = "Reset"},
-    (ui_listitem_t){.string = "Factory"}};
+    (ui_listitem_t){.string = "Set kiln"},
+    (ui_listitem_t){.string = "Temp history"},
+};
+
+static void init(void)
+{
+    ui_list_init(&me.list, items, ARRAY_LENGTH(items), ARRAY_LENGTH(items) / 2, 0, 0, DISP_W, DISP_H);
+}
 
 static void enter(void)
 {
-    static bool init = false;
-    if (!init)
-    {
-        ui_list_init(&me.list, items, 7, 4);
-        ui_scrolltext_init(&me.scrl, "blahabvlalaskdjlaksdjkal sj dlkasj dlksajdl kjaslkd jalsjd... WRAP!", &font_roboto_extrabold_30, 0, 0, DISP_W);
-        init = true;
-    }
-    ui_list_set_index(&me.list, ui_list_get_selected_index(&me.list));
+    ui_list_reset(&me.list);
 }
 
 static void handle_event(uint32_t type, void *arg)
 {
     switch (type)
     {
-    case EVENT_UI_PRESS:
+    case EVENT_UI_CLICK:
+        ui_list_select(&me.list);
+        ui_goto_view(&view_sleep, false);
+        ui_trigger_update();
+        break;
     case EVENT_UI_BACK:
         ui_trigger_update();
         break;
@@ -50,13 +47,11 @@ static void handle_event(uint32_t type, void *arg)
 
 static ui_tick_t paint(const gfx_ctx_t *ctx)
 {
-    ui_tick_t t1 = ui_list_paint(&me.list, ctx);
-    ui_tick_t t2 = ui_scrolltext_paint(&me.scrl, ctx);
-    return t1 < t2 ? t1 : t2;
+    return ui_list_paint(&me.list, ctx);
 }
 
-const ui_view_t view_menu = {
-
+UI_DECLARE_VIEW view_menu = {
+    .init = init,
     .enter = enter,
     .handle_event = handle_event,
     .paint = paint,

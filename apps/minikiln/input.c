@@ -1,3 +1,4 @@
+#include "timer.h"
 #include "minio.h"
 #include "board.h"
 #include "stm32f1xx_ll_bus.h"
@@ -8,10 +9,13 @@
 #include "events.h"
 #include "sys.h"
 
+#define CLICK_COOLDOWN_TICKS 1000
+
 static struct
 {
     uint32_t button_mask;
     uint32_t button_press_timestamp[_INPUT_BUTTON_COUNT];
+    tick_t button_click_tick[_INPUT_BUTTON_COUNT];
     event_t ev_hw_button;
     event_t ev_button;
     event_t ev_scroll;
@@ -60,7 +64,8 @@ static void buttons_init(void)
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOA);
 
     /* Set PA4 as input with pull-down (or pull-up if needed) */
-    LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_4, LL_GPIO_MODE_FLOATING);
+    LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_4, LL_GPIO_MODE_INPUT);
+    LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_4, LL_GPIO_PULL_UP);
 
     /* Enable EXTI4 */
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_AFIO);
@@ -119,9 +124,15 @@ static void input_event(uint32_t type, void *arg)
             break;
         if (me.button_mask & (1 << but))
         {
-            me.button_mask &= ~(1 << but);
-            event_add(&me.ev_button, EVENT_UI_PRESS, (void *)but);
+            tick_t now = timer_now();
+            if (now - me.button_click_tick[but] > CLICK_COOLDOWN_TICKS)
+            {
+                event_add(&me.ev_button, EVENT_UI_CLICK, (void *)but);
+                me.button_click_tick[but] = now;
+            }
         }
+        me.button_mask &= ~(1 << but);
+        break;
     }
     case EVENT_SECOND_TICK:
     {
@@ -133,7 +144,7 @@ static void input_event(uint32_t type, void *arg)
             if (me.button_mask & (1 << i) && now_s - me.button_press_timestamp[i] > INPUT_LONG_PRESS_SEC)
             {
                 me.button_mask &= ~(1 << i);
-                event_add(&me.ev_button, EVENT_UI_PRESSHOLD, i);
+                event_add(&me.ev_button, EVENT_UI_PRESSHOLD, (void *)i);
             }
         }
         break;

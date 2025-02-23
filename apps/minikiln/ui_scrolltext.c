@@ -28,7 +28,7 @@ ui_tick_t ui_scrolltext_paint(ui_scrolltext_t *st, const gfx_ctx_t *ctx)
     lctx.clip.x1 = st->x + st->width;
     if (st->str_width <= st->width)
     {
-        gfx_string(&lctx, st->font, st->string, st->x, st->y);
+        gfx_string(&lctx, st->font, st->string, st->x, st->y, GFX_COL_SET);
         return UI_TICK_NEVER;
     }
     if (st->tick == 0)
@@ -36,16 +36,16 @@ ui_tick_t ui_scrolltext_paint(ui_scrolltext_t *st, const gfx_ctx_t *ctx)
     ui_tick_t dt = ctx->tick - st->tick;
     if (dt < SCROLLTEXT_TICKS_TO_SCROLL)
     {
-        gfx_string(&lctx, st->font, st->string, st->x, st->y);
+        gfx_string(&lctx, st->font, st->string, st->x, st->y, GFX_COL_SET);
         return SCROLLTEXT_TICKS_TO_SCROLL - dt;
     }
     int dx = ((dt - SCROLLTEXT_TICKS_TO_SCROLL) * SCROLLTEXT_DX_PER_TICK) / 2;
-    gfx_string(&lctx, st->font, st->string, st->x - dx, st->y);
-    gfx_string(&lctx, st->font, st->string, st->x - dx + st->str_width + SCROLLTEXT_SPACE, st->y);
+    gfx_string(&lctx, st->font, st->string, st->x - dx, st->y, GFX_COL_SET);
+    gfx_string(&lctx, st->font, st->string, st->x - dx + st->str_width + SCROLLTEXT_SPACE, st->y, GFX_COL_SET);
     if (dt > (ui_tick_t)(SCROLLTEXT_TICKS_TO_SCROLL + 2 * (st->str_width + SCROLLTEXT_SPACE) / SCROLLTEXT_DX_PER_TICK))
-        {
-            st->tick = ctx->tick;
-        }
+    {
+        st->tick = ctx->tick;
+    }
     return 0;
 }
 
