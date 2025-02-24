@@ -1,6 +1,6 @@
 SECTIONS {
 
-.cli_func_entries (NOLOAD): {
+.cli_func_entries : {
     . = ALIGN(4);
     __cli_func_entries_start = .;
     KEEP(*(.cli_func_entries*))
