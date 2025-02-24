@@ -2,106 +2,109 @@
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-_estack = ORIGIN(RAM) + LENGTH(RAM)-1;    /* end of RAM */
+_estack = ORIGIN(RAM) + LENGTH(RAM)-1;
+
+/* Program Headers: define explicit permissions */
+PHDRS
+{
+  text PT_LOAD FLAGS(4);   /* R E */
+  data PT_LOAD FLAGS(6);   /* R W */
+}
 
 /* Define output sections */
 SECTIONS
 {
-  /* The startup code goes first into FLASH */
+  /* The startup code (R E) */
   .isr_vector :
   {
     isr_vector_address = .;
     . = ALIGN(4);
-    KEEP(*(.isr_vector)) /* Startup code */
+    KEEP(*(.isr_vector))
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH :text
 
-  /* The program code and other data goes into FLASH */
+  /* Code section (R E) */
   .text :
   {
     . = ALIGN(4);
-    *(.text)           /* .text sections (code) */
-    *(.text*)          /* .text* sections (code) */
-    *(.glue_7)         /* glue arm to thumb code */
-    *(.glue_7t)        /* glue thumb to arm code */
+    *(.text)
+    *(.text*)
+    *(.glue_7)
+    *(.glue_7t)
     *(.eh_frame)
-
-    KEEP (*(.init))
-    KEEP (*(.fini))
-
+    KEEP(*(.init))
+    KEEP(*(.fini))
     . = ALIGN(4);
-    _etext = .;        /* define a global symbols at end of code */
-  } >FLASH
+    _etext = .;
+  } >FLASH :text
 
-  /* Constant data goes into FLASH */
+  /* Constants section (R E) */
   .rodata :
   {
     . = ALIGN(4);
-    *(.rodata)         /* .rodata sections (constants, strings, etc.) */
-    *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
-  } >FLASH
+    *(.rodata)
+    *(.rodata*)
+  } >FLASH :text
 
-  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
-  .ARM : {
+  .ARM.extab : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH :text
+  .ARM :
+  {
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
-  } >FLASH
+  } >FLASH :text
 
-  .preinit_array     :
+  .preinit_array :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
-    KEEP (*(.preinit_array*))
+    KEEP(*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } >FLASH
+  } >FLASH :text
+
   .init_array :
   {
     PROVIDE_HIDDEN (__init_array_start = .);
-    KEEP (*(SORT(.init_array.*)))
-    KEEP (*(.init_array*))
+    KEEP(*(SORT(.init_array.*)))
+    KEEP(*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
-  } >FLASH
+  } >FLASH :text
+
   .fini_array :
   {
     PROVIDE_HIDDEN (__fini_array_start = .);
-    KEEP (*(SORT(.fini_array.*)))
-    KEEP (*(.fini_array*))
+    KEEP(*(SORT(.fini_array.*)))
+    KEEP(*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } >FLASH
+  } >FLASH :text
 
-  /* used by the startup to initialize data */
+  /* Used by startup to initialize data */
   _sidata = LOADADDR(.data);
 
-  /* Initialized data sections goes into RAM, load LMA copy after code */
-  .data : 
+  /* Data section (R W) */
+  .data :
   {
     . = ALIGN(4);
-    _sdata = .;        /* create a global symbol at data start */
-    *(.data)           /* .data sections */
-    *(.data*)          /* .data* sections */
-
+    _sdata = .;
+    *(.data)
+    *(.data*)
     . = ALIGN(4);
-    _edata = .;        /* define a global symbol at data end */
-  } >RAM AT> FLASH
+    _edata = .;
+  } >RAM AT> FLASH :data
 
-  
-  /* Uninitialized data section */
-  . = ALIGN(4);
-  .bss :
+  /* BSS section (R W) */
+  .bss (NOLOAD) :
   {
-    /* This is used by the startup in order to initialize the .bss secion */
-    _sbss = .;         /* define a global symbol at bss start */
+    _sbss = .;
     __bss_start__ = _sbss;
     *(.bss)
     *(.bss*)
     *(COMMON)
-
     . = ALIGN(4);
-    _ebss = .;         /* define a global symbol at bss end */
+    _ebss = .;
     __bss_end__ = _ebss;
-  } >RAM
+  } >RAM :data
 
-  /* Remove information from the standard libraries */
+  /* Remove info from standard libs */
   /DISCARD/ :
   {
     libc.a ( * )

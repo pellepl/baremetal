@@ -1,5 +1,5 @@
 /* Deprecated linker script for Nordic Semiconductor nRF52 devices,
- * please use nrfx_common.ld. This version exists for backwards 
+ * please use nrfx_common.ld. This version exists for backwards
  * compatibility.
  *
  * Version: Sourcery G++ 4.5-1
@@ -48,6 +48,13 @@ OUTPUT_FORMAT ("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
  */
 ENTRY(Reset_Handler)
 
+/* Program Headers: define explicit permissions */
+PHDRS
+{
+  text PT_LOAD FLAGS(4);   /* R E */
+  data PT_LOAD FLAGS(6);   /* R W */
+}
+
 SECTIONS
 {
     .text :
@@ -75,18 +82,18 @@ SECTIONS
         *(.rodata*)
 
         KEEP(*(.eh_frame*))
-    } > FLASH
+    } > FLASH  :text
 
     .ARM.extab :
     {
         *(.ARM.extab* .gnu.linkonce.armextab.*)
-    } > FLASH
+    } > FLASH  :text
 
     __exidx_start = .;
     .ARM.exidx :
     {
         *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-    } > FLASH
+    } > FLASH  :text
     __exidx_end = .;
 
     . = ALIGN(4);
@@ -124,7 +131,7 @@ SECTIONS
         /* All data end */
         __data_end__ = .;
 
-    } > RAM
+    } > RAM :data
 
     .bss :
     {
@@ -134,7 +141,7 @@ SECTIONS
         *(COMMON)
         . = ALIGN(4);
         __bss_end__ = .;
-    } > RAM
+    } > RAM :data
 
     .heap (COPY):
     {
@@ -143,7 +150,7 @@ SECTIONS
         PROVIDE(end = .);
         KEEP(*(.heap*))
         __HeapLimit = .;
-    } > RAM
+    } > RAM :data
 
     /* .stack_dummy section doesn't contains any symbols. It is only
      * used for linker to calculate size of stack sections, and assign
@@ -151,7 +158,7 @@ SECTIONS
     .stack_dummy (COPY):
     {
         KEEP(*(.stack*))
-    } > RAM
+    } > RAM :data
 
     /* Set stack top to end of RAM, and stack limit move down by
      * size of stack_dummy section */
@@ -161,11 +168,11 @@ SECTIONS
 
     /* Check if data + heap + stack exceeds RAM limit */
     ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
-    
+
     /* Check if text sections + data exceeds FLASH limit */
     DataInitFlashUsed = __bss_start__ - __data_start__;
     CodeFlashUsed = __etext - ORIGIN(FLASH);
     TotalFlashUsed = CodeFlashUsed + DataInitFlashUsed;
     ASSERT(TotalFlashUsed <= LENGTH(FLASH), "region FLASH overflowed with .data and user data")
-    
+
 }

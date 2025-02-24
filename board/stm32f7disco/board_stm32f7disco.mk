@@ -14,7 +14,7 @@ CFLAGS += -DVDD_VALUE=3300
 CFLAGS += -DTICK_INT_PRIORITY=0x0F
 CFLAGS += -DART_ACCLERATOR_ENABLE=1
 
-LDFLAGS_LATE += --script=$(board_dir)/sdram.ld
+LINKER_FILES += $(board_dir)/sdram.ld
 
 # should the app define this maybe?
 CFLAGS += -DHAL_MODULE_ENABLED

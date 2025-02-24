@@ -4,8 +4,9 @@
 -include ../local.mk
 
 BOARD ?= pca10040
+BAREMETAL_DIR ?= .
 
-board_dir := board/$(BOARD)
+board_dir := $(BAREMETAL_DIR)/board/$(BOARD)
 -include $(board_dir)/board_$(BOARD).mk
 
 ifeq ($(OS),Windows_NT)
@@ -37,7 +38,7 @@ all:: $(target).hex
 
 # sanity check environment
 
-arch_dir := arch/$(ARCH)
+arch_dir := $(BAREMETAL_DIR)/arch/$(ARCH)
 ifndef NO_SANITY_CHECK
 
 make_v := $(subst ., ,$(MAKE_VERSION))
@@ -92,9 +93,9 @@ endif
 
 # include arch and modules
 include $(arch_dir)/arch_$(ARCH).mk
-include arch/arch.mk
-modules_dir := modules
-include modules/modules.mk
+include $(BAREMETAL_DIR)/arch/arch.mk
+modules_dir := $(BAREMETAL_DIR)/modules
+include $(modules_dir)/modules.mk
 
 GCC_AS_LD ?= 1
 
@@ -124,9 +125,9 @@ endif
 # set default linker file
 LINKER_FILE ?= $(proc_dir)/$(PROC).ld
 # general include directories in specific-first, general-last order
-INCLUDE += $(board_dir) board/ $(proc_dir) $(family_dir) $(arch_dir) arch/
+INCLUDE += $(board_dir) $(BAREMETAL_DIR)/board/ $(proc_dir) $(family_dir) $(arch_dir) $(BAREMETAL_DIR)/arch/
 # board compile files
-CFILES += board/board_common.c
+CFILES += $(BAREMETAL_DIR)/board/board_common.c
 ifneq "$(wildcard $(board_dir)/board_$(BOARD).c)" ""
 CFILES += $(board_dir)/board_$(BOARD).c
 endif
@@ -198,10 +199,12 @@ LDFLAGS += -Map=$(target).map
 
 ifndef NO_LINK_FILE
 ifneq "$(LINKER_FILE)" ""
-#LDFLAGS += --script=$(LINKER_FILE)
-LDFLAGS_LATE += --script=$(LINKER_FILE)
+final_linker_files := $(LINKER_FILE) $(LINKER_FILES)
 endif
 endif
+
+LDFLAGS += -L$(BAREMETAL_DIR)
+LDFLAGS_LATE += $(final_linker_files:%=--script=%)
 
 ifeq "$(GCC_AS_LD)" "1"
 _ldflags:=$(CFLAGS) $(LDFLAGS:-%=-Wl,-%)
@@ -211,7 +214,7 @@ _ldflags:=$(LDFLAGS)
 _ldflags_late:=$(LDFLAGS_LATE)
 endif
 
--include apps/$(APP)/$(APP)-target.mk
+-include $(APPS_DIR)/$(APP)/$(APP)-target.mk
 
 $(target).elf: $(objfiles) $(asobjfiles)
 	@$(ECHO) "LD\t$@"
@@ -251,7 +254,7 @@ $(depfiles): $(TARGET_DIR)/%.d:%.c
 clean:
 	$(v)$(RM) -r $(TARGET_DIR)
 
--include apps/$(APP)/$(APP)-late.mk
+-include $(APPS_DIR)/$(APP)/$(APP)-late.mk
 
 define var_set
 $(if $1,✓,)
@@ -290,4 +293,6 @@ info:
 	$(info LIBS)
 	$(foreach c,$(LIBS),$(info .           $(c)))
 	$(info LD FILE     $(LINKER_FILE))
+	$(info LD FLAGS)
+	$(foreach c,$(LDFLAGS) $(LDFLAGS_LATE),$(info .           $(c)))
 	$(info CC          $(XCC))
