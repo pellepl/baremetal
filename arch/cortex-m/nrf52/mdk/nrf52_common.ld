@@ -99,7 +99,7 @@ SECTIONS
     . = ALIGN(4);
     __etext = .;
 
-    .data : AT (__etext)
+    .data :
     {
         __data_start__ = .;
         *(vtable)
@@ -131,7 +131,7 @@ SECTIONS
         /* All data end */
         __data_end__ = .;
 
-    } > RAM :data
+    } >RAM AT >FLASH :data
 
     .bss :
     {
