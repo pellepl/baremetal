@@ -39,13 +39,13 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32l0xx_hal.h"
 
 /** @addtogroup STM32L0xx_LL_USB_DRIVER
   * @{
   */
 
 #if defined (HAL_PCD_MODULE_ENABLED) || defined (HAL_HCD_MODULE_ENABLED)
+#include "stm32l0xx_hal.h"
 #if defined (USB)
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

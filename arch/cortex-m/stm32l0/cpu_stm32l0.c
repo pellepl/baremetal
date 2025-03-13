@@ -2,12 +2,15 @@
 /* MIT License (see ./LICENSE) */
 
 #include "bmtypes.h"
-#include "stm32f0xx.h"
+#include "stm32l0xx.h"
 #include "cpu.h"
-#include "stm32f0xx_ll_rcc.h"
-#include "stm32f0xx_ll_system.h"
+#include "stm32l0xx_ll_bus.h"
+#include "stm32l0xx_ll_pwr.h"
+#include "stm32l0xx_ll_rcc.h"
+#include "stm32l0xx_ll_system.h"
+#include "stm32l0xx_ll_utils.h"
 
-#if !defined(NO_STM32_HSE_PLL) && !defined(NO_STM32F0_HSE_PLL)
+#if !defined(NO_STM32_HSE_PLL) && !defined(NO_STM32L0_HSE_PLL)
 void cpu_init(void)
 {
 #if HSE_VALUE == 8000000

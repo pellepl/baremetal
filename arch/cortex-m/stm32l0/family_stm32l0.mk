@@ -9,10 +9,10 @@ cc-flags-fpu = -mfloat-abi=hard
 ifndef NO_STM32_TEMPLATE_SYSTEM_FILE
 CFILES += $(mdk_dir)/STM32L0xx/Source/Templates/system_stm32l0xx.c
 endif
-INCLUDE += $(mdk_dir)/STM32F0xx/Include
+INCLUDE += $(mdk_dir)/STM32L0xx/Include
 
 ifeq "$(PROC)" "stm32l053"
-CFLAGS += -DSTM32L053
+CFLAGS += -DSTM32L053xx
 proc-cc-flags += $(cc-flags-nofpu)
 else
 $(error PROC is not defined correctly for arch $(ARCH), family $(FAMILY))
@@ -31,5 +31,21 @@ ifndef NO_STM32_LL_DRIVER_FULL
 CFLAGS += -DUSE_FULL_LL_DRIVER
 endif
 endif
+
+ifndef NO_SQUELCH_OF_HAL_WARNINGS
+CFLAGS += \
+	-Wno-inline \
+#	-Wno-cast-qual \
+	-Wno-cast-align \
+	-Wno-redundant-decls \
+	-Wno-expansion-to-defined \
+	-Wno-missing-prototypes \
+	-Wno-redundant-decls \
+	-Wno-strict-prototypes \
+	-Wno-discarded-qualifiers \
+	-Wno-implicit-fallthrough \
+	-Wno-missing-field-initializers
+endif
+
 
 -include $(family_dir)/stm-flash-l0.mk

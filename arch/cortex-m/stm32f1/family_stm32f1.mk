@@ -57,4 +57,3 @@ endif
 endif
 
 -include $(family_dir)/stm-flash-f1.mk
-
