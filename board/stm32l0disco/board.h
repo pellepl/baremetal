@@ -8,22 +8,26 @@
 
 #include "board_common.h"
 
-#define BOARD_PIN_MAX                   (16*3)
+#define PORTA(x) (0 + (x))
+#define PORTB(x) (16 + (x))
+#define PORTC(x) (32 + (x))
 
-#define BOARD_BUTTON_COUNT              (0)
-#define BOARD_BUTTON_GPIO_PIN           ((const uint16_t[BOARD_BUTTON_COUNT]){})
-#define BOARD_BUTTON_GPIO_ACTIVE        ((const uint8_t[BOARD_BUTTON_COUNT]){})
+#define BOARD_PIN_MAX (16 * 3)
 
-#define BOARD_LED_COUNT                 (1)
-#define BOARD_LED_GPIO_PIN              ((const uint16_t[BOARD_LED_COUNT]){2*16+13})
-#define BOARD_LED_GPIO_ACTIVE           ((const uint8_t[BOARD_LED_COUNT]){0})
+#define BOARD_BUTTON_COUNT (1)
+#define BOARD_BUTTON_GPIO_PIN ((const uint16_t[BOARD_BUTTON_COUNT]){PORTA(0)})
+#define BOARD_BUTTON_GPIO_ACTIVE ((const uint8_t[BOARD_BUTTON_COUNT]){0})
+
+#define BOARD_LED_COUNT (2)
+#define BOARD_LED_GPIO_PIN ((const uint16_t[BOARD_LED_COUNT]){PORTA(5), PORTB(4)})
+#define BOARD_LED_GPIO_ACTIVE ((const uint8_t[BOARD_LED_COUNT]){0, 0})
 
 // used like this
 // static const board_uart_pindef_t uart_pindefs[BOARD_UART_COUNT] = BOARD_UART_GPIO_PINS;
-#define BOARD_UART_COUNT                (1)
-#define BOARD_UART_GPIO_PINS          \
-    { \
-        (board_uart_pindef_t){.rx_pin=0*16+3,.tx_pin=0*16+2,.cts_pin=BOARD_PIN_UNDEF,.rts_pin=BOARD_PIN_UNDEF}, \
+#define BOARD_UART_COUNT (1)
+#define BOARD_UART_GPIO_PINS                                                                                                    \
+    {                                                                                                                           \
+        (board_uart_pindef_t){.rx_pin = PORTA(10), .tx_pin = PORTA(9), .cts_pin = BOARD_PIN_UNDEF, .rts_pin = BOARD_PIN_UNDEF}, \
     }
 
 #endif // _BOARD_H_
