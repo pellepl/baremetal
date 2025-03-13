@@ -13,6 +13,9 @@ OPENOCD_INTERFACE_FILE = "interface/stlink-v2.cfg"
 else ifeq "$(OPENOCD_DEBUGGER)" "stlink-v2-1"
 OPENOCD_VID_PID ?= "0483:374b"
 OPENOCD_INTERFACE_FILE = "interface/stlink-v2-1.cfg"
+else ifeq "$(OPENOCD_DEBUGGER)" "stlink"
+OPENOCD_VID_PID ?= "0483:374b"
+OPENOCD_INTERFACE_FILE = "interface/stlink.cfg"
 else ifeq "$(OPENOCD_DEBUGGER)" "user"
 else
 $(error OPENOCD_DEBUGGER is not defined or invalid, please set to "stlink-v2", "stlink-v2-1", or "user")
@@ -45,8 +48,8 @@ $(shell lsusb -d $(OPENOCD_VID_PID) -v 2> /dev/null | grep -oP "iSerial\s*[0-9]\
 endef
 
 ifndef DEVICE_SINGLE
-DEVICE_SERIAL_ARG := -c "hla_serial $$arg"
-DEVICE_SERIAL_FIRST := -c "hla_serial $(STM_DEVICE_FIRST)"
+DEVICE_SERIAL_ARG := -c "adapter serial $$arg"
+DEVICE_SERIAL_FIRST := -c "adapter serial $(STM_DEVICE_FIRST)"
 else
 DEVICE_SERIAL_ARG :=
 DEVICE_SERIAL_FIRST :=
