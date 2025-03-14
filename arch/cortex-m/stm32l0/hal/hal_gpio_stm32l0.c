@@ -106,7 +106,9 @@ int gpio_hal_deinit(void) {
         LL_IOP_GRP1_PERIPH_GPIOA |
         LL_IOP_GRP1_PERIPH_GPIOB |
         LL_IOP_GRP1_PERIPH_GPIOC |
+#if defined(GPIOD)
         LL_IOP_GRP1_PERIPH_GPIOD |
+#endif
 #if defined(GPIOE)
         LL_IOP_GRP1_PERIPH_GPIOE |
 #endif
@@ -118,4 +120,19 @@ int gpio_hal_deinit(void) {
 #endif
         0);
     return 0;
+}
+
+void gpio_hal_stm32l0_af(uint16_t pin, uint8_t af);
+void gpio_hal_stm32l0_af(uint16_t pin, uint8_t af)
+{
+    GPIO_TypeDef *port = port_for_pin(pin);
+    uint32_t hw_pin = pins[pin & 0xf];
+    if ((pin & 0xf) < 8)
+    {
+        LL_GPIO_SetAFPin_0_7(port, hw_pin, af);
+    }
+    else
+    {
+        LL_GPIO_SetAFPin_8_15(port, hw_pin, af);
+    }
 }
