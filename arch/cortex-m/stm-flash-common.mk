@@ -15,7 +15,7 @@ OPENOCD_VID_PID ?= "0483:374b"
 OPENOCD_INTERFACE_FILE = "interface/stlink-v2-1.cfg"
 else ifeq "$(OPENOCD_DEBUGGER)" "stlink"
 OPENOCD_VID_PID ?= "0483:374b"
-OPENOCD_INTERFACE_FILE = "interface/stlink.cfg"
+OPENOCD_INTERFACE_FILE = "interface/stlink-v2-1.cfg"
 else ifeq "$(OPENOCD_DEBUGGER)" "user"
 else
 $(error OPENOCD_DEBUGGER is not defined or invalid, please set to "stlink-v2", "stlink-v2-1", or "user")
@@ -49,10 +49,8 @@ endef
 
 ifndef DEVICE_SINGLE
 DEVICE_SERIAL_ARG := -c "adapter serial $$arg"
-DEVICE_SERIAL_FIRST := -c "adapter serial $(STM_DEVICE_FIRST)"
 else
 DEVICE_SERIAL_ARG :=
-DEVICE_SERIAL_FIRST :=
 endif
 
 _filter = $(foreach v,$(2),$(if $(findstring $(1),$(v)),$(v),))
@@ -153,6 +151,11 @@ stm-erase-all: .prereq-devs
 # Connects first best device to openocd
 stm-connect: .prereq-devs
 	@echo "Connecting to $(STM_DEVICE_FIRST)"
+ifndef DEVICE_SINGLE
+	$(eval DEVICE_SERIAL_FIRST := -c "adapter serial $(STM_DEVICE_FIRST)")
+else
+	$(eval DEVICE_SERIAL_FIRST := )
+endif
 	$(OPENOCD) -f $(OPENOCD_INTERFACE_FILE) \
 	           $(DEVICE_SERIAL_FIRST) \
 			   -f $(OPENOCD_TARGET_FILE) \

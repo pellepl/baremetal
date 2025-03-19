@@ -59,7 +59,7 @@ static int cli_flash_write(int argc, const char **argv) {
     uint8_t buf[length];
 
     for (int i = 2; i < argc; i++) {
-        buf[i-2] = strtol(argv[i], 0, 16);
+        buf[i-2] = strtol(argv[i], 0, 0);
     }
 
     int res = flash_write(sector, offset, buf, length);

@@ -5,7 +5,8 @@
 #include "stm32l0xx_ll_bus.h"
 #include "stm32l0xx_ll_gpio.h"
 
-int gpio_hal_init(void) {
+int gpio_hal_init(void)
+{
     LL_IOP_GRP1_EnableClock(
         LL_IOP_GRP1_PERIPH_GPIOA |
         LL_IOP_GRP1_PERIPH_GPIOB |
@@ -26,7 +27,7 @@ int gpio_hal_init(void) {
     return 0;
 }
 
-static GPIO_TypeDef * const ports[] = {
+static GPIO_TypeDef *const ports[] = {
     GPIOA, GPIOB, GPIOC,
 #if defined(GPIOD)
     GPIOD,
@@ -61,47 +62,55 @@ static const uint32_t pins[] = {
     LL_GPIO_PIN_15,
 };
 
-static GPIO_TypeDef *port_for_pin(uint16_t pin) {
-    return ports[pin>>4];
+static GPIO_TypeDef *port_for_pin(uint16_t pin)
+{
+    return ports[pin >> 4];
 }
 
-int gpio_hal_config(uint16_t pin, gpio_direction_t dir, gpio_pull_t pull) {
+int gpio_hal_config(uint16_t pin, gpio_direction_t dir, gpio_pull_t pull)
+{
     GPIO_TypeDef *port = port_for_pin(pin);
-    uint32_t hw_pin = pins[pin&0xf];
-    uint32_t mode = (uint32_t[5]){LL_GPIO_MODE_INPUT, LL_GPIO_MODE_OUTPUT, LL_GPIO_MODE_ANALOG, LL_GPIO_MODE_INPUT, LL_GPIO_MODE_ALTERNATE}[dir];
-    uint32_t output =
-        (dir == GPIO_DIRECTION_OUTPUT || dir == GPIO_DIRECTION_FUNCTION_OUT) ?
-          (pull == GPIO_PULL_DOWN ? LL_GPIO_OUTPUT_OPENDRAIN : LL_GPIO_OUTPUT_PUSHPULL) :
-          LL_GPIO_OUTPUT_OPENDRAIN;
-    LL_GPIO_InitTypeDef cfg = {
-        .Pin = hw_pin,
-        .Mode = mode,
-        .Speed = mode == LL_GPIO_MODE_ALTERNATE ? LL_GPIO_SPEED_HIGH : LL_GPIO_SPEED_MEDIUM,
-        .OutputType = output,
-        .Pull = pull == GPIO_PULL_DOWN ? LL_GPIO_PULL_DOWN : LL_GPIO_PULL_UP
-    };
-    (void)LL_GPIO_Init(port, &cfg);
+    uint32_t ll_pin = pins[pin & 0xf];
+    uint32_t ll_mode = (uint32_t[5]){
+        LL_GPIO_MODE_INPUT,
+        LL_GPIO_MODE_OUTPUT,
+        LL_GPIO_MODE_ANALOG,
+        LL_GPIO_MODE_ALTERNATE,
+        LL_GPIO_MODE_ALTERNATE,
+    }[dir];
+    uint32_t ll_output =
+        (dir == GPIO_DIRECTION_OUTPUT || dir == GPIO_DIRECTION_FUNCTION_OUT) ? (pull == GPIO_PULL_DOWN ? LL_GPIO_OUTPUT_OPENDRAIN : LL_GPIO_OUTPUT_PUSHPULL) : LL_GPIO_OUTPUT_OPENDRAIN;
+    LL_GPIO_SetPinOutputType(port, ll_pin, ll_output);
+    LL_GPIO_SetPinPull(port, ll_pin, pull == GPIO_PULL_DOWN ? LL_GPIO_PULL_DOWN : LL_GPIO_PULL_UP);
+    LL_GPIO_SetPinSpeed(port, ll_pin, ll_mode == LL_GPIO_MODE_ALTERNATE ? LL_GPIO_SPEED_FREQ_HIGH : LL_GPIO_SPEED_MEDIUM);
+    LL_GPIO_SetPinMode(port, ll_pin, ll_mode);
     return 0;
 }
 
-int gpio_hal_set(uint16_t pin, uint8_t state) {
+int gpio_hal_set(uint16_t pin, uint8_t state)
+{
     GPIO_TypeDef *port = port_for_pin(pin);
-    uint32_t hw_pin = pins[pin&0xf];
-    if (state) {
-        LL_GPIO_SetOutputPin(port, hw_pin);
-    } else {
-        LL_GPIO_ResetOutputPin(port, hw_pin);
+    uint32_t ll_pin = pins[pin & 0xf];
+    if (state)
+    {
+        LL_GPIO_SetOutputPin(port, ll_pin);
+    }
+    else
+    {
+        LL_GPIO_ResetOutputPin(port, ll_pin);
     }
     return 0;
 }
 
-int gpio_hal_read(uint16_t pin) {
+int gpio_hal_read(uint16_t pin)
+{
     GPIO_TypeDef *port = port_for_pin(pin);
-    uint32_t hw_pin = pins[pin&0xf];
-    return LL_GPIO_IsInputPinSet(port, hw_pin);
+    uint32_t ll_pin = pins[pin & 0xf];
+    return LL_GPIO_IsInputPinSet(port, ll_pin);
 }
 
-int gpio_hal_deinit(void) {
+int gpio_hal_deinit(void)
+{
     LL_IOP_GRP1_DisableClock(
         LL_IOP_GRP1_PERIPH_GPIOA |
         LL_IOP_GRP1_PERIPH_GPIOB |
@@ -126,13 +135,13 @@ void gpio_hal_stm32l0_af(uint16_t pin, uint8_t af);
 void gpio_hal_stm32l0_af(uint16_t pin, uint8_t af)
 {
     GPIO_TypeDef *port = port_for_pin(pin);
-    uint32_t hw_pin = pins[pin & 0xf];
+    uint32_t ll_pin = pins[pin & 0xf];
     if ((pin & 0xf) < 8)
     {
-        LL_GPIO_SetAFPin_0_7(port, hw_pin, af);
+        LL_GPIO_SetAFPin_0_7(port, ll_pin, af);
     }
     else
     {
-        LL_GPIO_SetAFPin_8_15(port, hw_pin, af);
+        LL_GPIO_SetAFPin_8_15(port, ll_pin, af);
     }
 }
