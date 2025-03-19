@@ -5,11 +5,20 @@
 #include "flash_driver.h"
 #include "stm32l0xx.h"
 
+#define DEBUG 0
+
+#if DEBUG
+#include "minio.h"
+#define dbg(...) do { printf( __VA_ARGS__ );  }while(0);
+#else
+#define dbg(...)
+#endif
+
 static uint16_t _sectors;
 static uint16_t _sector_size;
 
 #ifndef STM32L0_FLASH_TIMEOUT
-#define STM32L0_FLASH_TIMEOUT 0xb0000
+#define STM32L0_FLASH_TIMEOUT 0x10000
 #endif
 
 #define STM_FLASH_SECTOR_CODE0 0
@@ -39,10 +48,19 @@ static FLASH_res _flash_wait(uint32_t timeout)
     }
     if (FLASH->SR & FLASH_SR_WRPERR)
     {
+        FLASH->SR = 0xffffffff;
         return FLASH_ERR_WRITE_PROTECTED;
     }
-    if (FLASH->SR & (FLASH_SR_PGAERR | FLASH_SR_PGAERR | FLASH_SR_SIZERR | FLASH_SR_OPTVERR | FLASH_SR_RDERR | FLASH_SR_NOTZEROERR | FLASH_SR_FWWERR))
+    if (FLASH->SR & (FLASH_SR_PGAERR | FLASH_SR_SIZERR | FLASH_SR_OPTVERR | FLASH_SR_RDERR | FLASH_SR_NOTZEROERR | FLASH_SR_FWWERR))
     {
+        dbg("FLASH_SR ERR %s%s%s%s%s%s\n", 
+        FLASH->SR & FLASH_SR_PGAERR ? "ALIGN " : "", 
+        FLASH->SR & FLASH_SR_SIZERR ? "SIZE " : "", 
+        FLASH->SR & FLASH_SR_OPTVERR ? "OPTV " : "", 
+        FLASH->SR & FLASH_SR_RDERR ? "RD " : "", 
+        FLASH->SR & FLASH_SR_NOTZEROERR ? "NOTZERO " : "", 
+        FLASH->SR & FLASH_SR_FWWERR ? "FW " : "");
+        FLASH->SR = 0xffffffff;
         return FLASH_ERR_OTHER;
     }
     return FLASH_OK;
@@ -67,6 +85,8 @@ static void _flash_close(void)
     FLASH->PECR |= FLASH_PECR_PELOCK | FLASH_PECR_PRGLOCK | FLASH_PECR_OPTLOCK;
 }
 
+#include "minio.h"
+
 static FLASH_res _flash_erase(uint32_t addr)
 {
     FLASH_res res = _flash_wait(STM32L0_FLASH_TIMEOUT);
@@ -81,6 +101,7 @@ static FLASH_res _flash_erase(uint32_t addr)
 
 static FLASH_res _flash_write_word(uint32_t addr, uint32_t data)
 {
+    dbg("write %08x == %08x\n", addr, data);
     FLASH_res res = _flash_wait(STM32L0_FLASH_TIMEOUT);
     if (res != FLASH_OK)
         return res;
@@ -96,7 +117,7 @@ static uint8_t *_flash_addr_for_sector(uint32_t sector)
     int sector_size = flash_get_sector_size(sector);
     if (sector_size <= 0)
         return 0;
-    if (sector < STM_FLASH_SECTOR_CODE0 + _sector_size)
+    if (sector < STM_FLASH_SECTOR_CODE0 + _sectors)
     {
         return (uint8_t *)(((sector - STM_FLASH_SECTOR_CODE0) * _sector_size) + FLASH_BASE);
     }
@@ -117,7 +138,7 @@ int flash_get_address_for_sector(uint32_t sector, void **address)
 int flash_init(void)
 {
     _sector_size = 128;
-    volatile uint16_t *flash_size_p = (uint16_t *)0x1ff8004c;
+    volatile uint16_t *flash_size_p = (uint16_t *)0x1ff8007c;
     uint32_t flash_size = (uint32_t)(*flash_size_p) * 1024;
     _sectors = flash_size / _sector_size;
     return 0;
@@ -191,8 +212,12 @@ int flash_is_protected(uint32_t sector)
 
 int flash_erase(uint32_t sector)
 {
+    int sector_size = flash_get_sector_size(sector);
+    if (sector_size < 0)
+        return sector_size;
+    uint32_t addr = (uint32_t)_flash_addr_for_sector(sector);
     _flash_open();
-    FLASH_res res = _flash_erase(sector);
+    FLASH_res res = _flash_erase(addr);
     _flash_close();
     switch (res)
     {
@@ -214,22 +239,32 @@ int flash_write(uint32_t sector, uint32_t offset, const uint8_t *data, uint32_t 
     int sector_size = flash_get_sector_size(sector);
     if (sector_size < 0)
         return sector_size;
-    if (length == 0 || offset >= (uint32_t)sector_size)
+    
+    if (offset >= (uint32_t)sector_size)
+        return 0;
+    
+    if (offset + length >= (uint32_t)sector_size)
+        length = sector_size - offset;
+    
+    if (length == 0)
         return 0;
 
-    uint32_t addr = (uint32_t)_flash_addr_for_sector(sector) + offset;
 
+    uint32_t addr = (uint32_t)_flash_addr_for_sector(sector);
+    dbg("write %d bytes to %08x\n", length, addr + offset);
     _flash_open();
-    while (res == FLASH_OK && written < length && written < sector_size - offset)
+    while (res == FLASH_OK && written < length)
     {
-        uint32_t d32 = 0xffffffff;
-        for (int i = 0; i < 4 && written < length; i++, written++)
-        {
-            d32 &= ~(0xff << (i * 8));
+
+        uint32_t d32 = 0;
+        for (int i = offset & 3; i < 4 && written < length; i++) {
             d32 |= data[written] << (i * 8);
+            written++;
         }
-        res = _flash_write_word(addr + written, d32);
+        res = _flash_write_word(addr + (offset & ~3), d32);
+        offset += 4 - (offset & 3);
     }
+
     _flash_close();
     switch (res)
     {

@@ -16,6 +16,10 @@ typedef struct  {
 
 #define BOARD_PIN_UNDEF         ((uint16_t)-1)
 
+#ifndef DEFAULT_UART_BAUDRATE
+#define DEFAULT_UART_BAUDRATE   UART_BAUDRATE_115200
+#endif
+
 void board_init(void);
 
 #endif // _BOARD_COMMON_H_

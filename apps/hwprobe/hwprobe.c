@@ -51,7 +51,7 @@ int main(void) {
     gpio_init();
     flash_init();
     uart_config_t cfg = {
-        .baudrate = UART_BAUDRATE_115200,
+        .baudrate = DEFAULT_UART_BAUDRATE,
         .parity = UART_PARITY_NONE,
         .stopbits = UART_STOPBITS_1,
         .flowcontrol = UART_FLOWCONTROL_NONE

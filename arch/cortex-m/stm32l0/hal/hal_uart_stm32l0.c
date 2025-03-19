@@ -35,9 +35,9 @@
 #define UART_COUNT_5 0
 #endif
 
-#define UART_COUNT (UART_COUNT_1+UART_COUNT_2+UART_COUNT_3+UART_COUNT_4+UART_COUNT_5)
+#define UART_COUNT (UART_COUNT_1 + UART_COUNT_2 + UART_COUNT_3 + UART_COUNT_4 + UART_COUNT_5)
 
-static USART_TypeDef * const phy_block[1+UART_COUNT] = {
+static USART_TypeDef *const phy_block[1 + UART_COUNT] = {
     (void *)0,
 #ifdef USART1
     USART1,
@@ -57,7 +57,7 @@ static USART_TypeDef * const phy_block[1+UART_COUNT] = {
 };
 
 #ifdef CONFIG_UART_STM32_RX_INTERRUPT
-static IRQn_Type const phy_irqn[1+UART_COUNT] = {
+static IRQn_Type const phy_irqn[1 + UART_COUNT] = {
     (IRQn_Type)0,
 #ifdef USART1
     USART1_IRQn,
@@ -77,18 +77,23 @@ static IRQn_Type const phy_irqn[1+UART_COUNT] = {
 };
 #endif
 
-static uint8_t loghdl2phyix[UART_COUNT] = { 0 };
+static uint8_t loghdl2phyix[UART_COUNT] = {0};
 
-typedef struct {
+typedef struct
+{
     uint8_t phy_hdl;
-    union {
-        struct {
+    union
+    {
+        struct
+        {
             uint16_t rx, tx, cts, rts;
         } pin;
         uint16_t pins[4];
     };
-    union {
-        struct {
+    union
+    {
+        struct
+        {
             uint16_t rx, tx, cts, rts;
         } af;
         uint16_t afs[4];
@@ -103,23 +108,51 @@ typedef struct {
 
 static const uart_phy_pin_cfg_t defs[] = {
 #ifdef USART1
-    {.phy_hdl = PHYIX_U1,
-     .pin.rx = PA(10), .pin.tx = PA(9),  .pin.cts = PA(11), .pin.rts = PA(12),
-     .af.rx  = 4,      .af.tx  = 4,      .af.cts  = 4,      .af.rts  = 4,
+    {
+        .phy_hdl = PHYIX_U1,
+        .pin.rx = PA(10),
+        .pin.tx = PA(9),
+        .pin.cts = PA(11),
+        .pin.rts = PA(12),
+        .af.rx = 4,
+        .af.tx = 4,
+        .af.cts = 4,
+        .af.rts = 4,
     },
-    {.phy_hdl = PHYIX_U1,
-     .pin.rx = PB(7),  .pin.tx = PB(6),  .pin.cts = BOARD_PIN_UNDEF, .pin.rts = BOARD_PIN_UNDEF,
-     .af.rx  = 4,      .af.tx  = 4,      .af.cts  = 0,      .af.rts  = 0,
+    {
+        .phy_hdl = PHYIX_U1,
+        .pin.rx = PB(7),
+        .pin.tx = PB(6),
+        .pin.cts = BOARD_PIN_UNDEF,
+        .pin.rts = BOARD_PIN_UNDEF,
+        .af.rx = 4,
+        .af.tx = 4,
+        .af.cts = 0,
+        .af.rts = 0,
     },
 #endif
 #ifdef USART2
-    {.phy_hdl = PHYIX_U2,
-     .pin.rx = PA(3),  .pin.tx = PA(2),  .pin.cts = PA(0), .pin.rts = PA(1),
-     .af.rx  = 4,      .af.tx = 4,      .af.cts  = 4,      .af.rts  = 4,
+    {
+        .phy_hdl = PHYIX_U2,
+        .pin.rx = PA(3),
+        .pin.tx = PA(2),
+        .pin.cts = PA(0),
+        .pin.rts = PA(1),
+        .af.rx = 4,
+        .af.tx = 4,
+        .af.cts = 4,
+        .af.rts = 4,
     },
-    {.phy_hdl = PHYIX_U2,
-     .pin.rx = PA(15), .pin.tx = PA(14),  .pin.cts = BOARD_PIN_UNDEF, .pin.rts = BOARD_PIN_UNDEF,
-     .af.rx  = 4,      .af.tx  = 4,      .af.cts  = 0,      .af.rts  = 0,
+    {
+        .phy_hdl = PHYIX_U2,
+        .pin.rx = PA(15),
+        .pin.tx = PA(14),
+        .pin.cts = BOARD_PIN_UNDEF,
+        .pin.rts = BOARD_PIN_UNDEF,
+        .af.rx = 4,
+        .af.tx = 4,
+        .af.cts = 0,
+        .af.rts = 0,
     },
 #endif
 #ifdef USART3
@@ -130,38 +163,48 @@ static const uart_phy_pin_cfg_t defs[] = {
 #endif
 };
 
-static int pins_to_phy_hdl(uart_phy_pin_cfg_t *cfg) {
+static int pins_to_phy_hdl(uart_phy_pin_cfg_t *cfg)
+{
     uint32_t ix;
     uint32_t pix;
     uint32_t user_pin_defs = 0;
     cfg->phy_hdl = (uint8_t)-1;
-    for (pix = 0; pix < 4; pix++) {
-        if (cfg->pins[pix] != BOARD_PIN_UNDEF) user_pin_defs++;
+    for (pix = 0; pix < 4; pix++)
+    {
+        if (cfg->pins[pix] != BOARD_PIN_UNDEF)
+            user_pin_defs++;
     }
-    if (user_pin_defs == 0) {
+    if (user_pin_defs == 0)
+    {
         return ERR_UART_CONFIG;
     }
     uint8_t cur_phy_hdl = (uint8_t)-1;
     uint32_t pin_hits = 0;
-    for (ix = 0; ix < sizeof(defs)/sizeof(defs[0]); ix++) {
+    for (ix = 0; ix < sizeof(defs) / sizeof(defs[0]); ix++)
+    {
         const uart_phy_pin_cfg_t *ref = &defs[ix];
-        if (cur_phy_hdl != ref->phy_hdl) {
+        if (cur_phy_hdl != ref->phy_hdl)
+        {
             cur_phy_hdl = ref->phy_hdl;
             pin_hits = 0;
         }
-        for (pix = 0; pix < 4; pix++) {
+        for (pix = 0; pix < 4; pix++)
+        {
             if (cfg->pins[pix] != BOARD_PIN_UNDEF &&
-                ref->pins[pix] == cfg->pins[pix]) {
+                ref->pins[pix] == cfg->pins[pix])
+            {
                 pin_hits++;
                 cfg->afs[pix] = ref->afs[pix];
             }
         }
-        if (pin_hits == user_pin_defs) {
+        if (pin_hits == user_pin_defs)
+        {
             cfg->phy_hdl = cur_phy_hdl;
             break;
         }
     }
-    if (cfg->phy_hdl == (uint8_t)-1) {
+    if (cfg->phy_hdl == (uint8_t)-1)
+    {
         return ERR_UART_CONFIG;
     }
     return 0;
@@ -169,137 +212,192 @@ static int pins_to_phy_hdl(uart_phy_pin_cfg_t *cfg) {
 
 extern void gpio_hal_stm32l0_af(uint16_t pin, uint8_t af);
 
-int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
-#if 0
-    if (loghdl2phyix[hdl] != 0) return ERR_UART_BUSY;
+int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin)
+{
+    if (loghdl2phyix[hdl] != 0)
+        return ERR_UART_BUSY;
 
     uart_phy_pin_cfg_t phy_cfg = {
         .pin.rx = rx_pin,
         .pin.tx = tx_pin,
         .pin.rts = rts_pin,
-        .pin.cts = cts_pin
-    };
+        .pin.cts = cts_pin};
 
     int res = pins_to_phy_hdl(&phy_cfg);
 
-    if (res) return res;
+    if (res)
+        return res;
 
-    if (config->flowcontrol == UART_FLOWCONTROL_NONE) {
+    if (config->flowcontrol == UART_FLOWCONTROL_NONE)
+    {
         rts_pin = cts_pin = BOARD_PIN_UNDEF;
     }
 
-    switch (phy_cfg.phy_hdl) {
-#       ifdef USART1
-        case PHYIX_U1:
-            LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_USART1);
-            break;
-#       endif
-#       ifdef USART2
-        case PHYIX_U2:
-            LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
-            break;
-#       endif
-#       ifdef USART3
-        case PHYIX_U3:
-            LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART3);
-            break;
-#       endif
-#       ifdef UART4
-        case PHYIX_U4:
-            LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART4);
-            break;
-#       endif
-#       ifdef UART5
-        case PHYIX_U5:
-            LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART5);
-            break;
-#       endif
-#       ifdef USART6
-        case PHYIX_U6:
-            LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_USART6);
-            break;
-#       endif
-#       ifdef UART7
-        case PHYIX_U7:
-            LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART7);
-            break;
-#       endif
-#       ifdef UART8
-        case PHYIX_U8:
-            LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART8);
-            break;
-#       endif
+    switch (phy_cfg.phy_hdl)
+    {
+#ifdef USART1
+    case PHYIX_U1:
+        LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_USART1);
+        break;
+#endif
+#ifdef USART2
+    case PHYIX_U2:
+        LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
+        break;
+#endif
+#ifdef USART3
+    case PHYIX_U3:
+        LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART3);
+        break;
+#endif
+#ifdef UART4
+    case PHYIX_U4:
+        LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART4);
+        break;
+#endif
+#ifdef UART5
+    case PHYIX_U5:
+        LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART5);
+        break;
+#endif
+#ifdef USART6
+    case PHYIX_U6:
+        LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_USART6);
+        break;
+#endif
+#ifdef UART7
+    case PHYIX_U7:
+        LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART7);
+        break;
+#endif
+#ifdef UART8
+    case PHYIX_U8:
+        LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART8);
+        break;
+#endif
     }
-    if (phy_cfg.pin.rx != BOARD_PIN_UNDEF) {
+    if (phy_cfg.pin.rx != BOARD_PIN_UNDEF)
+    {
         res = gpio_config(phy_cfg.pin.rx, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
         gpio_hal_stm32l0_af(phy_cfg.pin.rx, phy_cfg.af.rx);
     }
-    if (res == 0 && phy_cfg.pin.tx != BOARD_PIN_UNDEF) {
+    if (res == 0 && phy_cfg.pin.tx != BOARD_PIN_UNDEF)
+    {
         res = gpio_config(phy_cfg.pin.tx, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_UP);
         gpio_hal_stm32l0_af(phy_cfg.pin.tx, phy_cfg.af.tx);
     }
-    if (res == 0 && phy_cfg.pin.cts != BOARD_PIN_UNDEF) {
+    if (res == 0 && phy_cfg.pin.cts != BOARD_PIN_UNDEF)
+    {
         res = gpio_config(phy_cfg.pin.cts, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
         gpio_hal_stm32l0_af(phy_cfg.pin.cts, phy_cfg.af.cts);
     }
-    if (res == 0 && phy_cfg.pin.rts != BOARD_PIN_UNDEF) {
+    if (res == 0 && phy_cfg.pin.rts != BOARD_PIN_UNDEF)
+    {
         res = gpio_config(phy_cfg.pin.rts, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_UP);
         gpio_hal_stm32l0_af(phy_cfg.pin.rts, phy_cfg.af.rts);
     }
 
     USART_TypeDef *u = phy_block[phy_cfg.phy_hdl];
-    if (res == 0) {
+    if (res == 0)
+    {
         uint32_t transfer_direction;
-        if (phy_cfg.pin.rx == BOARD_PIN_UNDEF) {
-            if (phy_cfg.pin.tx == BOARD_PIN_UNDEF) {
+        if (phy_cfg.pin.rx == BOARD_PIN_UNDEF)
+        {
+            if (phy_cfg.pin.tx == BOARD_PIN_UNDEF)
+            {
                 transfer_direction = LL_USART_DIRECTION_NONE;
-            } else {
+            }
+            else
+            {
                 transfer_direction = LL_USART_DIRECTION_TX;
             }
-        } else {
-            if (phy_cfg.pin.tx == BOARD_PIN_UNDEF) {
+        }
+        else
+        {
+            if (phy_cfg.pin.tx == BOARD_PIN_UNDEF)
+            {
                 transfer_direction = LL_USART_DIRECTION_RX;
-            } else {
+            }
+            else
+            {
                 transfer_direction = LL_USART_DIRECTION_TX_RX;
             }
         }
         uint32_t parity, stopbits;
-        switch (config->parity) {
-            case UART_PARITY_EVEN:  parity = LL_USART_PARITY_EVEN; break;
-            case UART_PARITY_ODD:   parity = LL_USART_PARITY_ODD; break;
-            default:                parity = LL_USART_PARITY_NONE; break;
+        switch (config->parity)
+        {
+        case UART_PARITY_EVEN:
+            parity = LL_USART_PARITY_EVEN;
+            break;
+        case UART_PARITY_ODD:
+            parity = LL_USART_PARITY_ODD;
+            break;
+        default:
+            parity = LL_USART_PARITY_NONE;
+            break;
         }
         stopbits = config->stopbits == UART_STOPBITS_2 ? LL_USART_STOPBITS_2 : LL_USART_STOPBITS_1;
 
         uint32_t hw_flowctrl = LL_USART_HWCONTROL_NONE;
-        if (config->flowcontrol == UART_FLOWCONTROL_RTSCTS) {
-            if (phy_cfg.pin.rts == BOARD_PIN_UNDEF) {
-                if (phy_cfg.pin.cts == BOARD_PIN_UNDEF) {
+        if (config->flowcontrol == UART_FLOWCONTROL_RTSCTS)
+        {
+            if (phy_cfg.pin.rts == BOARD_PIN_UNDEF)
+            {
+                if (phy_cfg.pin.cts == BOARD_PIN_UNDEF)
+                {
                     hw_flowctrl = LL_USART_HWCONTROL_NONE;
-                } else {
+                }
+                else
+                {
                     hw_flowctrl = LL_USART_HWCONTROL_CTS;
                 }
-            } else {
-                if (phy_cfg.pin.cts == BOARD_PIN_UNDEF) {
+            }
+            else
+            {
+                if (phy_cfg.pin.cts == BOARD_PIN_UNDEF)
+                {
                     hw_flowctrl = LL_USART_HWCONTROL_RTS;
-                } else {
+                }
+                else
+                {
                     hw_flowctrl = LL_USART_HWCONTROL_RTS_CTS;
                 }
             }
         }
 
         uint32_t baudrate;
-        switch (config->baudrate) {
-            case UART_BAUDRATE_600:     baudrate = 600; break;
-            case UART_BAUDRATE_1200:    baudrate = 1200; break;
-            case UART_BAUDRATE_2400:    baudrate = 2400; break;
-            case UART_BAUDRATE_4800:    baudrate = 4800; break;
-            case UART_BAUDRATE_9600:    baudrate = 9600; break;
-            case UART_BAUDRATE_57600:   baudrate = 57600; break;
-            case UART_BAUDRATE_460800:  baudrate = 460800; break;
-            case UART_BAUDRATE_921600:  baudrate = 921600; break;
-            case UART_BAUDRATE_1000000: baudrate = 1000000; break;
-            default:                    baudrate = 115200; break;
+        switch (config->baudrate)
+        {
+        case UART_BAUDRATE_600:
+            baudrate = 600;
+            break;
+        case UART_BAUDRATE_1200:
+            baudrate = 1200;
+            break;
+        case UART_BAUDRATE_2400:
+            baudrate = 2400;
+            break;
+        case UART_BAUDRATE_4800:
+            baudrate = 4800;
+            break;
+        case UART_BAUDRATE_9600:
+            baudrate = 9600;
+            break;
+        case UART_BAUDRATE_57600:
+            baudrate = 57600;
+            break;
+        case UART_BAUDRATE_460800:
+            baudrate = 460800;
+            break;
+        case UART_BAUDRATE_921600:
+            baudrate = 921600;
+            break;
+        case UART_BAUDRATE_1000000:
+            baudrate = 1000000;
+            break;
+        default:
+            baudrate = 115200;
+            break;
         }
 
         LL_USART_InitTypeDef usart_config = {
@@ -309,195 +407,155 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
             .Parity = parity,
             .TransferDirection = transfer_direction,
             .HardwareFlowControl = hw_flowctrl,
-            .OverSampling = LL_USART_OVERSAMPLING_8
-        };
+            .OverSampling = LL_USART_OVERSAMPLING_8};
         res = LL_USART_Init(u, &usart_config);
 
-        if (res == 0) {
-#           ifdef CONFIG_UART_STM32_RX_INTERRUPT
+        if (res == 0)
+        {
+#ifdef CONFIG_UART_STM32_RX_INTERRUPT
             LL_USART_EnableIT_RXNE(u);
             NVIC_ClearPendingIRQ(phy_irqn[phy_cfg.phy_hdl]);
             NVIC_EnableIRQ(phy_irqn[phy_cfg.phy_hdl]);
-#           endif
+#endif
             LL_USART_Enable(u);
             while (!LL_USART_IsActiveFlag_TEACK(u) || !LL_USART_IsActiveFlag_REACK(u))
                 ;
         }
     }
 
-    if (res == 0) {
+    if (res == 0)
+    {
         loghdl2phyix[hdl] = phy_cfg.phy_hdl;
     }
     return res;
-
-#endif
-    // Enable clocks for USART1 and GPIOA
-    LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_USART1);
-    LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
-
-    // Configure PA9 as USART1_TX and PA10 as USART1_RX
-    LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_9, LL_GPIO_MODE_ALTERNATE);
-    LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_10, LL_GPIO_MODE_ALTERNATE);
-    LL_GPIO_SetAFPin_8_15(GPIOA, LL_GPIO_PIN_9, LL_GPIO_AF_4);
-    LL_GPIO_SetAFPin_8_15(GPIOA, LL_GPIO_PIN_10, LL_GPIO_AF_4);
-
-    LL_GPIO_SetPinSpeed(GPIOA, LL_GPIO_PIN_9, LL_GPIO_SPEED_FREQ_HIGH);
-    LL_GPIO_SetPinSpeed(GPIOA, LL_GPIO_PIN_10, LL_GPIO_SPEED_FREQ_HIGH);
-    LL_GPIO_SetPinOutputType(GPIOA, LL_GPIO_PIN_9, LL_GPIO_OUTPUT_PUSHPULL);
-    LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_10, LL_GPIO_PULL_UP);
-
-    // Configure USART1
-    LL_USART_SetTransferDirection(USART1, LL_USART_DIRECTION_TX_RX);
-    LL_USART_SetBaudRate(USART1, SystemCoreClock, LL_USART_OVERSAMPLING_16, 115200);
-    LL_USART_SetDataWidth(USART1, LL_USART_DATAWIDTH_8B);
-    LL_USART_SetStopBitsLength(USART1, LL_USART_STOPBITS_1);
-    LL_USART_SetParity(USART1, LL_USART_PARITY_NONE);
-    LL_USART_SetHWFlowCtrl(USART1, LL_USART_HWCONTROL_NONE);
-
-    // Enable USART1 and wait for readiness
-    LL_USART_Enable(USART1);
-    while (!LL_USART_IsActiveFlag_TEACK(USART1) || !LL_USART_IsActiveFlag_REACK(USART1))
-        ;
-
-    LL_USART_ClearFlag_ORE(USART1);
-    LL_USART_ClearFlag_FE(USART1);
-    LL_USART_ClearFlag_NE(USART1);
-
-    return 0;
 }
 
-int uart_hal_tx(unsigned int hdl, char x) {
-#if 0
-    if (loghdl2phyix[hdl]) {
+int uart_hal_tx(unsigned int hdl, char x)
+{
+    if (loghdl2phyix[hdl])
+    {
         USART_TypeDef *u = phy_block[loghdl2phyix[hdl]];
-        while (LL_USART_IsActiveFlag_TXE(u) == 0);
+        while (LL_USART_IsActiveFlag_TXE(u) == 0)
+            ;
         LL_USART_TransmitData8(u, (uint8_t)x);
         return 0;
-    } else {
+    }
+    else
+    {
         return ERR_UART_NOINIT;
     }
-#endif
-    while (!LL_USART_IsActiveFlag_TXE(USART1))
-        ;
-    LL_USART_TransmitData8(USART1, x);
-    while (!LL_USART_IsActiveFlag_TC(USART1))
-        ;
 }
-#include "minio.h"
-int uart_hal_rx(unsigned int hdl) {
-#if 0
-    if (loghdl2phyix[hdl]) {
+
+int uart_hal_rx(unsigned int hdl)
+{
+    if (loghdl2phyix[hdl])
+    {
         USART_TypeDef *u = phy_block[loghdl2phyix[hdl]];
         while (!LL_USART_IsActiveFlag_RXNE(u))
         {
-            printf("%08x %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n", u->ISR,
-                   u->ISR & (1 << 0) ? "PE " : "",
-                   u->ISR & (1 << 1) ? "FE " : "",
-                   u->ISR & (1 << 2) ? "NF " : "",
-                   u->ISR & (1 << 3) ? "ORE " : "",
-                   u->ISR & (1 << 4) ? "IDLE " : "",
-                   u->ISR & (1 << 5) ? "RXNE " : "",
-                   u->ISR & (1 << 6) ? "TC " : "",
-                   u->ISR & (1 << 7) ? "TXE " : "",
-                   u->ISR & (1 << 9) ? "CTSIF " : "",
-                   u->ISR & (1 << 10) ? "CTS " : "",
-                   u->ISR & (1 << 16) ? "BUSY " : "",
-                   u->ISR & (1 << 17) ? "CMF " : "",
-                   u->ISR & (1 << 18) ? "SBKF " : "",
-                   u->ISR & (1 << 19) ? "RWU " : "",
-                   u->ISR & (1 << 20) ? "WUF " : "",
-                   u->ISR & (1 << 21) ? "TEACK " : "",
-                   u->ISR & (1 << 22) ? "REACK " : "");
-            cpu_halt(200);
-        };
-        return LL_USART_ReceiveData8(u);
-    } else {
+            if (LL_USART_IsActiveFlag_ORE(u))
+            {
+                LL_USART_ClearFlag_ORE(u);
+            }
+            if (LL_USART_IsActiveFlag_FE(u))
+            {
+                LL_USART_ClearFlag_FE(u);
+            }
+            if (LL_USART_IsActiveFlag_NE(u))
+            {
+                LL_USART_ClearFlag_NE(u);
+            }
+        }
+        int rx = LL_USART_ReceiveData8(u);
+        return rx;
+    }
+    else
+    {
         return ERR_UART_NOINIT;
     }
-#endif
-#if 0
-    while (!LL_USART_IsActiveFlag_RXNE(USART1))
-    {
-        // Check for errors while waiting
-        if (LL_USART_IsActiveFlag_ORE(USART1))
-        {
-            LL_USART_ClearFlag_ORE(USART1);
-            printf("Overrun Error!\n");
-        }
-        if (LL_USART_IsActiveFlag_FE(USART1))
-        {
-            LL_USART_ClearFlag_FE(USART1);
-            printf("Framing Error!\n");
-        }
-        if (LL_USART_IsActiveFlag_NE(USART1))
-        {
-            LL_USART_ClearFlag_NE(USART1);
-            printf("Noise Error!\n");
-        }
-    }
-#endif
-    int rx = LL_USART_ReceiveData8(USART1);
-    printf("%02x\n", rx);
-    cpu_halt(200);
-    return rx;
 }
-
-int uart_hal_rxpoll(unsigned int hdl) {
-    if (loghdl2phyix[hdl]) {
+int uart_hal_rxpoll(unsigned int hdl)
+{
+    if (loghdl2phyix[hdl])
+    {
         USART_TypeDef *u = phy_block[loghdl2phyix[hdl]];
-        if (LL_USART_IsActiveFlag_RXNE(u) == 0) {
+        if (LL_USART_IsActiveFlag_ORE(u))
+        {
+            LL_USART_ClearFlag_ORE(u);
+        }
+        if (LL_USART_IsActiveFlag_FE(u))
+        {
+            LL_USART_ClearFlag_FE(u);
+        }
+        if (LL_USART_IsActiveFlag_NE(u))
+        {
+            LL_USART_ClearFlag_NE(u);
+        }
+        if (LL_USART_IsActiveFlag_RXNE(u) == 0)
+        {
             return -1;
-        } else {
+        }
+        else
+        {
             return LL_USART_ReceiveData8(u);
         }
-    } else {
+    }
+    else
+    {
         return ERR_UART_NOINIT;
     }
 }
 
-int uart_hal_deinit(unsigned int hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
-    if (loghdl2phyix[hdl] == 0) return ERR_UART_NOINIT;
+int uart_hal_deinit(unsigned int hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin)
+{
+    if (loghdl2phyix[hdl] == 0)
+        return ERR_UART_NOINIT;
 
     USART_TypeDef *u = phy_block[loghdl2phyix[hdl]];
 
     LL_USART_Disable(u);
 
-#   ifdef CONFIG_UART_STM32_RX_INTERRUPT
+#ifdef CONFIG_UART_STM32_RX_INTERRUPT
     NVIC_DisableIRQ(phy_irqn[loghdl2phyix[hdl]]);
     NVIC_ClearPendingIRQ(phy_irqn[loghdl2phyix[hdl]]);
-#   endif
+#endif
 
-    switch (loghdl2phyix[hdl]) {
-#       ifdef USART1
-        case PHYIX_U1:
-            LL_APB2_GRP1_DisableClock(LL_APB2_GRP1_PERIPH_USART1);
-            break;
-#       endif
-#       ifdef USART2
-        case PHYIX_U2:
-            LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_USART2);
-            break;
-#       endif
-#       ifdef USART3
-        case PHYIX_U3:
-            LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_USART3);
-            break;
-#       endif
-#       ifdef UART4
-        case PHYIX_U4:
-            LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_UART4);
-            break;
-#       endif
-#       ifdef UART5
-        case PHYIX_U5:
-            LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_UART5);
-            break;
-#       endif
+    switch (loghdl2phyix[hdl])
+    {
+#ifdef USART1
+    case PHYIX_U1:
+        LL_APB2_GRP1_DisableClock(LL_APB2_GRP1_PERIPH_USART1);
+        break;
+#endif
+#ifdef USART2
+    case PHYIX_U2:
+        LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_USART2);
+        break;
+#endif
+#ifdef USART3
+    case PHYIX_U3:
+        LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_USART3);
+        break;
+#endif
+#ifdef UART4
+    case PHYIX_U4:
+        LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_UART4);
+        break;
+#endif
+#ifdef UART5
+    case PHYIX_U5:
+        LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_UART5);
+        break;
+#endif
     }
-    if (rx_pin != BOARD_PIN_UNDEF) (void)gpio_config(rx_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
-    if (tx_pin != BOARD_PIN_UNDEF) (void)gpio_config(tx_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
-    if (rts_pin != BOARD_PIN_UNDEF) (void)gpio_config(rts_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
-    if (cts_pin != BOARD_PIN_UNDEF) (void)gpio_config(cts_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+    if (rx_pin != BOARD_PIN_UNDEF)
+        (void)gpio_config(rx_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+    if (tx_pin != BOARD_PIN_UNDEF)
+        (void)gpio_config(tx_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+    if (rts_pin != BOARD_PIN_UNDEF)
+        (void)gpio_config(rts_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+    if (cts_pin != BOARD_PIN_UNDEF)
+        (void)gpio_config(cts_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
 
     loghdl2phyix[hdl] = 0;
     return 0;
@@ -505,50 +563,59 @@ int uart_hal_deinit(unsigned int hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t
 
 #ifdef CONFIG_UART_STM32_RX_INTERRUPT
 void uart_irq_rxchar_stm32l0(unsigned int hdl, char x);
-__attribute__(( weak )) void uart_irq_rxchar_stm32l0(unsigned int hdl, char x) {}
+__attribute__((weak)) void uart_irq_rxchar_stm32l0(unsigned int hdl, char x) {}
 
-static void stm32l0_uart_irq(int phy_hdl_ix) {
+static void stm32l0_uart_irq(int phy_hdl_ix)
+{
     USART_TypeDef *u = phy_block[phy_hdl_ix];
     NVIC_ClearPendingIRQ(phy_irqn[phy_hdl_ix]);
     uint8_t hdl;
-    for (hdl = 0; hdl < UART_COUNT; hdl++) {
-        if (loghdl2phyix[hdl] == phy_hdl_ix) {
+    for (hdl = 0; hdl < UART_COUNT; hdl++)
+    {
+        if (loghdl2phyix[hdl] == phy_hdl_ix)
+        {
             break;
         }
     }
-    if (LL_USART_IsActiveFlag_RXNE(u)) {
-         // cleared by reading byte
+    if (LL_USART_IsActiveFlag_RXNE(u))
+    {
+        // cleared by reading byte
         uart_irq_rxchar_stm32l0(hdl, LL_USART_ReceiveData8(u));
     }
 }
 
 #if defined(USART1)
 void USART1_IRQHandler(void);
-void USART1_IRQHandler(void) {
+void USART1_IRQHandler(void)
+{
     stm32l0_uart_irq(PHYIX_U1);
 }
 #endif
 #if defined(USART2)
 void USART2_IRQHandler(void);
-void USART2_IRQHandler(void) {
+void USART2_IRQHandler(void)
+{
     stm32l0_uart_irq(PHYIX_U2);
 }
 #endif
 #if defined(USART3)
 void USART3_IRQHandler(void);
-void USART3_IRQHandler(void) {
+void USART3_IRQHandler(void)
+{
     stm32l0_uart_irq(PHYIX_U3);
 }
 #endif
 #if defined(UART4)
 void UART4_IRQHandler(void);
-void UART4_IRQHandler(void) {
+void UART4_IRQHandler(void)
+{
     stm32l0_uart_irq(PHYIX_U4);
 }
 #endif
 #if defined(UART5)
 void UART5_IRQHandler(void);
-void UART5_IRQHandler(void) {
+void UART5_IRQHandler(void)
+{
     stm32l0_uart_irq(PHYIX_U5);
 }
 #endif
