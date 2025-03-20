@@ -1,11 +1,11 @@
 /* Copyright (c) 2019 Peter Andersson (pelleplutt1976<at>gmail.com) */
 /* MIT License (see ./LICENSE) */
 
-#if CONFIG_TEST_CRYSTAL==1
+#if CONFIG_CRYSTAL_TEST == 1
 
 #include "cli.h"
 #include "minio.h"
-#if FAMILY==nrf52 || FAMILY==stm32f1
+#if FAMILY == nrf52 || FAMILY == stm32f1 || FAMILY == stm32l0
 #include "crystal_test.h"
 
 static int cli_xtal_test(int argc, const char **argv) {

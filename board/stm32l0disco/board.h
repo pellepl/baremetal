@@ -7,6 +7,7 @@
 #define _BOARD_H_
 
 #include "board_common.h"
+#include "stm32l053xx.h"
 
 #define PORTA(x) (0 + (x))
 #define PORTB(x) (16 + (x))

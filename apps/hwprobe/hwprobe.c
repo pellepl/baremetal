@@ -54,8 +54,7 @@ int main(void) {
         .baudrate = DEFAULT_UART_BAUDRATE,
         .parity = UART_PARITY_NONE,
         .stopbits = UART_STOPBITS_1,
-        .flowcontrol = UART_FLOWCONTROL_NONE
-    };
+        .flowcontrol = UART_FLOWCONTROL_NONE};
     uart_init(0, &cfg);
 
     printf("\nhwprobe cli\n");
