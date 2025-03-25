@@ -171,6 +171,7 @@ stm-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
 		-ex "mon speed 10000" \
 		-ex "mon flash download=1" \
 		-ex "break HardFault_Handler" \
+		$(EXTRA_DEBUG_COMMANDS) \
 
 # Starts a bare debug session - stm-connect must have been issued first.
 stm-debug-bare: .prereq-devs
@@ -178,6 +179,7 @@ stm-debug-bare: .prereq-devs
 		-ex "target remote localhost:$(GDB_PORT)" \
 		-ex "mon speed 10000" \
 		-ex "mon flash download=1" \
+		$(EXTRA_CONNECT_COMMANDS) \
 
 rightparen:=)
 
