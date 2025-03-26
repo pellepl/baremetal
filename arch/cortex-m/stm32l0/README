@@ -17,4 +17,7 @@ Makeflags:
     included in source files for this family. Define this to avoid that and
     implement your own SystemInit function.
 
+  NO_STM32L0_CPU_INIT
+    Define to implement your own void cpu_init(void) function.
+
 See stm-flash.mk for convenience targets for flashing, debugging etc.
