@@ -26,9 +26,9 @@
 // used like this
 // static const board_uart_pindef_t uart_pindefs[BOARD_UART_COUNT] = BOARD_UART_GPIO_PINS;
 #define BOARD_UART_COUNT (1)
-#define BOARD_UART_GPIO_PINS                                                                                                     \
-    {                                                                                                                            \
-        (board_uart_pindef_t){.rx_pin = PORTA(15), .tx_pin = PORTA(14), .cts_pin = BOARD_PIN_UNDEF, .rts_pin = BOARD_PIN_UNDEF}, \
+#define BOARD_UART_GPIO_PINS                                                                                                    \
+    {                                                                                                                           \
+        (board_uart_pindef_t){.rx_pin = PORTA(10), .tx_pin = PORTA(9), .cts_pin = BOARD_PIN_UNDEF, .rts_pin = BOARD_PIN_UNDEF}, \
     }
 
 #endif // _BOARD_H_
