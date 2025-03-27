@@ -23,12 +23,17 @@ int gpio_hal_init(void)
 #if defined(GPIOG)
         LL_IOP_GRP1_PERIPH_GPIOG |
 #endif
+#if defined(GPIOH)
+        LL_IOP_GRP1_PERIPH_GPIOH |
+#endif
         0);
     return 0;
 }
 
 static GPIO_TypeDef *const ports[] = {
-    GPIOA, GPIOB, GPIOC,
+    GPIOA,
+    GPIOB,
+    GPIOC,
 #if defined(GPIOD)
     GPIOD,
 #endif
@@ -39,7 +44,10 @@ static GPIO_TypeDef *const ports[] = {
     GPIOF,
 #endif
 #if defined(GPIOG)
-    GPIOG
+    GPIOG,
+#endif
+#if defined(GPIOH)
+    GPIOH,
 #endif
 };
 
@@ -126,6 +134,9 @@ int gpio_hal_deinit(void)
 #endif
 #if defined(GPIOG)
         LL_IOP_GRP1_PERIPH_GPIOG |
+#endif
+#if defined(GPIOH)
+        LL_IOP_GRP1_PERIPH_GPIOH |
 #endif
         0);
     return 0;
