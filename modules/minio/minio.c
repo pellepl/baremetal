@@ -78,6 +78,10 @@ static int u_atoin(const char *str, const char **endptr, int base) {
             if (*str == 'x' || *str == 'X') {
                 base = 16;
                 str++;
+            }
+            else if (*str == 'b' || *str == 'B') {
+                base = 2;
+                str++;
             } else {
                 base = 8;
             }

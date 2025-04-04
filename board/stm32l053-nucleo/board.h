@@ -12,6 +12,7 @@
 #define PORTA(x) (0 + (x))
 #define PORTB(x) (16 + (x))
 #define PORTC(x) (32 + (x))
+#define PORTD(x) (48 + (x))
 
 #define BOARD_PIN_MAX (16 * 3)
 
