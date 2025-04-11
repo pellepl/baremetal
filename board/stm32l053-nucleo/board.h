@@ -14,6 +14,9 @@
 #define PORTC(x) (32 + (x))
 #define PORTD(x) (48 + (x))
 
+#define PININPORT(x) ((x) & 0xf)
+#define PORT(x) ((GPIO_TypeDef *[]){GPIOA, GPIOB, GPIOC, GPIOD})[(x >> 4)]
+
 #define BOARD_PIN_MAX (16 * 3)
 
 #define BOARD_BUTTON_COUNT (1)
