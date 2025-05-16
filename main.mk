@@ -6,8 +6,8 @@
 BOARD ?= pca10040
 BAREMETAL_DIR ?= .
 
-board_dir := $(BAREMETAL_DIR)/board/$(BOARD)
--include $(board_dir)/board_$(BOARD).mk
+BOARD_DIR ?= $(BAREMETAL_DIR)/board/$(BOARD)
+-include $(BOARD_DIR)/board_$(BOARD).mk
 
 ifeq ($(OS),Windows_NT)
 ECHO:=echo -e
@@ -60,10 +60,10 @@ $(warning ############################################################)
 NO_BUILD_INFO_COMPILER := 1
 endif
 
-ifeq "$(wildcard $(board_dir)/board.h)" ""
+ifeq "$(wildcard $(BOARD_DIR)/board.h)" ""
 $(warning ############################################################)
 $(warning BOARD seems to be set incorrectly, cannot find board)
-$(warning definition file $(board_dir)/board.h)
+$(warning definition file $(BOARD_DIR)/board.h)
 $(warning ############################################################)
 $(error Cannot find board.h for board $(BOARD))
 endif
@@ -125,11 +125,11 @@ endif
 # set default linker file
 LINKER_FILE ?= $(proc_dir)/$(PROC).ld
 # general include directories in specific-first, general-last order
-INCLUDE += $(board_dir) $(BAREMETAL_DIR)/board/ $(proc_dir) $(family_dir) $(arch_dir) $(BAREMETAL_DIR)/arch/
+INCLUDE += $(BOARD_DIR) $(BAREMETAL_DIR)/board/ $(proc_dir) $(family_dir) $(arch_dir) $(BAREMETAL_DIR)/arch/
 # board compile files
 CFILES += $(BAREMETAL_DIR)/board/board_common.c
-ifneq "$(wildcard $(board_dir)/board_$(BOARD).c)" ""
-CFILES += $(board_dir)/board_$(BOARD).c
+ifneq "$(wildcard $(BOARD_DIR)/board_$(BOARD).c)" ""
+CFILES += $(BOARD_DIR)/board_$(BOARD).c
 endif
 
 # pass build info to compilation entities
