@@ -87,9 +87,11 @@ int gpio_hal_config(uint16_t pin, gpio_direction_t dir, gpio_pull_t pull)
         LL_GPIO_MODE_ALTERNATE,
     }[dir];
     uint32_t ll_output =
-        (dir == GPIO_DIRECTION_OUTPUT || dir == GPIO_DIRECTION_FUNCTION_OUT) ? (pull == GPIO_PULL_DOWN ? LL_GPIO_OUTPUT_OPENDRAIN : LL_GPIO_OUTPUT_PUSHPULL) : LL_GPIO_OUTPUT_OPENDRAIN;
+        (dir == GPIO_DIRECTION_OUTPUT || dir == GPIO_DIRECTION_FUNCTION_OUT) ? LL_GPIO_OUTPUT_PUSHPULL : LL_GPIO_OUTPUT_OPENDRAIN;
+    if (pull == GPIO_PULL_UP)
+        dir = LL_GPIO_OUTPUT_OPENDRAIN;
     LL_GPIO_SetPinOutputType(port, ll_pin, ll_output);
-    LL_GPIO_SetPinPull(port, ll_pin, pull == GPIO_PULL_DOWN ? LL_GPIO_PULL_DOWN : LL_GPIO_PULL_UP);
+    LL_GPIO_SetPinPull(port, ll_pin, pull == GPIO_PULL_NONE ? LL_GPIO_PULL_NO : (pull == GPIO_PULL_DOWN ? LL_GPIO_PULL_DOWN : LL_GPIO_PULL_UP));
     LL_GPIO_SetPinSpeed(port, ll_pin, ll_mode == LL_GPIO_MODE_ALTERNATE ? LL_GPIO_SPEED_FREQ_HIGH : LL_GPIO_SPEED_MEDIUM);
     LL_GPIO_SetPinMode(port, ll_pin, ll_mode);
     return 0;
