@@ -41,29 +41,6 @@ __attribute__((weak)) void cpu_halt_us(uint32_t microseconds)
         SysTick->CTRL = 0; // disable
     }
 }
-__attribute__((weak)) void cpu_halt_us(uint32_t us)
-{
-    static int cyccnt_init = 0;
-    if (!cyccnt_init)
-    {
-        CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-        if ((DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk) == 0)
-            DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-        cyccnt_init = 1;
-    }
-
-    const uint32_t cpu_hz = cpu_core_clock_freq();
-    const uint32_t cycles_per_us = cpu_hz / 1000000u;
-    if (!cycles_per_us) return;
-
-    uint64_t total = (uint64_t)us * (uint64_t)cycles_per_us;
-    // Limit each wait to <= 0x7FFFFFFF cycles so wrap logic stays valid
-    while (total) {
-        uint32_t chunk = (total > 0x7FFFFFFFULL) ? 0x7FFFFFFFu : (uint32_t)total;
-        delay_cycles(chunk);
-        total -= chunk;
-    }
-}
 #else
 static inline void delay_cycles(uint32_t cycles)
 {
@@ -86,6 +63,29 @@ __attribute__((weak)) void cpu_halt(uint32_t ms)
     const uint32_t cpm = cpu_core_clock_freq() / 1000u;
     while (ms--) {
         delay_cycles(cpm);
+    }
+}
+__attribute__((weak)) void cpu_halt_us(uint32_t us)
+{
+    static int cyccnt_init = 0;
+    if (!cyccnt_init)
+    {
+        CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+        if ((DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk) == 0)
+            DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+        cyccnt_init = 1;
+    }
+
+    const uint32_t cpu_hz = cpu_core_clock_freq();
+    const uint32_t cycles_per_us = cpu_hz / 1000000u;
+    if (!cycles_per_us) return;
+
+    uint64_t total = (uint64_t)us * (uint64_t)cycles_per_us;
+    // Limit each wait to <= 0x7FFFFFFF cycles so wrap logic stays valid
+    while (total) {
+        uint32_t chunk = (total > 0x7FFFFFFFULL) ? 0x7FFFFFFFu : (uint32_t)total;
+        delay_cycles(chunk);
+        total -= chunk;
     }
 }
 #endif

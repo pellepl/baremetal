@@ -31,4 +31,4 @@ CFILES += $(wildcard apps/$(APP)/drivers/*.c)
 
 CFLAGS += -Wno-address-of-packed-member
 
-LDFLAGS_LATE += --script=apps/$(APP)/targets/linker_targets.ld
+LINKER_FILES += apps/$(APP)/targets/linker_targets.ld
