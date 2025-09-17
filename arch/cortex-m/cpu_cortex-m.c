@@ -12,6 +12,7 @@ __attribute__((weak, noreturn)) void cpu_reset(void)
 }
 
 #if CONFIG_STM32F1_HALT_USING_SYSCLK
+
 __attribute__((weak)) void cpu_halt(uint32_t milliseconds) {
     uint32_t ticks_per_ms = cpu_core_clock_freq() / 1000;
     SysTick->LOAD = ticks_per_ms - 1;
@@ -22,6 +23,7 @@ __attribute__((weak)) void cpu_halt(uint32_t milliseconds) {
     }
     SysTick->CTRL = 0; // disable
 }
+
 __attribute__((weak)) void cpu_halt_us(uint32_t microseconds)
 {
     if (microseconds == 0)
@@ -41,7 +43,9 @@ __attribute__((weak)) void cpu_halt_us(uint32_t microseconds)
         SysTick->CTRL = 0; // disable
     }
 }
+
 #else
+
 static inline void delay_cycles(uint32_t cycles)
 {
     uint32_t end = DWT->CYCCNT + cycles;
@@ -65,6 +69,7 @@ __attribute__((weak)) void cpu_halt(uint32_t ms)
         delay_cycles(cpm);
     }
 }
+
 __attribute__((weak)) void cpu_halt_us(uint32_t us)
 {
     static int cyccnt_init = 0;

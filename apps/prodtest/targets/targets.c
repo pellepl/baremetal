@@ -224,6 +224,20 @@ static void target_info_accelerometer(const target_t *t) {
     }
 }
 
+static void target_info_ppg(const target_t *t) {
+    if (t->ppg.routed) {
+        printf("ppg.type: %d\r\n", t->ppg.type);
+        printf("ppg.pin_vdd: "); print_pin(t->ppg.pin_vdd);
+        printf("   active: %s\r\n", t->ppg.pin_vdd_active_high ? "HI" : "LO");
+        printf("ppg.pin_reset: "); print_pin(t->ppg.pin_reset);
+        printf("   active: %s\r\n", t->ppg.pin_reset_active_high ? "HI" : "LO");
+        printf("ppg.pin_ifc_on: "); print_pin(t->ppg.pin_interface_on);
+        printf("   active: %s\r\n", t->ppg.pin_interface_on_active_high ? "HI" : "LO");
+        printf("ppg.pin_adc_rdy: "); print_pin_nl(t->ppg.pin_adc_ready);
+        target_info_bus("ppg.", &t->ppg.bus);
+    }
+}
+
 static void target_info_pat9125(const target_t *t) {
     if (t->pat9125.routed) {
         printf("pat9125.pin_int: "); print_pin_nl(t->pat9125.pin_int);
@@ -248,6 +262,7 @@ static int cli_target_info(int argc, const char **argv)
     target_info_charger(t);
     target_info_vibrator(t);
     target_info_accelerometer(t);
+    target_info_ppg(t);
     target_info_pat9125(t);
     printf("pin_test_clk: "); print_pin_nl(t->pin_test_clk);
     printf("pins_pulled_up: ");

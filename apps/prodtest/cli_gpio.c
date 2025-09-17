@@ -106,7 +106,7 @@ static void gpio_dump(uint16_t pin)
 
 static int cli_gpio_dump(int argc, const char **argv)
 {
-    uint32_t pins = (NRF_FICR->INFO.VARIANT == 0x52840 || NRF_FICR->INFO.VARIANT == 0x52833) ? 48 : 32;
+    uint32_t pins = (NRF_FICR->INFO.PART == 0x52840 || NRF_FICR->INFO.PART == 0x52833) ? 48 : 32;
     printf("PIN    DIR  INP  PULL DRIV SENS STAT\r\n");
     if (argc == 0)
     {

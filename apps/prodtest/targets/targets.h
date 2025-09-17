@@ -191,6 +191,22 @@ typedef struct target
         bus_t bus;
     } accelerometer;
 
+    struct {
+        bool routed;
+        enum
+        {
+            PPG_TYPE_AFE4410,
+        } type;
+        uint16_t pin_vdd;
+        bool pin_vdd_active_high;
+        uint16_t pin_reset;
+        bool pin_reset_active_high;
+        uint16_t pin_interface_on;
+        bool pin_interface_on_active_high;
+        uint16_t pin_adc_ready;
+        bus_t bus;
+    } ppg;
+
     struct
     {
         bool routed;
