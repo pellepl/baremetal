@@ -55,7 +55,7 @@ int spi_init(spi_bus_t spi_bus, const spi_config_t *cfg)
     if (spi_bus == SPI_BUS_FAST && NRF_FICR->INFO.PART != 0x52833 && NRF_FICR->INFO.PART != 0x52840) {
         return -ENOTSUP;
     }
-    struct spi_state *bus = &state[spi_bus]; 
+    struct spi_state *bus = &state[spi_bus];
     NRF_SPIM_Type *hw = bus_hw[spi_bus].hw;
 
     if (bus->init)
@@ -120,7 +120,7 @@ int spi_init(spi_bus_t spi_bus, const spi_config_t *cfg)
         hw->FREQUENCY = SPI_CLK_FREQ_M8;
     else if (bus->cfg.clk_freq <= 16000000)
         hw->FREQUENCY = SPI_CLK_FREQ_M16;
-    else 
+    else
         hw->FREQUENCY = SPI_CLK_FREQ_M32;
 
     NVIC_ClearPendingIRQ(bus_hw[spi_bus].irqn);
@@ -135,7 +135,7 @@ void spi_deinit(spi_bus_t spi_bus) {
     if (spi_bus == SPI_BUS_FAST && NRF_FICR->INFO.PART != 0x52833 && NRF_FICR->INFO.PART != 0x52840) {
         return;
     }
-    struct spi_state *bus = &state[spi_bus]; 
+    struct spi_state *bus = &state[spi_bus];
     NRF_SPIM_Type *hw = bus_hw[spi_bus].hw;
 
     if (!bus->init)
@@ -160,7 +160,7 @@ void spi_deinit(spi_bus_t spi_bus) {
 
 static void start(spi_bus_t spi_bus, const uint8_t *tx_data, uint16_t tx_len, uint8_t *rx_data, uint16_t rx_len, spi_cb_t cb)
 {
-    struct spi_state *bus = &state[spi_bus]; 
+    struct spi_state *bus = &state[spi_bus];
     NRF_SPIM_Type *hw = bus_hw[spi_bus].hw;
     bus->tx_data = tx_data;
     bus->tx_len = tx_len;
@@ -221,7 +221,8 @@ int spi_transceive_blocking(spi_bus_t spi_bus, const uint8_t *tx_data, uint16_t 
 static void ev_spi_done(uint32_t ev, void *arg) {
     spi_bus_t spi_bus = (spi_bus_t)arg;
     struct spi_state *bus = &state[spi_bus];
-    if (bus->cb) bus->cb(ERROR_OK, spi_bus, bus->tx_data, bus->tx_len, bus->rx_data, bus->rx_len); 
+    if (bus->cb)
+        bus->cb(ERROR_OK, spi_bus, bus->tx_data, bus->tx_len, bus->rx_data, bus->rx_len);
 }
 
 static void handle_irq(spi_bus_t spi_bus)

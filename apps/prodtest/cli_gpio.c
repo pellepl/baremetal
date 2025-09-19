@@ -9,14 +9,29 @@
 
 #if NO_EXTRA_CLI == 0
 
+static uint16_t pin_parse(const char *arg)
+{
+    bool dot = arg[1] == '.' || arg[2] == '.';
+    if (!dot)
+        return strtol(arg, 0, 0);
+    else
+    {
+        if (arg[0] == 'P' || arg[0] == 'p')
+            arg++;
+        int port = arg[0] - '0';
+        int pin = strtol(arg + 2, NULL, 0);
+        return port * 32 + pin;
+    }
+}
+
 static int cli_gpio_set(int argc, const char **argv)
 {
     if (argc != 2)
     {
         return ERR_CLI_EINVAL;
     }
-    int pin = strtol(argv[0], 0, 0);
-    int set = strtol(argv[1], 0, 0);
+    int pin = pin_parse(argv[0]);
+    int set = strtol(argv[1], NULL, 0);
     return gpio_set(pin, set);
 }
 CLI_FUNCTION(cli_gpio_set, "gpio_set", "set gpio: <pin> 0|1");
@@ -27,7 +42,7 @@ static int cli_gpio_read(int argc, const char **argv)
     {
         return ERR_CLI_EINVAL;
     }
-    int pin = strtol(argv[0], 0, 0);
+    int pin = pin_parse(argv[0]);
     int val = gpio_read(pin);
     if (val >= 0)
     {
@@ -47,39 +62,64 @@ static int cli_gpio_config(int argc, const char **argv)
     {
         return ERR_CLI_EINVAL;
     }
-    int pin = strtol(argv[0], 0, 0);
+    int pin = pin_parse(argv[0]);
     gpio_direction_t dir = argv[1][0] == 'o' ? GPIO_DIRECTION_OUTPUT : GPIO_DIRECTION_INPUT;
     gpio_pull_t pull = GPIO_PULL_NONE;
     uint32_t drive = GPIO_PIN_CNF_DRIVE_S0S1;
-    for (int i = 2; i < argc; i++) {
-        if (strcmp(argv[i], "up") == 0) {
+    for (int i = 2; i < argc; i++)
+    {
+        if (strcmp(argv[i], "up") == 0)
+        {
             pull = GPIO_PULL_UP;
-        } else if (strcmp(argv[i], "down") == 0) {
+        }
+        else if (strcmp(argv[i], "down") == 0)
+        {
             pull = GPIO_PULL_DOWN;
-        } else if (strcmp(argv[i], "none") == 0) {
+        }
+        else if (strcmp(argv[i], "none") == 0)
+        {
             pull = GPIO_PULL_NONE;
-        } else if (strcmp(argv[i], "s0s1") == 0) {
+        }
+        else if (strcmp(argv[i], "s0s1") == 0)
+        {
             drive = GPIO_PIN_CNF_DRIVE_S0S1;
-        } else if (strcmp(argv[i], "h0s1") == 0) {
+        }
+        else if (strcmp(argv[i], "h0s1") == 0)
+        {
             drive = GPIO_PIN_CNF_DRIVE_H0S1;
-        } else if (strcmp(argv[i], "s0h1") == 0) {
+        }
+        else if (strcmp(argv[i], "s0h1") == 0)
+        {
             drive = GPIO_PIN_CNF_DRIVE_S0H1;
-        } else if (strcmp(argv[i], "h0h1") == 0) {
+        }
+        else if (strcmp(argv[i], "h0h1") == 0)
+        {
             drive = GPIO_PIN_CNF_DRIVE_H0H1;
-        } else if (strcmp(argv[i], "d0s1") == 0) {
+        }
+        else if (strcmp(argv[i], "d0s1") == 0)
+        {
             drive = GPIO_PIN_CNF_DRIVE_D0S1;
-        } else if (strcmp(argv[i], "d0h1") == 0) {
+        }
+        else if (strcmp(argv[i], "d0h1") == 0)
+        {
             drive = GPIO_PIN_CNF_DRIVE_D0H1;
-        } else if (strcmp(argv[i], "s0d1") == 0) {
+        }
+        else if (strcmp(argv[i], "s0d1") == 0)
+        {
             drive = GPIO_PIN_CNF_DRIVE_S0D1;
-        } else if (strcmp(argv[i], "h0d1") == 0) {
+        }
+        else if (strcmp(argv[i], "h0d1") == 0)
+        {
             drive = GPIO_PIN_CNF_DRIVE_H0D1;
-        } else {
+        }
+        else
+        {
             return ERR_CLI_EINVAL;
         }
     }
     int err = gpio_config(pin, dir, pull);
-    if (!err) {
+    if (!err)
+    {
         NRF_GPIO_Type *port = pin < 32 ? NRF_P0 : NRF_P1;
         port->PIN_CNF[pin & 0x1f] &= ~GPIO_PIN_CNF_DRIVE_Msk;
         port->PIN_CNF[pin & 0x1f] |= drive << GPIO_PIN_CNF_DRIVE_Pos;
@@ -119,7 +159,7 @@ static int cli_gpio_dump(int argc, const char **argv)
     {
         for (int i = 0; i < argc; i++)
         {
-            uint16_t p = strtol(argv[i], NULL, 0);
+            uint16_t p = pin_parse(argv[i]);
             if (p < pins)
             {
                 gpio_dump(p);
