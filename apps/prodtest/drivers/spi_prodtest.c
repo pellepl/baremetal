@@ -67,10 +67,11 @@ int spi_init(spi_bus_t spi_bus, const spi_config_t *cfg)
     gpio_set(bus->cfg.pins.csn, 1);
     gpio_set(bus->cfg.pins.clk, cfg->mode <= 1 ? 0 : 1);
     gpio_set(bus->cfg.pins.mosi, 0);
-    gpio_config(bus->cfg.pins.clk, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
+    gpio_direction_t out_dir = spi_bus == SPI_BUS_FAST ? GPIO_DIRECTION_FUNCTION_OUT : GPIO_DIRECTION_OUTPUT;
+    gpio_config(bus->cfg.pins.clk, out_dir, GPIO_PULL_NONE);
     NRF_GPIO_Type *port = bus->cfg.pins.clk < 32 ? NRF_P0 : NRF_P1;
     port->PIN_CNF[bus->cfg.pins.clk & 0x1f] |= GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos;
-    gpio_config(bus->cfg.pins.mosi, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
+    gpio_config(bus->cfg.pins.mosi, out_dir, GPIO_PULL_NONE);
     gpio_config(bus->cfg.pins.miso, GPIO_DIRECTION_INPUT, GPIO_PULL_DOWN);
     gpio_config(bus->cfg.pins.csn, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
     hw->PSEL.SCK = bus->cfg.pins.clk;

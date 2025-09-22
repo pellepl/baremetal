@@ -139,26 +139,14 @@ static void deinit(void)
     {
         spi_deinit(SPI_BUS_GENERIC);
     }
-    if (target->ppg.pin_adc_ready != BOARD_PIN_UNDEF)
-    {
-        gpio_irq_callback(target->ppg.pin_adc_ready, NULL);
-        target_reset_pin(target->ppg.pin_adc_ready);
-    }
-    if (target->ppg.pin_reset != BOARD_PIN_UNDEF)
-    {
-        gpio_set(target->ppg.pin_reset, target->ppg.pin_reset_active_high ? 0 : 1);
-        target_reset_pin(target->ppg.pin_reset);
-    }
-    if (target->ppg.pin_interface_on != BOARD_PIN_UNDEF)
-    {
-        gpio_set(target->ppg.pin_interface_on, target->ppg.pin_interface_on_active_high ? 0 : 1);
-        target_reset_pin(target->ppg.pin_interface_on);
-    }
-    if (target->ppg.pin_vdd != BOARD_PIN_UNDEF)
-    {
-        gpio_set(target->ppg.pin_vdd, target->ppg.pin_vdd_active_high ? 0 : 1);
-        target_reset_pin(target->ppg.pin_vdd);
-    }
+    gpio_irq_callback(target->ppg.pin_adc_ready, NULL);
+    target_reset_pin(target->ppg.pin_adc_ready);
+    gpio_set(target->ppg.pin_reset, target->ppg.pin_reset_active_high ? 1 : 0);
+    target_reset_pin(target->ppg.pin_reset);
+    gpio_set(target->ppg.pin_interface_on, target->ppg.pin_interface_on_active_high ? 0 : 1);
+    target_reset_pin(target->ppg.pin_interface_on);
+    gpio_set(target->ppg.pin_vdd, target->ppg.pin_vdd_active_high ? 0 : 1);
+    target_reset_pin(target->ppg.pin_vdd);
 }
 
 static void enable_spi_ifc(bool enable)
@@ -354,29 +342,14 @@ int ppg_afe4410_init(void)
         return err;
     }
 
-    if (target->ppg.pin_vdd != BOARD_PIN_UNDEF)
-    {
-        gpio_set(target->ppg.pin_vdd, target->ppg.pin_vdd_active_high ? 0 : 1);
-        gpio_config(target->ppg.pin_vdd, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
-    }
-
-    if (target->ppg.pin_reset != BOARD_PIN_UNDEF)
-    {
-        gpio_set(target->ppg.pin_reset, target->ppg.pin_reset_active_high ? 0 : 1);
-        gpio_config(target->ppg.pin_reset, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
-    }
-
-    if (target->ppg.pin_interface_on != BOARD_PIN_UNDEF)
-    {
-        gpio_set(target->ppg.pin_interface_on, target->ppg.pin_interface_on_active_high ? 0 : 1);
-        gpio_config(target->ppg.pin_interface_on, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
-    }
-
-    if (target->ppg.pin_adc_ready != BOARD_PIN_UNDEF)
-    {
-        gpio_config(target->ppg.pin_adc_ready, GPIO_DIRECTION_INPUT, GPIO_PULL_DOWN);
-        gpio_irq_callback(target->ppg.pin_adc_ready, adc_ready_irq);
-    }
+    gpio_set(target->ppg.pin_vdd, target->ppg.pin_vdd_active_high ? 0 : 1);
+    gpio_config(target->ppg.pin_vdd, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
+    gpio_set(target->ppg.pin_reset, target->ppg.pin_reset_active_high ? 0 : 1);
+    gpio_config(target->ppg.pin_reset, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
+    gpio_set(target->ppg.pin_interface_on, target->ppg.pin_interface_on_active_high ? 0 : 1);
+    gpio_config(target->ppg.pin_interface_on, GPIO_DIRECTION_OUTPUT, GPIO_PULL_NONE);
+    gpio_config(target->ppg.pin_adc_ready, GPIO_DIRECTION_INPUT, GPIO_PULL_DOWN);
+    gpio_irq_callback(target->ppg.pin_adc_ready, adc_ready_irq);
 
     (void)ppg_afe4410_power(true);
     cpu_halt(10);

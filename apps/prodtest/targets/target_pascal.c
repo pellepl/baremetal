@@ -3,7 +3,7 @@
 #include "cpu.h"
 
 /////////////////////////////////////////
-// Pascal, FKS934, full display, Rango //
+// Pascal, Beans : FKS934              //
 /////////////////////////////////////////
 
 static void pascal_target_init(const target_t *t)
@@ -112,6 +112,23 @@ TARGET_SPEC pascal = {
     .ppg.bus.spi.pin_mosi = P(0, 17),
     .ppg.bus.spi.pin_cs = P(1, 8),
     .ppg.bus.spi.pin_cs_active_high = false,
+
+    .display.routed = true,
+    .display.type = DISPLAY_TYPE_CH3613,
+    .display.pin_vdd = P(0, 9),
+    .display.pin_vdd_active_high = true,
+    .display.pin_dc = P(0, 10),
+    .display.pin_reset = P(1, 11),
+    .display.pin_reset_active_high = false,
+    .display.pin_tearing = P(1, 1),
+    .display.bus.bus_type = BUS_TYPE_SPI,
+    .display.bus.bus_speed_hz = 32000000,
+    .display.bus.spi.mode = 3,
+    .display.bus.spi.pin_clk = P(0, 25),
+    .display.bus.spi.pin_miso = BOARD_PIN_UNDEF,
+    .display.bus.spi.pin_mosi = P(0, 24),
+    .display.bus.spi.pin_cs = P(1, 3),
+    .display.bus.spi.pin_cs_active_high = false,
 
     .vibrator.routed = true,
     .vibrator.pin = P(0, 8),

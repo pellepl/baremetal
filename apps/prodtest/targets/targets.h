@@ -210,6 +210,22 @@ typedef struct target
     struct
     {
         bool routed;
+        enum
+        {
+            DISPLAY_TYPE_CH3613,
+        } type;
+        uint16_t pin_vdd;
+        bool pin_vdd_active_high;
+        uint16_t pin_reset;
+        bool pin_reset_active_high;
+        uint16_t pin_dc;
+        uint16_t pin_tearing;
+        bus_t bus;
+    } display;
+
+    struct
+    {
+        bool routed;
         uint16_t pin_int;
         bus_t bus;
     } pat9125;

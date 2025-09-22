@@ -115,7 +115,7 @@ static int cli_targets(int argc, const char **argv)
     {
         const target_t *t = targets;
         targets++;
-        
+
         printf("%s\tnrf%x\tUICR:", t->name, t->id.ficr_proc);
         mask_hex_print(t->id.uicr.raw._80, t->id.uicr_mask.raw._80, 32);
         mask_hex_print(t->id.uicr.pronto.rev, t->id.uicr_mask.pronto.rev, 8);
@@ -130,7 +130,7 @@ static int cli_targets(int argc, const char **argv)
 CLI_FUNCTION(cli_targets, "targets", "lists supported targets");
 
 static void _print_pin(uint16_t pin, bool nl) {
-    if (pin == BOARD_PIN_UNDEF) 
+    if (pin == BOARD_PIN_UNDEF)
         printf("<N/A>")
     else
         printf("P%d.%02d", pin >> 5, pin & 0x1f);
@@ -238,6 +238,25 @@ static void target_info_ppg(const target_t *t) {
     }
 }
 
+static void target_info_disp(const target_t *t)
+{
+    if (t->display.routed)
+    {
+        printf("display.type: %d\r\n", t->display.type);
+        printf("display.pin_vdd: ");
+        print_pin(t->display.pin_vdd);
+        printf("   active: %s\r\n", t->display.pin_vdd_active_high ? "HI" : "LO");
+        printf("display.pin_reset: ");
+        print_pin(t->display.pin_reset);
+        printf("   display: %s\r\n", t->display.pin_reset_active_high ? "HI" : "LO");
+        printf("display.pin_dc: ");
+        print_pin_nl(t->display.pin_dc);
+        printf("display.pin_tearing: ");
+        print_pin_nl(t->display.pin_tearing);
+        target_info_bus("display.", &t->display.bus);
+    }
+}
+
 static void target_info_pat9125(const target_t *t) {
     if (t->pat9125.routed) {
         printf("pat9125.pin_int: "); print_pin_nl(t->pat9125.pin_int);
@@ -263,6 +282,7 @@ static int cli_target_info(int argc, const char **argv)
     target_info_vibrator(t);
     target_info_accelerometer(t);
     target_info_ppg(t);
+    target_info_disp(t);
     target_info_pat9125(t);
     printf("pin_test_clk: "); print_pin_nl(t->pin_test_clk);
     printf("pins_pulled_up: ");
