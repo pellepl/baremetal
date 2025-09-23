@@ -3,6 +3,7 @@
 #include "common_util.h"
 #include "disp_ch3613.h"
 #include "disp_ch3613_registers.h"
+#include "font.h"
 #include "minio.h"
 #include "spi_prodtest.h"
 #include "targets.h"
@@ -10,14 +11,16 @@
 extern uint32_t _RAM_START;
 extern uint32_t _RAM_SIZE;
 
+#define MAX_SPI_TRANSFER 0x7fff
 #define DISP_WIDTH 390
 #define DISP_HEIGHT 390
 #define DISP_CUTOUT_WIDTH 354
 #define DISP_CUTOUT_HEIGHT 142
 #define DISP_CUTOUT_X1 18
 #define DISP_CUTOUT_Y1 25
-#define BYTES_PER_PIXEL 0.5f
-#define GBUF_SIZE (size_t)(DISP_WIDTH * DISP_HEIGHT * BYTES_PER_PIXEL)
+#define PIXELS_PER_BYTE 2
+#define PIXELS_TO_BYTES(pix) ((pix) / PIXELS_PER_BYTE)
+#define GBUF_SIZE (PIXELS_TO_BYTES(DISP_WIDTH) * DISP_HEIGHT)
 #define NUMARGS(...) (sizeof((int[]){0, ##__VA_ARGS__}) / sizeof(int) - 1)
 #define DISP_CMD_BLOCKING(cmd, ...)                                          \
     err = disp_write_cmd_blocking(cmd, NUMARGS(__VA_ARGS__), ##__VA_ARGS__); \
@@ -31,7 +34,7 @@ extern uint32_t _RAM_SIZE;
 #define COL_R_PIXEL(c) ((c) & 0xf)
 #define COL_L_MASK (0x0f)
 #define COL_R_MASK (0xf0)
-#define STRIDE_Y(y) ((DISP_HEIGHT + (y - 1)) * -(int)(DISP_WIDTH * BYTES_PER_PIXEL))
+#define STRIDE_Y(y) (((DISP_HEIGHT - 1) - (y)) * PIXELS_TO_BYTES(DISP_WIDTH + 2))
 
 // The screen is not centered so we must tweak the coords a bit
 #define CASET_X_OFFSET 6
@@ -263,26 +266,27 @@ int disp_ch3613_palette(const uint32_t *p)
     return err;
 }
 
-int disp_ch3613_clear(uint8_t col)
+void disp_ch3613_clear(uint8_t col)
 {
-    return disp_ch3613_fill(0, 0, DISP_WIDTH - 1, DISP_HEIGHT - 1, col);
+    disp_ch3613_fill(0, 0, DISP_WIDTH - 1, DISP_HEIGHT - 1, col);
 }
 
-int disp_ch3613_fill(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t col)
+void disp_ch3613_fill(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t col)
 {
-    if (x1 > x2 || y2 > y1)
-        return 0;
+    if (!me.init)
+        return;
+    if (x1 > x2 || y1 > y2)
+        return;
     x1 = clamp(x1, 0, DISP_WIDTH - 1);
     x2 = clamp(x2, 0, DISP_WIDTH - 1);
     y1 = clamp(y1, 0, DISP_HEIGHT - 1);
     y2 = clamp(y2, 0, DISP_HEIGHT - 1);
     int w = x2 - x1 + 1;
     uint8_t *gram;
-
     for (int y = y1; y <= y2; y++)
     {
         int w_rem = w;
-        gram = me.gbuf + STRIDE_Y(y) + (int)(x1 * BYTES_PER_PIXEL);
+        gram = me.gbuf + STRIDE_Y(y) + PIXELS_TO_BYTES(x1);
         if (x1 & 1)
         {
             *gram = (*gram & COL_R_MASK) | COL_R_PIXEL(col);
@@ -291,25 +295,109 @@ int disp_ch3613_fill(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t col
         }
         if (w_rem >= 2)
         {
-            memset(gram, COL_BIPIXEL(col), (int)(w_rem * BYTES_PER_PIXEL));
-            gram += (int)(w_rem * BYTES_PER_PIXEL);
+            memset(gram, COL_BIPIXEL(col), PIXELS_TO_BYTES(w_rem));
         }
         if ((x2 & 1) == 0)
         {
+            gram += PIXELS_TO_BYTES(w_rem);
             *gram = (*gram & COL_L_MASK) | COL_L_PIXEL(col);
         }
     }
-
-    return -ENOTSUP;
 }
 
 int disp_ch3613_flush(void)
 {
-    return -ENOTSUP;
+    if (!me.init)
+        return -EBADF;
+    uint32_t x1 = 0 + CASET_X_OFFSET;
+    uint32_t y1 = 0;
+    uint32_t x2 = DISP_WIDTH + CASET_X_OFFSET;
+    uint32_t y2 = DISP_HEIGHT;
+    int err;
+    DISP_CMD_BLOCKING(CH13613_USER_CASET, x1 >> 8, x1, x2 >> 8, x2);
+    DISP_CMD_BLOCKING(CH13613_USER_RASET, y1 >> 8, y1, y2 >> 8, y2);
+    DISP_CMD_BLOCKING(CH13613_USER_RAMW);
+    uint32_t bytes_to_tx = (uint32_t)(PIXELS_TO_BYTES(x2 - x1)) * (y2 - y1);
+    uint8_t *data = me.gbuf;
+    dcx(DCX_DATA);
+    while (!err && bytes_to_tx > 0)
+    {
+        uint32_t chunk_size = min(bytes_to_tx, MAX_SPI_TRANSFER);
+        err = spi_transceive_blocking(SPI_BUS_FAST, data, chunk_size, NULL, 0);
+        bytes_to_tx -= chunk_size;
+        data += chunk_size;
+    }
+end:
+    return err;
 }
 
-int disp_ch3613_string(const char *str, int16_t x, int16_t y, uint8_t colour)
+static void draw_glyph(uint8_t glyph, int16_t x, int16_t y, uint8_t col)
 {
+    if (x >= DISP_WIDTH || x < -FONT_WIDTH)
+        return;
+    if (y >= DISP_HEIGHT || y < -FONT_HEIGHT)
+        return;
+    const uint8_t *glyph_bits = font_data[glyph];
+    uint8_t *gram;
+    for (int gy = 0; gy < FONT_HEIGHT; gy++)
+    {
+        if (y + gy < 0)
+            continue;
+        if (y + gy >= DISP_HEIGHT)
+            break;
+        uint32_t hline_bits = (glyph_bits[gy * 2 + 1] << 8) | (glyph_bits[gy * 2]);
+        if (hline_bits == 0)
+            continue;
+        if (x & 1)
+            hline_bits <<= 1;
+        int gx = 0;
+        gram = me.gbuf + STRIDE_Y(y + gy) + PIXELS_TO_BYTES(x);
+        while (hline_bits != 0 && x + gx < DISP_WIDTH)
+        {
+            switch (hline_bits & 0b11)
+            {
+            case 0b00:
+                break;
+            case 0b01:
+                *gram = (*gram & COL_L_MASK) | COL_L_PIXEL(col);
+                break;
+            case 0b10:
+                *gram = (*gram & COL_R_MASK) | COL_R_PIXEL(col);
+                break;
+            case 0b11:
+                *gram = COL_BIPIXEL(col);
+                break;
+            }
+            hline_bits >>= 2;
+            gx += 2;
+            gram++;
+        }
+    }
+}
+
+int disp_ch3613_string(const char *str, int16_t x, int16_t y, uint8_t col)
+{
+    if (!me.init)
+        return -EBADF;
+    if (x >= DISP_WIDTH || y >= DISP_HEIGHT)
+        return 0;
+    char c;
+    int16_t orig_x = x;
+    while ((c = *str++) != 0 && y < DISP_HEIGHT)
+    {
+        if (c == '\n')
+        {
+            x = orig_x;
+            y += FONT_HEIGHT;
+            continue;
+        }
+        if (x >= DISP_WIDTH)
+            continue;
+        draw_glyph((uint8_t)c - 1, x, y, col);
+        x += FONT_WIDTH;
+    }
+
+    return 0;
 }
 
 #if NO_EXTRA_CLI == 0
@@ -334,7 +422,8 @@ static int cli_disp_command(int argc, const char **argv)
 {
     if (argc <= 0)
         return ERR_CLI_EINVAL;
-    if (!me.init) return -EBADF;
+    if (!me.init)
+        return -EBADF;
     uint8_t data[argc];
     for (int i = 0; i < argc; i++)
         data[i] = strtol(argv[i], NULL, 0);
@@ -348,5 +437,39 @@ static int cli_disp_deinit(int argc, const char **argv)
     return 0;
 }
 CLI_FUNCTION(cli_disp_deinit, "ch3613_deinit", "deinitialize CH3613 display driver");
+
+static int cli_disp_flush(int argc, const char **argv)
+{
+    return disp_ch3613_flush();
+}
+CLI_FUNCTION(cli_disp_flush, "ch3613_flush", "flushes gram contents to display");
+
+static int cli_disp_clear(int argc, const char **argv)
+{
+    disp_ch3613_clear(argc > 0 ? strtol(argv[0], NULL, 0) : 0);
+    return disp_ch3613_flush();
+}
+CLI_FUNCTION(cli_disp_clear, "ch3613_clear", "clears gram and flushes: (<color>)");
+
+static int cli_disp_string(int argc, const char **argv)
+{
+    if (argc < 1)
+        return ERR_CLI_EINVAL;
+    static int16_t _str_x = 0;
+    static int16_t _str_y = 0;
+    static uint8_t _str_col = 0x3;
+    if (argc > 1)
+        _str_x = strtol(argv[1], NULL, 0);
+    if (argc > 2)
+        _str_y = strtol(argv[2], NULL, 0);
+    if (argc > 3)
+        _str_col = strtol(argv[3], NULL, 0);
+    if (_str_y > DISP_HEIGHT - FONT_HEIGHT)
+        _str_y = 0;
+    disp_ch3613_string(argv[0], _str_x, _str_y, _str_col);
+    _str_y += FONT_HEIGHT;
+    return disp_ch3613_flush();
+}
+CLI_FUNCTION(cli_disp_string, "ch3613_string", "render string and flushes: <text> (<x> <y> <color)");
 
 #endif
