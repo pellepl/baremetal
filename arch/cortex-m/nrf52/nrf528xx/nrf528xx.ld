@@ -9,4 +9,8 @@ MEMORY
   RAM (rwx) :  ORIGIN = 0x20000000, LENGTH = 0x6000
 }
 
+_RAM_START = ORIGIN(RAM);
+_RAM_SIZE = LENGTH(RAM);
+
+
 INCLUDE "arch/cortex-m/nrf52/mdk/nrf52_common.ld"

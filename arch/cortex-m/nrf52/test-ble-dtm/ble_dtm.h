@@ -50,7 +50,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#if PROC != nrf528xx
 #include "nrf.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {

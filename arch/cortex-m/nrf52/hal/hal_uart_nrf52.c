@@ -44,15 +44,15 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
         | (config->flowcontrol == UART_FLOWCONTROL_NONE ? UART_CONFIG_HWFC_Disabled : UART_CONFIG_HWFC_Enabled);
 
 #if defined(UART_PSEL_RXD_CONNECT_Pos)
-    u->PSEL.RXD = rx_pin;
-    u->PSEL.TXD = tx_pin;
-    u->PSEL.CTS = cts_pin;
-    u->PSEL.RTS = rts_pin;
+    u->PSEL.RXD = rx_pin == BOARD_PIN_UNDEF ? (uint32_t)-1 : rx_pin;
+    u->PSEL.TXD = tx_pin == BOARD_PIN_UNDEF ? (uint32_t)-1 : tx_pin;
+    u->PSEL.CTS = cts_pin == BOARD_PIN_UNDEF ? (uint32_t)-1 : cts_pin;
+    u->PSEL.RTS = rts_pin == BOARD_PIN_UNDEF ? (uint32_t)-1 : rts_pin;
 #else
-    u->PSELRXD = rx_pin;
-    u->PSELTXD = tx_pin;
-    u->PSELCTS = cts_pin;
-    u->PSELRTS = rts_pin;
+    u->PSELRXD = rx_pin == BOARD_PIN_UNDEF ? (uint32_t)-1 : rx_pin;
+    u->PSELTXD = tx_pin == BOARD_PIN_UNDEF ? (uint32_t)-1 : tx_pin;
+    u->PSELCTS = cts_pin == BOARD_PIN_UNDEF ? (uint32_t)-1 : cts_pin;
+    u->PSELRTS = rts_pin == BOARD_PIN_UNDEF ? (uint32_t)-1 : rts_pin;
 #endif
     if (config->flowcontrol == UART_FLOWCONTROL_RTSCTS) {
         if (cts_pin != BOARD_PIN_UNDEF) {

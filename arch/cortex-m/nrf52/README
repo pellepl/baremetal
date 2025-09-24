@@ -10,4 +10,7 @@ Makeflags:
     Enables a processor specific module for testing the radio in a BLE manner.
     See test-ble-dtm/.
 
+  CONFIG_GPIO_IRQ
+    Enables gpio irq callback functionality.
+
 See nrf-flash.mk for convenience targets for flashing, debugging etc.

@@ -1,5 +1,6 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#pragma GCC diagnostic ignored "-Wredundant-decls" // can someone explain why we need this?
 
 #define SystemCoreClock SystemCoreClock_10
 #define SystemCoreClockUpdate SystemCoreClockUpdate_10
