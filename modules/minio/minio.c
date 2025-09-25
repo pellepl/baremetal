@@ -127,18 +127,38 @@ static void u_itoan(uint32_t v, char *dst, int base, int num, int flags) {
     const char *arr = (flags & NUM_FLAG_CAPITALS) ? I_BASE_ARR_U : I_BASE_ARR_L;
     char *ptr = dst, *ptr_o = dst, tmp_char;
     int tmp_value;
-    int ix = 0;
     char zero_char = flags & NUM_FLAG_FILL_SPACE ? ' ' : '0';
+
+    int prefix_chars = 0;
+    if (num > 0)
+    {
+        if (flags & NUM_FLAG_BASE_SIG)
+        {
+            if (base == 16 || base == 2)
+                prefix_chars += 2; // 0x,0b
+            else if (base == 8)
+                prefix_chars += 1; // 0
+        }
+        if (flags & (NUM_FLAG_NEGATE | NUM_FLAG_FORCE_SIGN))
+            prefix_chars += 1;
+        if (prefix_chars > num)
+            return;
+    }
+
     do {
+        if (num > 0 && ptr >= ptr_o + num - prefix_chars)
+            break;
         tmp_value = v;
         v /= base;
-        if (tmp_value != 0 || (tmp_value == 0 && ix == 0)) {
-            *ptr++ = arr[(tmp_value - v * base)];
-        } else {
+        *ptr++ = arr[(tmp_value - v * base)];
+    } while (v);
+
+    if ((flags & NUM_FLAG_FILL_SPACE) == 0 && num > 0)
+    {
+        // fill with '0'
+        while (ptr < ptr_o + num)
             *ptr++ = zero_char;
-        }
-        ix++;
-    } while ((v && num == 0) || (num != 0 && ix < num));
+    }
 
     if (flags & NUM_FLAG_BASE_SIG) {
         if (base == 16) {
@@ -148,6 +168,7 @@ static void u_itoan(uint32_t v, char *dst, int base, int num, int flags) {
             *ptr++ = '0';
         } else if (base == 2) {
             *ptr++ = 'b';
+            *ptr++ = '0';
         }
     }
 
@@ -156,6 +177,13 @@ static void u_itoan(uint32_t v, char *dst, int base, int num, int flags) {
         *ptr++ = '-';
     } else if (flags & NUM_FLAG_FORCE_SIGN) {
         *ptr++ = '+';
+    }
+
+    if ((flags & NUM_FLAG_FILL_SPACE) != 0 && num > 0)
+    {
+        // fill with ' '
+        while (ptr < ptr_o + num)
+            *ptr++ = zero_char;
     }
 
     // end
