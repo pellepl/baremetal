@@ -44,6 +44,12 @@ typedef struct {
 void tick_timer_init(tick_timer_t *tim);
 
 /**
+ * Tear down the tick timer framework.
+ * @param tim the tick timer struct
+ */
+void tick_timer_deinit(tick_timer_t *tim);
+
+/**
  * Sets the an alarm at the given absolute tick.
  * The alarm will only be set if there is no untriggered alarm set previously,
  * or if the new alarm is earlier than the current alarm. In the latter case,
@@ -52,14 +58,14 @@ void tick_timer_init(tick_timer_t *tim);
  */
 void tick_timer_set_alarm(tick_timer_t *tim, tick_t tick);
 
-/** 
+/**
  * Aborts current untriggered alarm. If there is no such alarm,
  * nothing happens.
  * @param tim the tick timer struct
  */
 void tick_timer_abort_alarm(tick_timer_t *tim);
 
-/** 
+/**
  * Returns current tick.
  * @param tim the tick timer struct
  * @return the current tick value

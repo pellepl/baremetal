@@ -11,6 +11,11 @@
 void tick_timer_hal_init(tick_timer_t *tim);
 
 /**
+ * Frees resources used by timer.
+ */
+void tick_timer_hal_deinit(tick_timer_t *tim);
+
+/**
  * Returns current raw timer value.
  * @param tim the tick timer struct
  * @return the timer value
@@ -20,7 +25,7 @@ uint32_t tick_timer_hal_get_current(tick_timer_t *tim);
 /**
  * Sets the timer period.
  * @param tim the tick timer struct
- * @param ticks 
+ * @param ticks
  */
 void tick_timer_hal_set_period(tick_timer_t *tim, uint32_t ticks);
 

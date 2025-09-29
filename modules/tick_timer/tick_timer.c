@@ -101,3 +101,8 @@ void tick_timer_init(tick_timer_t *tim)
     tick_timer_hal_init(tim);
     tim->timer_period = tim->hal_max_ticks;
 }
+
+void tick_timer_deinit(tick_timer_t *tim)
+{
+    tick_timer_hal_deinit(tim);
+}

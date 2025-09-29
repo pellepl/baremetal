@@ -8,7 +8,7 @@ static volatile uint16_t __tick_timer_period;
 #error please define stm32 timer prescaler CONFIG_TICK_TIMER_STM32_PRESCALER (0-65535)
 #endif
 #if CONFIG_TICK_TIMER_STM32_HW_TIM < 2 || CONFIG_TICK_TIMER_STM32_HW_TIM > 4
-#error please define stm32 timer CONFIG_TICK_TIMER_STM32_HW_TIM (2,3,4) 
+#error please define stm32 timer CONFIG_TICK_TIMER_STM32_HW_TIM (2,3,4)
 #endif
 
 #define CAT(a, ...) PRIMITIVE_CAT(a, __VA_ARGS__)
@@ -36,7 +36,15 @@ void tick_timer_hal_init(tick_timer_t *tim) {
     LL_TIM_EnableCounter(TIMx);
 }
 
-uint32_t tick_timer_hal_get_current(tick_timer_t *tim) {
+void tick_timer_hal_deinit(tick_timer_t *tim)
+{
+    LL_TIM_DisableCounter(TIMx);
+    NVIC_DisableIRQ(CAT(TIM, CAT(CONFIG_TICK_TIMER_STM32_HW_TIM, _IRQn)));
+    LL_APB1_GRP1_DisableClock(CAT(LL_APB1_GRP1_PERIPH_TIM, CONFIG_TICK_TIMER_STM32_HW_TIM));
+}
+
+uint32_t tick_timer_hal_get_current(tick_timer_t *tim)
+{
     return (uint32_t)((__tick_timer_period -  LL_TIM_GetCounter(TIMx)) & 0xffff);
 }
 
