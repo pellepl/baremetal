@@ -51,7 +51,7 @@ ENTRY(Reset_Handler)
 /* Program Headers: define explicit permissions */
 PHDRS
 {
-  text PT_LOAD FLAGS(4);   /* R E */
+  text PT_LOAD FLAGS(5);   /* R E */
   data PT_LOAD FLAGS(6);   /* R W */
 }
 
@@ -82,7 +82,7 @@ SECTIONS
         *(.rodata*)
 
         KEEP(*(.eh_frame*))
-    } > FLASH  :text
+    } > FLASH :text
 
     .ARM.extab :
     {
@@ -133,7 +133,7 @@ SECTIONS
 
     } >RAM AT >FLASH :data
 
-    .bss :
+    .bss (NOLOAD) :
     {
         . = ALIGN(4);
         __bss_start__ = .;
