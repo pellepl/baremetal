@@ -1208,7 +1208,6 @@ int nvmtnvj_mount(uint32_t sector_start, uint8_t max_lookahead_sectors)
     uint32_t data_min_seq_block_ix = UNDEF_IX;
     uint32_t data_max_seq_block_ix = UNDEF_IX;
     uint32_t unknown_block_ix = UNDEF_IX;
-    uint32_t data_block_ix = UNDEF_IX;
     uint32_t spare_block_ix = UNDEF_IX;
     uint32_t evict_block_ix = UNDEF_IX;
     uint8_t data_block_count = 0;
