@@ -11,7 +11,7 @@ __attribute__((weak, noreturn)) void cpu_reset(void)
         ;
 }
 
-#if CONFIG_STM32F1_HALT_USING_SYSCLK
+#if CONFIG_CORTEX_HALT_USING_SYSCLK
 
 __attribute__((weak)) void cpu_halt(uint32_t milliseconds) {
     uint32_t ticks_per_ms = cpu_core_clock_freq() / 1000;

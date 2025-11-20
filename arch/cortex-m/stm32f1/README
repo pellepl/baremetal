@@ -17,7 +17,4 @@ Makeflags:
     included in source files for this family. Define this to avoid that and
     implement your own SystemInit function.
 
-  CONFIG_STM32F1_HALT_USING_SYSCLK
-    Use SYSCLK for calculating cycles to halt when calling cpu_halt(x)
-
 See stm-flash.mk for convenience targets for flashing, debugging etc.

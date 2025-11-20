@@ -10,3 +10,6 @@ Makeflags:
   NO_NEWLIB_NANO
     By default, nano newlib is selected.
     Defining this flag disables this.
+
+  CONFIG_CORTEX_HALT_USING_SYSCLK
+    Use SYSCLK for calculating cycles to halt when calling cpu_halt(x)
