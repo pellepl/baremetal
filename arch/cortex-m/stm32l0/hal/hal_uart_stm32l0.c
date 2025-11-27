@@ -414,6 +414,13 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
         {
 #ifdef CONFIG_UART_STM32_RX_INTERRUPT
             LL_USART_EnableIT_RXNE(u);
+            LL_USART_DisableIT_IDLE(u);
+            LL_USART_DisableIT_PE(u);
+            LL_USART_DisableIT_ERROR(u);
+            LL_USART_DisableIT_TC(u);
+            LL_USART_DisableIT_TXE(u);
+            LL_USART_DisableIT_RTO(u);
+            LL_USART_DisableIT_EOB(u);
             NVIC_ClearPendingIRQ(phy_irqn[phy_cfg.phy_hdl]);
             NVIC_EnableIRQ(phy_irqn[phy_cfg.phy_hdl]);
 #endif
@@ -581,6 +588,20 @@ static void stm32l0_uart_irq(int phy_hdl_ix)
     {
         // cleared by reading byte
         uart_irq_rxchar_stm32l0(hdl, LL_USART_ReceiveData8(u));
+    }
+    else
+    {
+        if (LL_USART_IsActiveFlag_ORE(u))
+        {
+            (void)LL_USART_ReceiveData8(u);
+            LL_USART_ClearFlag_ORE(u);
+        }
+
+        if (LL_USART_IsActiveFlag_IDLE(u))
+            LL_USART_ClearFlag_IDLE(u);
+
+        if (LL_USART_IsActiveFlag_EOB(u))
+            LL_USART_ClearFlag_EOB(u);
     }
 }
 
