@@ -29,7 +29,7 @@
 #    include <string.h>
 #  else
 #    define fprintf(i, f, ...) minio_fprintf((i), (f), ## _VA_ARGS__)
-#    define printf(f, ...) do { minio_fprintf(UART_STD, f, ## __VA_ARGS__); } while (0);
+#define printf(f, ...) do { minio_fprintf(UART_STD, f, ##__VA_ARGS__); } while (0)
 #    define itoa(v, d, b) minio_itoa((v), (d), (b))
 #    define vn_printf(h, f, c, l) minio_vn_printf((h), (f), (c), (l))
 #    define sprintf(s, f, ...) minio_sprintf((s), (f), ## __VA_ARGS__)
