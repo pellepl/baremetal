@@ -237,12 +237,12 @@ endif
 $(objfiles): $(TARGET_DIR)/%.o:%.c
 	@$(ECHO) "CC\t$@"
 	$(v)$(MKDIR) $(@D)
-	$(v)$(XCC) $(CFLAGS) $(iflags) -c -o $@ $< $(LIBS)
+	$(v)$(XCC) $(CFLAGS) -D_FILENAME=\"$(notdir $<)\" $(iflags) -c -o $@ $< $(LIBS)
 
 $(asobjfiles): $(TARGET_DIR)/%.o:%.S
 	@$(ECHO) "AS\t$@"
 	$(v)$(MKDIR) $(@D)
-	$(v)$(XAS) $(CFLAGS) $(iflags) -c -o $@ $< $(LIBS)
+	$(v)$(XAS) $(CFLAGS) -D_FILENAME=\"$(notdir $<)\" $(iflags) -c -o $@ $< $(LIBS)
 
 $(depfiles): $(TARGET_DIR)/%.d:%.c
 	@$(ECHO) "DEP\t$@"
