@@ -69,7 +69,7 @@ stm-list: .prereq-devs
 # in parallel each with a timeout for 10 seconds, and await completion
 define _parallel
 	@rm -rf .parallel.pids
-	@$(foreach arg,$(2), \
+	$(foreach arg,$(2), \
           arg="$(arg)"; \
           timeout $(3)s $(1) & \
           echo "$$!" >> .parallel.pids; \
@@ -79,6 +79,10 @@ define _parallel
         done <.parallel.pids
 	@rm -rf .parallel.pids
 endef
+
+ifndef OPENOCD_RESET_HALT_CMD
+OPENOCD_RESET_HALT_CMD ?= reset halt
+endif
 
 # Resets stm devices.
 stm-reset: .prereq-devs
@@ -106,7 +110,7 @@ stm-flash: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
 					-c "telnet_port $(TELNET_PORT)" \
 					-c "tcl_port disabled" \
 					-c "init" \
-					-c "reset halt" \
+					-c "$(OPENOCD_RESET_HALT_CMD)" \
 					-c "flash write_image erase \"$(realpath $<)\"" \
 					-c "reset" \
 					-c "exit" \
@@ -127,7 +131,7 @@ stm-flash-file: .prereq-devs
 					-c "telnet_port $(TELNET_PORT)" \
 					-c "tcl_port disabled" \
 					-c "init" \
-					-c "reset halt" \
+					-c "$(OPENOCD_RESET_HALT_CMD)" \
 					-c "flash write_image erase \"$(realpath $(FILE))\"" \
 					-c "exit" \
 		  ,$(STM_DEVICES),60)
@@ -143,7 +147,7 @@ stm-erase-all: .prereq-devs
 					-c "telnet_port $(TELNET_PORT)" \
 					-c "tcl_port disabled" \
 					-c "init" \
-					-c "reset halt" \
+					-c "$(OPENOCD_RESET_HALT_CMD)" \
 					-c "stm32f1x mass_erase 0" \
 					-c "exit" \
 		  ,$(STM_DEVICES),60)
