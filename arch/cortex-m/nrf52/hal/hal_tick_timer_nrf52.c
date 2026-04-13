@@ -63,6 +63,12 @@ uint32_t tick_timer_hal_get_current(tick_timer_t *tim)
     return now;
 }
 
+uint32_t tick_timer_hal_get_frequency(tick_timer_t *tim)
+{
+    (void)tim;
+    return 16000000U >> CONFIG_TICK_TIMER_NRF52_PRESCALER;
+}
+
 void tick_timer_hal_set_period(tick_timer_t *tim, uint32_t ticks)
 {
     (void)tim;

@@ -1,5 +1,6 @@
 #include "tick_timer_hal.h"
 #include "stm32f1xx_ll_bus.h"
+#include "stm32f1xx_ll_rcc.h"
 #include "stm32f1xx_ll_tim.h"
 
 static tick_timer_t *__tick_timer;
@@ -46,6 +47,21 @@ void tick_timer_hal_deinit(tick_timer_t *tim)
 uint32_t tick_timer_hal_get_current(tick_timer_t *tim)
 {
     return (uint32_t)((__tick_timer_period -  LL_TIM_GetCounter(TIMx)) & 0xffff);
+}
+
+uint32_t tick_timer_hal_get_frequency(tick_timer_t *tim)
+{
+    (void)tim;
+    LL_RCC_ClocksTypeDef clocks;
+    LL_RCC_GetSystemClocksFreq(&clocks);
+
+    uint32_t tim_clk = clocks.PCLK1_Frequency;
+    if (LL_RCC_GetAPB1Prescaler() != LL_RCC_APB1_DIV_1)
+    {
+        tim_clk *= 2U;
+    }
+
+    return tim_clk / (CONFIG_TICK_TIMER_STM32_PRESCALER + 1U);
 }
 
 void tick_timer_hal_set_period(tick_timer_t *tim, uint32_t ticks) {

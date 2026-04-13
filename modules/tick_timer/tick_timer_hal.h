@@ -23,6 +23,13 @@ void tick_timer_hal_deinit(tick_timer_t *tim);
 uint32_t tick_timer_hal_get_current(tick_timer_t *tim);
 
 /**
+ * Returns the underlying hardware timer frequency in Hz after prescaling.
+ * @param tim the tick timer struct
+ * @return timer tick frequency in Hz
+ */
+uint32_t tick_timer_hal_get_frequency(tick_timer_t *tim);
+
+/**
  * Sets the timer period.
  * @param tim the tick timer struct
  * @param ticks
