@@ -9,16 +9,16 @@
 
 ifeq "$(OPENOCD_DEBUGGER)" "stlink-v2"
 OPENOCD_VID_PID ?= "0483:3748"
-OPENOCD_INTERFACE_FILE = "interface/stlink-v2.cfg"
+OPENOCD_INTERFACE_FILE = "interface/stlink.cfg"
 else ifeq "$(OPENOCD_DEBUGGER)" "stlink-v2-1"
 OPENOCD_VID_PID ?= "0483:374b"
-OPENOCD_INTERFACE_FILE = "interface/stlink-v2-1.cfg"
+OPENOCD_INTERFACE_FILE = "interface/stlink.cfg"
 else ifeq "$(OPENOCD_DEBUGGER)" "stlink"
 OPENOCD_VID_PID ?= "0483:374b"
-OPENOCD_INTERFACE_FILE = "interface/stlink-v2-1.cfg"
+OPENOCD_INTERFACE_FILE = "interface/stlink.cfg"
 else ifeq "$(OPENOCD_DEBUGGER)" "user"
 else
-$(error OPENOCD_DEBUGGER is not defined or invalid, please set to "stlink-v2", "stlink-v2-1", or "user")
+$(error OPENOCD_DEBUGGER is not defined or invalid, please set to "stlink", "stlink-v2", "stlink-v2-1", or "user")
 endif
 
 OPENOCD ?= openocd
@@ -81,7 +81,7 @@ define _parallel
 endef
 
 ifndef OPENOCD_RESET_HALT_CMD
-OPENOCD_RESET_HALT_CMD ?= reset halt
+OPENOCD_RESET_HALT_CMD ?= reset init
 endif
 
 # Resets stm devices.
