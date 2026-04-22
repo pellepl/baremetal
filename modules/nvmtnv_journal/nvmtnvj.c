@@ -324,6 +324,22 @@ static word_t seq_nbr_diff(word_t newer, word_t older)
     return (word_t)(newer - older);
 }
 
+static void seq_nbr_update_extrema(word_t seq_nbr, uint32_t block_ix,
+                                   word_t *min_seq_nbr, uint32_t *min_block_ix,
+                                   word_t *max_seq_nbr, uint32_t *max_block_ix)
+{
+    if (*max_block_ix == UNDEF_IX || seq_nbr_is_newer(seq_nbr, *max_seq_nbr))
+    {
+        *max_seq_nbr = seq_nbr;
+        *max_block_ix = block_ix;
+    }
+    if (*min_block_ix == UNDEF_IX || seq_nbr_is_newer(*min_seq_nbr, seq_nbr))
+    {
+        *min_seq_nbr = seq_nbr;
+        *min_block_ix = block_ix;
+    }
+}
+
 // reads across sector boundaries which flash_* api does not
 static int block_read(uint32_t block_ix, uint32_t offset, uint8_t *dst, uint32_t size)
 {
@@ -1220,16 +1236,8 @@ int nvmtnvj_mount(uint32_t sector_start, uint8_t max_lookahead_sectors)
         switch (block_type(&bhdr))
         {
         case BLOCK_TYPE_DATA:
-            if (sys.max_seq_nbr == SEQ_NBR_UNWRITTEN || bhdr.seq_nbr > sys.max_seq_nbr)
-            {
-                sys.max_seq_nbr = bhdr.seq_nbr;
-                data_max_seq_block_ix = b;
-            }
-            if (sys.min_seq_nbr == SEQ_NBR_UNWRITTEN || bhdr.seq_nbr < sys.min_seq_nbr)
-            {
-                sys.min_seq_nbr = bhdr.seq_nbr;
-                data_min_seq_block_ix = b;
-            }
+            seq_nbr_update_extrema(bhdr.seq_nbr, b, &sys.min_seq_nbr, &data_min_seq_block_ix,
+                                   &sys.max_seq_nbr, &data_max_seq_block_ix);
             data_block_count++;
             break;
         case BLOCK_TYPE_DATA_FREE:
@@ -1275,16 +1283,6 @@ int nvmtnvj_mount(uint32_t sector_start, uint8_t max_lookahead_sectors)
         data_min_seq_block_ix = data_max_seq_block_ix;
     }
 
-    // sequence number wrap guard
-    if (seq_nbr_is_newer(sys.min_seq_nbr, sys.max_seq_nbr))
-    {
-        word_t tmp = sys.min_seq_nbr;
-        sys.min_seq_nbr = sys.max_seq_nbr;
-        sys.max_seq_nbr = tmp;
-        uint32_t btmp = data_min_seq_block_ix;
-        data_min_seq_block_ix = data_max_seq_block_ix;
-        data_max_seq_block_ix = btmp;
-    }
     sys.current_block_ix = data_max_seq_block_ix;
 
     // sort out mount state

@@ -172,6 +172,23 @@ static int prime_gc_state(void)
 	return res;
 }
 
+typedef struct
+{
+	uint8_t magic;
+	uint8_t sectors_per_block;
+	uint8_t nbr_of_blocks;
+	uint8_t max_value_size;
+	uint32_t seq_nbr;
+	uint32_t data_flag;
+	uint32_t evict_flag;
+} test_block_header_t;
+
+static void set_block_seq_nbr(uint32_t block_ix, uint32_t seq_nbr)
+{
+	const size_t block_offset = block_ix * BLOCK_PAGES * PAGE_SIZE;
+	memcpy(memory + block_offset + offsetof(test_block_header_t, seq_nbr), &seq_nbr, sizeof(seq_nbr));
+}
+
 TEST(aborted_gc)
 {
 	TEST_CHECK_EQ(prime_gc_state(), 0);
@@ -203,6 +220,36 @@ TEST(aborted_gc)
 		nvmtnvj_delete(0x1111);
 		TEST_CHECK_EQ(test_tag_compare_all(), 0);
 	}
+	return 0;
+}
+TEST_END;
+
+TEST(mount_seq_wrap)
+{
+	TEST_CHECK_EQ(nvmtnvj_format(0, BLOCK_PAGES, PAGE_COUNT / BLOCK_PAGES, TAG_MAX_SIZE), 0);
+	TEST_CHECK_EQ(nvmtnvj_mount(0, BLOCK_PAGES + 1), 0);
+
+	const uint32_t tags_per_block = nvmtnvj_test_tags_per_block();
+	for (uint32_t i = 0; i < tags_per_block * 2 + 1; i++)
+	{
+		uint8_t value[4];
+		memcpy(value, &i, sizeof(value));
+		TEST_CHECK_EQ(nvmtnvj_write((uint16_t)(0x4000 + i), value, sizeof(value)), 0);
+	}
+
+	TEST_CHECK_EQ(nvmtnvj_unmount(), 0);
+
+	set_block_seq_nbr(0, 0xfffffffeu);
+	set_block_seq_nbr(1, 0x00000000u);
+	set_block_seq_nbr(2, 0x00000001u);
+
+	TEST_CHECK_EQ(nvmtnvj_mount(0, BLOCK_PAGES + 1), 0);
+
+	uint8_t data[4];
+	const uint32_t newest_value = tags_per_block * 2;
+	TEST_CHECK_EQ(nvmtnvj_read((uint16_t)(0x4000 + newest_value), data), (int)sizeof(data));
+	TEST_CHECK_EQ(memcmp(data, &newest_value, sizeof(data)), 0);
+
 	return 0;
 }
 TEST_END;
@@ -355,6 +402,7 @@ ADD_TEST(mount);
 ADD_TEST(write_read_delete);
 ADD_TEST(aborted_write);
 ADD_TEST(aborted_gc);
+ADD_TEST(mount_seq_wrap);
 ADD_TEST(fill);
 ADD_TEST(mount_scan_first_sector_borked);
 ADD_TEST(wear_balanced);
