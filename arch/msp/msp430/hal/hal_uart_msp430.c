@@ -7,8 +7,8 @@
 #include "board_common.h"
 
 int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
-    gpio_config(rx_pin, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_UP);
-    gpio_config(tx_pin, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_UP);
+    gpio_config(rx_pin, GPIO_DIRECTION_FUNCTION_OUT, CONFIG_UART_GPIO_RX_PULL_UP ? GPIO_PULL_UP : GPIO_PULL_NONE);
+    gpio_config(tx_pin, GPIO_DIRECTION_FUNCTION_OUT, CONFIG_UART_GPIO_TX_PULL_NONE ? GPIO_PULL_NONE : GPIO_PULL_UP);
     UCA0CTL0 = 0 |
         (config->parity == UART_PARITY_NONE ? 0 : UCPEN) |
         (config->parity == UART_PARITY_EVEN ? 0 : UCPAR) |

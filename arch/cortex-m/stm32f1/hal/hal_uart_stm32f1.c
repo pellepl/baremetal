@@ -243,16 +243,16 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
     }
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_AFIO);
     if (phy_cfg.pin.rx != BOARD_PIN_UNDEF) {
-         res = gpio_config(phy_cfg.pin.rx, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+        res = gpio_config(phy_cfg.pin.rx, GPIO_DIRECTION_FUNCTION_IN, CONFIG_UART_GPIO_RX_PULL_UP ? GPIO_PULL_UP : GPIO_PULL_NONE);
     }
     if (res == 0 && phy_cfg.pin.tx != BOARD_PIN_UNDEF) {
-         res = gpio_config(phy_cfg.pin.tx, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_UP);
+        res = gpio_config(phy_cfg.pin.tx, GPIO_DIRECTION_FUNCTION_OUT, CONFIG_UART_GPIO_TX_PULL_NONE ? GPIO_PULL_NONE : GPIO_PULL_UP);
     }
     if (res == 0 && phy_cfg.pin.cts != BOARD_PIN_UNDEF) {
-         res = gpio_config(phy_cfg.pin.cts, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+        res = gpio_config(phy_cfg.pin.cts, GPIO_DIRECTION_FUNCTION_IN, CONFIG_UART_GPIO_CTS_PULL_UP ? GPIO_PULL_UP: GPIO_PULL_NONE);
     }
     if (res == 0 && phy_cfg.pin.rts != BOARD_PIN_UNDEF) {
-         res = gpio_config(phy_cfg.pin.rts, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_UP);
+        res = gpio_config(phy_cfg.pin.rts, GPIO_DIRECTION_FUNCTION_OUT, CONFIG_UART_GPIO_RTS_PULL_NONE ? GPIO_PULL_NONE: GPIO_PULL_UP);
     }
 
     USART_TypeDef *u = phy_hdl[phy_cfg.phy_hdl];

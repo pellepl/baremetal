@@ -278,22 +278,22 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
     }
     if (phy_cfg.pin.rx != BOARD_PIN_UNDEF)
     {
-        res = gpio_config(phy_cfg.pin.rx, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+        res = gpio_config(phy_cfg.pin.rx, GPIO_DIRECTION_FUNCTION_IN, CONFIG_UART_GPIO_RX_PULL_UP ? GPIO_PULL_UP : GPIO_PULL_NONE);
         gpio_hal_stm32l0_af(phy_cfg.pin.rx, phy_cfg.af.rx);
     }
     if (res == 0 && phy_cfg.pin.tx != BOARD_PIN_UNDEF)
     {
-        res = gpio_config(phy_cfg.pin.tx, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_UP);
+        res = gpio_config(phy_cfg.pin.tx, GPIO_DIRECTION_FUNCTION_OUT, CONFIG_UART_GPIO_TX_PULL_NONE ? GPIO_PULL_NONE : GPIO_PULL_UP);
         gpio_hal_stm32l0_af(phy_cfg.pin.tx, phy_cfg.af.tx);
     }
     if (res == 0 && phy_cfg.pin.cts != BOARD_PIN_UNDEF)
     {
-        res = gpio_config(phy_cfg.pin.cts, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+        res = gpio_config(phy_cfg.pin.cts, GPIO_DIRECTION_FUNCTION_IN, CONFIG_UART_GPIO_CTS_PULL_UP ? GPIO_PULL_UP: GPIO_PULL_NONE);
         gpio_hal_stm32l0_af(phy_cfg.pin.cts, phy_cfg.af.cts);
     }
     if (res == 0 && phy_cfg.pin.rts != BOARD_PIN_UNDEF)
     {
-        res = gpio_config(phy_cfg.pin.rts, GPIO_DIRECTION_FUNCTION_OUT, GPIO_PULL_UP);
+        res = gpio_config(phy_cfg.pin.rts, GPIO_DIRECTION_FUNCTION_OUT, CONFIG_UART_GPIO_RTS_PULL_NONE ? GPIO_PULL_NONE: GPIO_PULL_UP);
         gpio_hal_stm32l0_af(phy_cfg.pin.rts, phy_cfg.af.rts);
     }
 

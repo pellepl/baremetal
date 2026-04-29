@@ -19,7 +19,7 @@ static NRF_UART_Type *hw[1] = {
 int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
     NRF_UART_Type *u = hw[hdl];
     if (rx_pin != BOARD_PIN_UNDEF) {
-        gpio_config(rx_pin, GPIO_DIRECTION_INPUT, GPIO_PULL_NONE);
+        gpio_config(rx_pin, GPIO_DIRECTION_INPUT, CONFIG_UART_GPIO_RX_PULL_UP ? GPIO_PULL_UP : GPIO_PULL_NONE);
     }
     if (tx_pin != BOARD_PIN_UNDEF) {
         gpio_set(tx_pin, 1);
@@ -56,7 +56,7 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
 #endif
     if (config->flowcontrol == UART_FLOWCONTROL_RTSCTS) {
         if (cts_pin != BOARD_PIN_UNDEF) {
-            gpio_config(cts_pin, GPIO_DIRECTION_INPUT, GPIO_PULL_NONE);
+            gpio_config(cts_pin, GPIO_DIRECTION_INPUT, CONFIG_UART_GPIO_CTS_PULL_UP ? GPIO_PULL_UP: GPIO_PULL_NONE);
         }
         if (rts_pin != BOARD_PIN_UNDEF) {
             gpio_set(rts_pin, 1);

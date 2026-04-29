@@ -1,1 +1,11 @@
 Simple uart driver, polling.
+
+Makeflags:
+  CONFIG_UART_GPIO_TX_PULL_NONE
+    Hint to driver: do not place a gpio pull-up on TX
+  CONFIG_UART_GPIO_RX_PULL_UP
+    Hint to driver: place a gpio pull-up on RX
+  CONFIG_UART_GPIO_RTS_PULL_NONE
+    Hint to driver: do not place a gpio pull-up on RTS
+  CONFIG_UART_GPIO_CTS_PULL_UP
+    Hint to driver: place a gpio pull-up on CTS
