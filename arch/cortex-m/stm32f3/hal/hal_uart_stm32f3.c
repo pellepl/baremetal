@@ -57,6 +57,21 @@ static IRQn_Type const phy_irqn[1 + UART_COUNT] = {
 
 static uint8_t loghdl2phyix[UART_COUNT] = {0};
 
+static void stm32f3_uart_clear_rx_errors(USART_TypeDef *u) {
+    if (LL_USART_IsActiveFlag_ORE(u)) {
+        LL_USART_ClearFlag_ORE(u);
+    }
+    if (LL_USART_IsActiveFlag_FE(u)) {
+        LL_USART_ClearFlag_FE(u);
+    }
+    if (LL_USART_IsActiveFlag_NE(u)) {
+        LL_USART_ClearFlag_NE(u);
+    }
+    if (LL_USART_IsActiveFlag_PE(u)) {
+        LL_USART_ClearFlag_PE(u);
+    }
+}
+
 typedef struct {
     uint8_t phy_hdl;
     union {
@@ -244,10 +259,17 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
         if (res == 0) {
 #ifdef CONFIG_UART_STM32_RX_INTERRUPT
             LL_USART_EnableIT_RXNE(u);
+            LL_USART_DisableIT_IDLE(u);
+            LL_USART_DisableIT_PE(u);
+            LL_USART_DisableIT_ERROR(u);
+            LL_USART_DisableIT_TC(u);
+            LL_USART_DisableIT_TXE(u);
+            LL_USART_DisableIT_EOB(u);
             NVIC_ClearPendingIRQ(phy_irqn[phy_cfg.phy_hdl]);
             NVIC_EnableIRQ(phy_irqn[phy_cfg.phy_hdl]);
 #endif
             LL_USART_Enable(u);
+            while (!LL_USART_IsActiveFlag_TEACK(u) || !LL_USART_IsActiveFlag_REACK(u));
         }
     }
 
@@ -270,7 +292,9 @@ int uart_hal_tx(unsigned int hdl, char x) {
 int uart_hal_rx(unsigned int hdl) {
     if (loghdl2phyix[hdl]) {
         USART_TypeDef *u = phy_block[loghdl2phyix[hdl]];
-        while (LL_USART_IsActiveFlag_RXNE(u) == 0);
+        while (LL_USART_IsActiveFlag_RXNE(u) == 0) {
+            stm32f3_uart_clear_rx_errors(u);
+        }
         return LL_USART_ReceiveData8(u);
     }
     return ERR_UART_NOINIT;
@@ -279,6 +303,7 @@ int uart_hal_rx(unsigned int hdl) {
 int uart_hal_rxpoll(unsigned int hdl) {
     if (loghdl2phyix[hdl]) {
         USART_TypeDef *u = phy_block[loghdl2phyix[hdl]];
+        stm32f3_uart_clear_rx_errors(u);
         return LL_USART_IsActiveFlag_RXNE(u) == 0 ? -1 : LL_USART_ReceiveData8(u);
     }
     return ERR_UART_NOINIT;
@@ -329,6 +354,16 @@ static void stm32f3_uart_irq(int phy_hdl_ix) {
     }
     if (LL_USART_IsActiveFlag_RXNE(u)) {
         uart_irq_rxchar_stm32f3(hdl, LL_USART_ReceiveData8(u));
+    } else {
+        stm32f3_uart_clear_rx_errors(u);
+
+        if (LL_USART_IsActiveFlag_IDLE(u)) {
+            LL_USART_ClearFlag_IDLE(u);
+        }
+
+        if (LL_USART_IsActiveFlag_EOB(u)) {
+            LL_USART_ClearFlag_EOB(u);
+        }
     }
 }
 
