@@ -21,6 +21,35 @@ PROG ?= STM32_Programmer_CLI
 endif
 endif
 
+STM32_GDBSERVER_CLI := $(lastword $(sort $(wildcard \
+	/opt/st/stm32cubeide_*/plugins/com.st.stm32cube.ide.mcu.externaltools.stlink-gdb-server.linux64_*/tools/bin/ST-LINK_gdbserver \
+	/usr/local/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/ST-LINK_gdbserver \
+)))
+ifneq "$(STM32_GDBSERVER_CLI)" ""
+STM32_GDBSERVER ?= $(STM32_GDBSERVER_CLI)
+else
+STM32_GDBSERVER ?= ST-LINK_gdbserver
+endif
+
+STM32_ARM_GDB_CLI := $(lastword $(sort $(wildcard \
+	/opt/st/stm32cubeide_*/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.*.linux64_*/tools/bin/arm-none-eabi-gdb \
+	/usr/local/STMicroelectronics/STM32Cube/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.*.linux64_*/tools/bin/arm-none-eabi-gdb \
+)))
+ifneq "$(TOOLCHAIN_DIR)" ""
+STM32_GDB ?= $(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb
+else ifneq "$(STM32_ARM_GDB_CLI)" ""
+STM32_GDB ?= $(STM32_ARM_GDB_CLI)
+else
+STM32_GDB ?= $(CROSS_COMPILE)gdb
+endif
+
+ifneq "$(findstring /,$(PROG))" ""
+STM32_CUBE_PROGRAMMER_DIR ?= $(abspath $(dir $(PROG))/..)
+STM32_GDBSERVER_CP_ARG ?= -cp "$(STM32_CUBE_PROGRAMMER_DIR)"
+else
+STM32_GDBSERVER_CP_ARG ?=
+endif
+
 STM32_CUBE_PORT ?= SWD
 STM32_CUBE_FREQ ?= 4000
 STM32_CUBE_MODE ?= UR
@@ -31,6 +60,9 @@ STM32_CUBE_FLASH_ARGS ?= -v
 STM32_CUBE_RESET_TIMEOUT ?= 10
 STM32_CUBE_FLASH_TIMEOUT ?= 60
 STM32_CUBE_ERASE_TIMEOUT ?= 60
+STM32_GDBSERVER_RESET_ARGS ?= -k --halt
+STM32_GDBSERVER_ARGS ?= -e
+GDB_PORT ?= 3333
 
 define strip_ansi
 sed -r 's/\x1b\[[0-9;]*[[:alpha:]]//g'
@@ -42,8 +74,10 @@ endef
 
 ifndef DEVICE_SINGLE
 DEVICE_SERIAL_ARG = sn=$$arg
+DEVICE_GDBSERVER_SERIAL_ARG = -i $(STM_DEVICE_FIRST)
 else
 DEVICE_SERIAL_ARG =
+DEVICE_GDBSERVER_SERIAL_ARG =
 endif
 
 _filter = $(foreach v,$(2),$(if $(findstring $(1),$(v)),$(v),))
@@ -110,6 +144,32 @@ stm-erase-all: .prereq-devs
 				-e all \
 	  ,$(STM_DEVICES),$(STM32_CUBE_ERASE_TIMEOUT))
 
+# Connects first best device to ST-LINK GDB server.
+stm-connect: .prereq-devs .prereq-gdbserver
+	@echo "Connecting to $(STM_DEVICE_FIRST) on gdb port $(GDB_PORT)"
+	"$(STM32_GDBSERVER)" \
+		-p $(GDB_PORT) \
+		-d \
+		--frequency $(STM32_CUBE_FREQ) \
+		$(DEVICE_GDBSERVER_SERIAL_ARG) \
+		$(STM32_GDBSERVER_CP_ARG) \
+		$(STM32_GDBSERVER_RESET_ARGS) \
+		$(STM32_GDBSERVER_ARGS)
+
+# Starts a debug session - stm-connect must have been issued first.
+stm-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs .prereq-gdb
+	$(STM32_GDB) \
+		-ex "file ${TARGET_DIR}/$(TARGETNAME).elf" \
+		-ex "target remote localhost:$(GDB_PORT)" \
+		-ex "break HardFault_Handler" \
+		$(EXTRA_DEBUG_COMMANDS)
+
+# Starts a bare debug session - stm-connect must have been issued first.
+stm-debug-bare: .prereq-devs .prereq-gdb
+	$(STM32_GDB) \
+		-ex "target remote localhost:$(GDB_PORT)" \
+		$(EXTRA_CONNECT_COMMANDS)
+
 rightparen:=)
 
 .prereq-devs: .prereq-prog
@@ -161,5 +221,19 @@ endif # DEVICE_SINGLE
 .prereq-prog:
 	@if [ $(has_prog) -ne 0 ]; then \
 		echo "*** ERROR: Could not find $(PROG). Make sure PROG or STM32_PRG_PATH is set correctly."; \
+		exit 1; \
+	fi
+
+.prereq-gdbserver: has_gdbserver=$(shell if [ -x "$(STM32_GDBSERVER)" ] || command -v "$(STM32_GDBSERVER)" > /dev/null 2>&1; then echo 0; else echo 1; fi)
+.prereq-gdbserver:
+	@if [ $(has_gdbserver) -ne 0 ]; then \
+		echo "*** ERROR: Could not find $(STM32_GDBSERVER). Make sure STM32_GDBSERVER is set correctly."; \
+		exit 1; \
+	fi
+
+.prereq-gdb: has_gdb=$(shell if [ -x "$(STM32_GDB)" ] || command -v "$(STM32_GDB)" > /dev/null 2>&1; then echo 0; else echo 1; fi)
+.prereq-gdb:
+	@if [ $(has_gdb) -ne 0 ]; then \
+		echo "*** ERROR: Could not find $(STM32_GDB). Make sure STM32_GDB, TOOLCHAIN_DIR, or CROSS_COMPILE is set correctly."; \
 		exit 1; \
 	fi
