@@ -16,9 +16,12 @@ OPENOCD_INTERFACE_FILE = "interface/stlink.cfg"
 else ifeq "$(OPENOCD_DEBUGGER)" "stlink"
 OPENOCD_VID_PID ?= "0483:374b"
 OPENOCD_INTERFACE_FILE = "interface/stlink.cfg"
+else ifeq "$(OPENOCD_DEBUGGER)" "stlink-v3"
+OPENOCD_VID_PID ?= "1366:1061"
+OPENOCD_INTERFACE_FILE = "interface/stlink.cfg"
 else ifeq "$(OPENOCD_DEBUGGER)" "user"
 else
-$(error OPENOCD_DEBUGGER is not defined or invalid, please set to "stlink", "stlink-v2", "stlink-v2-1", or "user")
+$(error OPENOCD_DEBUGGER is not defined or invalid, please set to "stlink", "stlink-v2", "stlink-v2-1", "stlink-v3", or "user")
 endif
 
 OPENOCD ?= openocd
