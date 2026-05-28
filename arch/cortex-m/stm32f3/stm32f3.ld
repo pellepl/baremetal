@@ -82,6 +82,7 @@ SECTIONS
     *(.data*)
     . = ALIGN(4);
     _edata = .;
+    . = ALIGN(8);
   } >RAM AT> FLASH :data
 
   .bss (NOLOAD) :
