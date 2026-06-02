@@ -192,9 +192,9 @@ int uart_hal_init(unsigned int hdl, const uart_config_t *config, uint16_t rx_pin
         .pin.rts = rts_pin,
         .pin.cts = cts_pin
     };
-    
+
     int res = pins_to_phy_hdl(&phy_cfg);
-    
+
     if (res) return res;
 
     if (config->flowcontrol == UART_FLOWCONTROL_NONE) {
@@ -374,7 +374,7 @@ int uart_hal_rxpoll(unsigned int hdl) {
 
 int uart_hal_deinit(unsigned int hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t rts_pin, uint16_t cts_pin) {
     if (log_hdl[hdl] == 0) return ERR_UART_NOINIT;
-    
+
     USART_TypeDef *u = phy_hdl[log_hdl[hdl]];
 
     LL_USART_Disable(u);
@@ -414,10 +414,10 @@ int uart_hal_deinit(unsigned int hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t
             break;
         #endif
     }
-    if (rx_pin != BOARD_PIN_UNDEF) (void)gpio_config(rx_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
-    if (tx_pin != BOARD_PIN_UNDEF) (void)gpio_config(tx_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
-    if (rts_pin != BOARD_PIN_UNDEF) (void)gpio_config(rts_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
-    if (cts_pin != BOARD_PIN_UNDEF) (void)gpio_config(cts_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+    if (rx_pin != BOARD_PIN_UNDEF) (void)gpio_config(rx_pin, GPIO_DIRECTION_ANALOG, GPIO_PULL_NONE);
+    if (tx_pin != BOARD_PIN_UNDEF) (void)gpio_config(tx_pin, GPIO_DIRECTION_ANALOG, GPIO_PULL_NONE);
+    if (rts_pin != BOARD_PIN_UNDEF) (void)gpio_config(rts_pin, GPIO_DIRECTION_ANALOG, GPIO_PULL_NONE);
+    if (cts_pin != BOARD_PIN_UNDEF) (void)gpio_config(cts_pin, GPIO_DIRECTION_ANALOG, GPIO_PULL_NONE);
 
     log_hdl[hdl] = 0;
     return 0;

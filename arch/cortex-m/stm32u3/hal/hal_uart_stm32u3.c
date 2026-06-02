@@ -409,10 +409,10 @@ int uart_hal_deinit(unsigned int hdl, uint16_t rx_pin, uint16_t tx_pin, uint16_t
 
     stm32u3_uart_clock_disable(loghdl2phyix[hdl]);
 
-    if (rx_pin != BOARD_PIN_UNDEF) (void)gpio_config(rx_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
-    if (tx_pin != BOARD_PIN_UNDEF) (void)gpio_config(tx_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
-    if (rts_pin != BOARD_PIN_UNDEF) (void)gpio_config(rts_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
-    if (cts_pin != BOARD_PIN_UNDEF) (void)gpio_config(cts_pin, GPIO_DIRECTION_FUNCTION_IN, GPIO_PULL_NONE);
+    if (rx_pin != BOARD_PIN_UNDEF) (void)gpio_config(rx_pin, GPIO_DIRECTION_ANALOG, GPIO_PULL_NONE);
+    if (tx_pin != BOARD_PIN_UNDEF) (void)gpio_config(tx_pin, GPIO_DIRECTION_ANALOG, GPIO_PULL_NONE);
+    if (rts_pin != BOARD_PIN_UNDEF) (void)gpio_config(rts_pin, GPIO_DIRECTION_ANALOG, GPIO_PULL_NONE);
+    if (cts_pin != BOARD_PIN_UNDEF) (void)gpio_config(cts_pin, GPIO_DIRECTION_ANALOG, GPIO_PULL_NONE);
 
     loghdl2phyix[hdl] = 0;
     return 0;
