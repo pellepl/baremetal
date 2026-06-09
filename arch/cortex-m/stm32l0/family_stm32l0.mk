@@ -14,6 +14,9 @@ INCLUDE += $(mdk_dir)/STM32L0xx/Include
 ifeq "$(PROC)" "stm32l053"
 CFLAGS += -DSTM32L053xx
 proc-cc-flags += $(cc-flags-nofpu)
+else ifeq "$(PROC)" "stm32l073"
+CFLAGS += -DSTM32L073xx
+proc-cc-flags += $(cc-flags-nofpu)
 else
 $(error PROC is not defined correctly for arch $(ARCH), family $(FAMILY))
 endif
