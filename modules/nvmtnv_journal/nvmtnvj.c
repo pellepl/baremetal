@@ -1178,6 +1178,21 @@ int nvmtnvj_unmount(void)
     return 0;
 }
 
+int nvmtnvj_geometry(uint32_t *sector_start, uint8_t *sectors_per_block, uint8_t *block_count, uint8_t *max_value_size)
+{
+    if (sys.state == STATE_UNMOUNTED)
+        return ERR_NVMTNVJ_MOUNT;
+    if (sector_start)
+        *sector_start = sys.starting_sector;
+    if (sectors_per_block)
+        *sectors_per_block = sys.sectors_per_block;
+    if (block_count)
+        *block_count = sys.nbr_of_blocks;
+    if (max_value_size)
+        *max_value_size = sys.max_value_size;
+    return 0;
+}
+
 int nvmtnvj_mount(uint32_t sector_start, uint8_t max_lookahead_sectors)
 {
     int res;

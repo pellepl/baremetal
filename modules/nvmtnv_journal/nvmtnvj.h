@@ -37,6 +37,7 @@ int nvmtnvj_size(uint16_t tag);
 int nvmtnvj_gc(void);
 int nvmtnvj_fix(void);
 int nvmtnvj_format(uint32_t sector_start, uint8_t sectors_per_block, uint8_t block_count, uint8_t max_value_size);
+int nvmtnvj_geometry(uint32_t *sector_start, uint8_t *sectors_per_block, uint8_t *block_count, uint8_t *max_value_size);
 
 #if NVMTNVJ_TEST
 // expose some privates to ease unittests
