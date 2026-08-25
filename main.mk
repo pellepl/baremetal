@@ -199,9 +199,12 @@ LDFLAGS += -Map=$(target).map
 
 ifndef NO_LINK_FILE
 ifneq "$(LINKER_FILE)" ""
-final_linker_files := $(LINKER_FILE) $(LINKER_FILES)
+final_linker_files := $(LINKER_FILE)
 endif
 endif
+
+final_linker_files += $(LINKER_FILES)
+final_linker_files += $(LINKER_FILES_LAST)
 
 LDFLAGS += -L$(BAREMETAL_DIR)
 LDFLAGS_LATE += $(final_linker_files:%=--script=%)
