@@ -12,13 +12,17 @@ else ifeq "$(PROC)" "msp430f4132"
 CFLAGS += -D__MSP430F4132__
 CFLAGS += -mmcu=$(PROC)
 msp_link_type := 430
+else ifeq "$(PROC)" "msp430g2001"
+CFLAGS += -D__MSP430G2001__
+CFLAGS += -mmcu=$(PROC)
+msp_link_type := 430
 else
 $(error PROC is not defined correctly for arch $(ARCH), family $(FAMILY))
 endif
 
 ifneq "$(GCC_AS_LD)" "1"
 
-# following sequence was derived by linking the MSP with GCC instead of ld, 
+# following sequence was derived by linking the MSP with GCC instead of ld,
 # along with the -v flag, a stroke of luck, and a load of angst
 
 NO_CRT0 := 1
