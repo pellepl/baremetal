@@ -139,7 +139,7 @@ endif
 ifndef NO_BUILD_INFO_GIT
 build_info_git_commit := "$(shell git rev-parse --short HEAD)"
 build_info_git_branch := "$(shell git rev-parse --abbrev-ref HEAD)$(shell git diff-index --quiet HEAD -- || echo -dirty)"
-build_info_git_tag := "$(shell git decribe 2> /dev/null || echo '(tagless)')"
+build_info_git_tag := "$(shell git describe --tags --abbrev=0 2>/dev/null || echo '(tagless)')"
 CFLAGS += -DBUILD_INFO_GIT_COMMIT=$(build_info_git_commit)
 CFLAGS += -DBUILD_INFO_GIT_BRANCH=$(build_info_git_branch)
 CFLAGS += -DBUILD_INFO_GIT_TAG=$(build_info_git_tag)
