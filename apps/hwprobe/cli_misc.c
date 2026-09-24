@@ -15,7 +15,7 @@ static int cli_info_app(int argc, const char **argv) {
        _str(BUILD_INFO_TARGET_ARCH), _str(BUILD_INFO_TARGET_FAMILY), _str(BUILD_INFO_TARGET_PROC),
        _str(BUILD_INFO_TARGET_BOARD));
    printf("rev:\t%s %s on %s\n",
-       _str(BUILD_INFO_GIT_COMMIT), _str(BUILD_INFO_GIT_TAG), _str(BUILD_INFO_GIT_BRANCH))
+       _str(BUILD_INFO_GIT_COMMIT), _str(BUILD_INFO_GIT_TAG), _str(BUILD_INFO_GIT_BRANCH));
    printf("build:\t%s@%s %s-%s %s\n",
        _str(BUILD_INFO_HOST_WHO), _str(BUILD_INFO_HOST_NAME),
        _str(BUILD_INFO_HOST_WHEN_DATE), _str(BUILD_INFO_HOST_WHEN_TIME),
