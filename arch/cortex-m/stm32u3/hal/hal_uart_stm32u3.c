@@ -75,22 +75,22 @@ static USART_TypeDef *const phy_block[PHYIX_COUNT] = {
 #ifdef CONFIG_UART_STM32_RX_INTERRUPT
 static IRQn_Type const phy_irqn[PHYIX_COUNT] = {
     (IRQn_Type)0,
-#if defined(USART1) && defined(USART1_IRQn)
+#if defined(USART1)
     [PHYIX_U1] = USART1_IRQn,
 #endif
-#if defined(USART2) && defined(USART2_IRQn)
+#if defined(USART2)
     [PHYIX_U2] = USART2_IRQn,
 #endif
-#if defined(USART3) && defined(USART3_IRQn)
+#if defined(USART3)
     [PHYIX_U3] = USART3_IRQn,
 #endif
-#if defined(UART4) && defined(UART4_IRQn)
+#if defined(UART4)
     [PHYIX_U4] = UART4_IRQn,
 #endif
-#if defined(UART5) && defined(UART5_IRQn)
+#if defined(UART5)
     [PHYIX_U5] = UART5_IRQn,
 #endif
-#if defined(LPUART1) && defined(LPUART1_IRQn)
+#if defined(LPUART1)
     [PHYIX_LPU1] = LPUART1_IRQn,
 #endif
 };
@@ -447,22 +447,22 @@ static void stm32u3_uart_irq(int phy_hdl_ix) {
     }
 }
 
-#if defined(USART1) && defined(USART1_IRQn)
+#if defined(USART1)
 void USART1_IRQHandler(void) { stm32u3_uart_irq(PHYIX_U1); }
 #endif
-#if defined(USART2) && defined(USART2_IRQn)
+#if defined(USART2)
 void USART2_IRQHandler(void) { stm32u3_uart_irq(PHYIX_U2); }
 #endif
-#if defined(USART3) && defined(USART3_IRQn)
+#if defined(USART3)
 void USART3_IRQHandler(void) { stm32u3_uart_irq(PHYIX_U3); }
 #endif
-#if defined(UART4) && defined(UART4_IRQn)
+#if defined(UART4)
 void UART4_IRQHandler(void) { stm32u3_uart_irq(PHYIX_U4); }
 #endif
-#if defined(UART5) && defined(UART5_IRQn)
+#if defined(UART5)
 void UART5_IRQHandler(void) { stm32u3_uart_irq(PHYIX_U5); }
 #endif
-#if defined(LPUART1) && defined(LPUART1_IRQn)
+#if defined(LPUART1)
 void LPUART1_IRQHandler(void) { stm32u3_uart_irq(PHYIX_LPU1); }
 #endif
 #endif
