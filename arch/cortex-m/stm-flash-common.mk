@@ -50,7 +50,7 @@ define list_stlink_devices
 $(shell lsusb -d $(OPENOCD_VID_PID) -v 2> /dev/null | grep -oP "iSerial\s*[0-9]\s\K.*" | tr -d '\n' | od -t x1 -w100 | grep -o "\ [0-9a-f][0-9a-f]" | sed -r 's/\s[c-f][0-9a-f]/ 3f/g' | sed -r 's/\s[8-f][0-9a-f]//g' | tr -d '\n' | sed -r 's/\s/\\x/g')
 endef
 
-ifndef DEVICE_SINGLE
+ifeq ($(strip $(filter-out 0,$(DEVICE_SINGLE))),)
 DEVICE_SERIAL_ARG := -c "adapter serial $$arg"
 else
 DEVICE_SERIAL_ARG :=
@@ -158,7 +158,7 @@ stm-erase-all: .prereq-devs
 # Connects first best device to openocd
 stm-connect: .prereq-devs
 	@echo "Connecting to $(STM_DEVICE_FIRST)"
-ifndef DEVICE_SINGLE
+ifeq ($(strip $(filter-out 0,$(DEVICE_SINGLE))),)
 	$(eval DEVICE_SERIAL_FIRST := -c "adapter serial $(STM_DEVICE_FIRST)")
 else
 	$(eval DEVICE_SERIAL_FIRST := )
@@ -191,7 +191,7 @@ stm-debug-bare: .prereq-devs
 rightparen:=)
 
 .prereq-devs: .prereq-prog
-ifndef DEVICE_SINGLE
+ifeq ($(strip $(filter-out 0,$(DEVICE_SINGLE))),)
   ifdef DEVICE_FILE
 	$(eval STM_DEVICES := $(shell \
 	   ids="$$(shell lsusb -d $(OPENOCD_VID_PID) -v 2> /dev/null | grep -oP 'iSerial\s*[0-9]\s\K.*' | tr -d '\n' | od -t x1 -w100 | grep -o '\ [0-9a-f][0-9a-f]' | sed -r 's/\s[c-f][0-9a-f]/ 3f/g' | sed -r 's/\s[8-f][0-9a-f]//g' | tr -d '\n' | sed -r 's/\s/\\x/g')"; \
@@ -239,9 +239,9 @@ ifndef DEVICE_SINGLE
 		exit 1; \
 	fi
   endif
-else # DEVICE_SINGLE
+else # DEVICE_SINGLE != 0
 	$(eval STM_DEVICES := DEVICE_SINGLE)
-endif # DEVICE_SINGLE
+endif # DEVICE_SINGLE != 0
 	$(eval STM_DEVICE_FIRST ?= $(word 1, $(STM_DEVICES)))
 	$(eval GDB_PORT ?= 3333)
 	$(eval TELNET_PORT ?= 4444)

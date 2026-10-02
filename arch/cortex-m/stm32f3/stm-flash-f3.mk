@@ -1,4 +1,4 @@
-ifndef NO_OPENOCD
+ifeq ($(strip $(filter-out 0,$(NO_OPENOCD))),)
 OPENOCD_DEBUGGER ?= stlink-v2
 OPENOCD_TARGET_FILE = target/stm32f3x.cfg
 include $(arch_dir)/stm-flash-common.mk

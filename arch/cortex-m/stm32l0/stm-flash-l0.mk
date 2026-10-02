@@ -1,4 +1,4 @@
-ifndef NO_OPENOCD
+ifeq ($(strip $(filter-out 0,$(NO_OPENOCD))),)
 OPENOCD_DEBUGGER ?= stlink
 OPENOCD_TARGET_FILE = target/stm32l0.cfg
 EXTRA_DEBUG_COMMANDS = -ex "mon reset_config srst_only"

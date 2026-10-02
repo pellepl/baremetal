@@ -72,7 +72,7 @@ define list_stlink_devices
 $(shell "$(PROG)" -l st-link-only 2> /dev/null | $(strip_ansi) | sed -n 's/.*ST-LINK SN[[:space:]]*:[[:space:]]*//p' | tr -d '\r')
 endef
 
-ifndef DEVICE_SINGLE
+ifeq ($(strip $(filter-out 0,$(DEVICE_SINGLE))),)
 DEVICE_SERIAL_ARG = sn=$$arg
 DEVICE_GDBSERVER_SERIAL_ARG = -i $(STM_DEVICE_FIRST)
 else
@@ -173,7 +173,7 @@ stm-debug-bare: .prereq-devs .prereq-gdb
 rightparen:=)
 
 .prereq-devs: .prereq-prog
-ifndef DEVICE_SINGLE
+ifeq ($(strip $(filter-out 0,$(DEVICE_SINGLE))),)
   ifdef DEVICE_FILE
 	$(eval STM_DEVICES := $(shell \
 	   ids="$$("$(PROG)" -l st-link-only 2> /dev/null | $(strip_ansi) | sed -n 's/.*ST-LINK SN[[:space:]]*:[[:space:]]*//p' | tr -d '\r')"; \
@@ -211,9 +211,9 @@ ifndef DEVICE_SINGLE
 		exit 1; \
 	fi
   endif
-else # DEVICE_SINGLE
+else # DEVICE_SINGLE != 0
 	$(eval STM_DEVICES := DEVICE_SINGLE)
-endif # DEVICE_SINGLE
+endif # DEVICE_SINGLE != 0
 	$(eval STM_DEVICE_FIRST ?= $(word 1, $(STM_DEVICES)))
 
 # private, checks we have STM32CubeProgrammer
