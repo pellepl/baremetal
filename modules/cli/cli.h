@@ -88,4 +88,9 @@ int cli_entry_list_length(void);
  */
 cli_entry_t **cli_entry_list_start(void);
 
+/**
+ * Returns currently executing or last executed cli entry.
+ */
+const cli_entry_t *cli_entry(void);
+
 #endif // _CLI_H_

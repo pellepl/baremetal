@@ -16,6 +16,7 @@ static struct {
     char ctrl_arg[CLI_ARGS_MAX];
     uint32_t arg_ix;
     int was_control;
+    const cli_entry_t *entry;
 } state;
 
 static const char *contains(char needle, const char *haystack) {
@@ -52,6 +53,7 @@ static void cli_commit(void) {
     for (int i = 0; i < entries; i++) {
         cli_entry_t *e = list[i];
         if (strcmp(e->name, state.buf) == 0 && e->func) {
+            state.entry = e;
             res = e->func(state.arg_ix, state.arg);
             break;
         }
@@ -109,4 +111,8 @@ void cli_parse(const char *str, uint32_t len) {
             state.buf[state.buf_ix++] = c;
         }
     }
+}
+
+const cli_entry_t *cli_entry(void) {
+    return state.entry;
 }
