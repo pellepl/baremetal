@@ -10,6 +10,7 @@ TI_VID_PID := "2047:0014"
 
 MSPDEBUG ?= mspdebug
 MSPDEBUG_DRIVER ?= tilib
+TOOLCHAIN_GDB ?= $(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb
 
 define unique_number
 $(shell printf "%d" 0x$$(echo "$(1)" | md5sum | cut -c 1-4) | cut -c 1-4)
@@ -85,13 +86,13 @@ msp-connect: .prereq-devs
 
 # Starts a debug session - msp-connect must have been issued first.
 msp-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
-	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb \
+	$(TOOLCHAIN_GDB) \
 		-ex "file ${TARGET_DIR}/$(TARGETNAME).elf" \
 		-ex "target remote localhost:$(GDB_PORT)"
 
 # Starts a bare debug session - nrf-connect must have been issued first.
 msp-debug-bare: .prereq-devs
-	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb \
+	$(TOOLCHAIN_GDB) \
 		-ex "target remote localhost:$(GDB_PORT)"
 
 rightparen:=)

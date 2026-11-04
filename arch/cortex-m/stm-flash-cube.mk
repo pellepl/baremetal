@@ -36,11 +36,11 @@ STM32_ARM_GDB_CLI := $(lastword $(sort $(wildcard \
 	/usr/local/STMicroelectronics/STM32Cube/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.*.linux64_*/tools/bin/arm-none-eabi-gdb \
 )))
 ifneq "$(TOOLCHAIN_DIR)" ""
-STM32_GDB ?= $(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb
+TOOLCHAIN_GDB ?= $(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb
 else ifneq "$(STM32_ARM_GDB_CLI)" ""
-STM32_GDB ?= $(STM32_ARM_GDB_CLI)
+TOOLCHAIN_GDB ?= $(STM32_ARM_GDB_CLI)
 else
-STM32_GDB ?= $(CROSS_COMPILE)gdb
+TOOLCHAIN_GDB ?= $(CROSS_COMPILE)gdb
 endif
 
 ifneq "$(findstring /,$(PROG))" ""
@@ -158,7 +158,7 @@ stm-connect: .prereq-devs .prereq-gdbserver
 
 # Starts a debug session - stm-connect must have been issued first.
 stm-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs .prereq-gdb
-	$(STM32_GDB) \
+	$(TOOLCHAIN_GDB) \
 		-ex "file ${TARGET_DIR}/$(TARGETNAME).elf" \
 		-ex "target remote localhost:$(GDB_PORT)" \
 		-ex "break HardFault_Handler" \
@@ -166,7 +166,7 @@ stm-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs .prereq-gdb
 
 # Starts a bare debug session - stm-connect must have been issued first.
 stm-debug-bare: .prereq-devs .prereq-gdb
-	$(STM32_GDB) \
+	$(TOOLCHAIN_GDB) \
 		-ex "target remote localhost:$(GDB_PORT)" \
 		$(EXTRA_CONNECT_COMMANDS)
 
@@ -231,9 +231,9 @@ endif # DEVICE_SINGLE != 0
 		exit 1; \
 	fi
 
-.prereq-gdb: has_gdb=$(shell if [ -x "$(STM32_GDB)" ] || command -v "$(STM32_GDB)" > /dev/null 2>&1; then echo 0; else echo 1; fi)
+.prereq-gdb: has_gdb=$(shell if [ -x "$(TOOLCHAIN_GDB)" ] || command -v "$(TOOLCHAIN_GDB)" > /dev/null 2>&1; then echo 0; else echo 1; fi)
 .prereq-gdb:
 	@if [ $(has_gdb) -ne 0 ]; then \
-		echo "*** ERROR: Could not find $(STM32_GDB). Make sure STM32_GDB, TOOLCHAIN_DIR, or CROSS_COMPILE is set correctly."; \
+		echo "*** ERROR: Could not find $(TOOLCHAIN_GDB). Make sure TOOLCHAIN_GDB is set correctly."; \
 		exit 1; \
 	fi

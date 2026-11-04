@@ -14,6 +14,8 @@ NRFJPROG ?= nrfjprog
 JLINK ?= JLinkExe
 JLINK_GDBSERVER ?= JLinkGDBServerCLExe
 
+TOOLCHAIN_GDB ?= $(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb
+
 ifeq "$(PROC)" "nrf52833"
 SOFTDEVICE_PREFIX ?= s140
 JLINK_DEVICE ?= nrf52833_xxaa
@@ -113,7 +115,7 @@ nrf-rtt: .prereq-devs
 
 # Starts a debug session - nrf-connect must have been issued first.
 nrf-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
-	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb \
+	$(TOOLCHAIN_GDB) \
 		-ex "file ${TARGET_DIR}/$(TARGETNAME).elf" \
 		-ex "target remote localhost:$(GDB_PORT)" \
 		-ex "mon speed 10000" \
@@ -122,7 +124,7 @@ nrf-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
 
 # Starts a bare debug session - nrf-connect must have been issued first.
 nrf-debug-bare: .prereq-devs
-	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb \
+	$(TOOLCHAIN_GDB) \
 		-ex "target remote localhost:$(GDB_PORT)" \
 		-ex "mon speed 10000" \
 		-ex "mon flash download=1" \

@@ -6,6 +6,8 @@
 # If DEVICE_FILTER is defined, only devices whose id has a substring match are operated on.
 # If DEVICE_FILE is defined, only devices whose id are listed in given file (one id per line) are operated on.
 
+TOOLCHAIN_GDB ?= $(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb
+
 
 ifeq "$(OPENOCD_DEBUGGER)" "stlink-v2"
 OPENOCD_VID_PID ?= "0483:3748"
@@ -172,7 +174,7 @@ endif
 
 # Starts a debug session - stm-connect must have been issued first.
 stm-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
-	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb \
+	$(TOOLCHAIN_GDB) \
 		-ex "file ${TARGET_DIR}/$(TARGETNAME).elf" \
 		-ex "target remote localhost:$(GDB_PORT)" \
 		-ex "mon speed 10000" \
@@ -182,7 +184,7 @@ stm-debug: ${TARGET_DIR}/$(TARGETNAME).hex .prereq-devs
 
 # Starts a bare debug session - stm-connect must have been issued first.
 stm-debug-bare: .prereq-devs
-	$(TOOLCHAIN_DIR)/bin/$(CROSS_COMPILE)gdb \
+	$(TOOLCHAIN_GDB) \
 		-ex "target remote localhost:$(GDB_PORT)" \
 		-ex "mon speed 10000" \
 		-ex "mon flash download=1" \
