@@ -52,6 +52,25 @@ int ringbuffer_putc(ringbuffer_t *rb, uint8_t c) {
     return 0;
 }
 
+int ringbuffer_unputc(ringbuffer_t *rb, uint8_t *c) {
+    uint16_t rix = rb->r_ix;
+    uint16_t wix = rb->w_ix;
+    if (RB_EMPTY(rix, wix)) {
+        return -1;
+    }
+    if (c) {
+        *c = rb->buffer[wix];
+    }
+    if (wix == 0) {
+        wix = rb->max_len-1;
+    } else {
+        wix--;
+    }
+    rb->w_ix = wix;
+
+    return 0;
+}
+
 int ringbuffer_available(ringbuffer_t *rb) {
     uint16_t rix = rb->r_ix;
     uint16_t wix = rb->w_ix;

@@ -27,6 +27,10 @@ int ringbuffer_getc(ringbuffer_t *rb, uint8_t *c);
    @returns 0 if OK, else -1 if full
  */
 int ringbuffer_putc(ringbuffer_t *rb, uint8_t c);
+/* Unputs a character from ringbuffer
+   @returns 0 if OK, else -1 if empty
+ */
+int ringbuffer_unputc(ringbuffer_t *rb, uint8_t *c);
 /* Returns a region of data from ringbuffer
    @returns number of actual bytes returned or -1 if empty
  */
