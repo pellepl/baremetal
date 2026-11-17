@@ -7,7 +7,9 @@ BOARD ?= pca10040
 BAREMETAL_DIR ?= .
 
 BOARD_DIR ?= $(BAREMETAL_DIR)/board/$(BOARD)
+ifeq ($(filter $(abspath $(BOARD_DIR)/board_$(BOARD).mk),$(abspath $(MAKEFILE_LIST))),)
 -include $(BOARD_DIR)/board_$(BOARD).mk
+endif
 
 ifeq ($(OS),Windows_NT)
 ECHO:=echo -e
