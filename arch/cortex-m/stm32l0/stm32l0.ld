@@ -83,11 +83,11 @@ SECTIONS
   /* Data section (R W) */
   .data :
   {
-    . = ALIGN(4);
+    . = ALIGN(8);
     _sdata = .;
     *(.data)
     *(.data*)
-    . = ALIGN(4);
+    . = ALIGN(8);
     _edata = .;
   } >RAM AT> FLASH :data
 
@@ -99,7 +99,7 @@ SECTIONS
     *(.bss)
     *(.bss*)
     *(COMMON)
-    . = ALIGN(4);
+    . = ALIGN(8);
     _ebss = .;
     __bss_end__ = _ebss;
   } >RAM :data
