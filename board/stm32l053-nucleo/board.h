@@ -32,7 +32,7 @@
 #define BOARD_UART_COUNT (1)
 #define BOARD_UART_GPIO_PINS                                                                                                    \
     {                                                                                                                           \
-        (board_uart_pindef_t){.rx_pin = PORTA(10), .tx_pin = PORTA(9), .cts_pin = BOARD_PIN_UNDEF, .rts_pin = BOARD_PIN_UNDEF}, \
+        (board_uart_pindef_t){.rx_pin = PORTA(3), .tx_pin = PORTA(2), .cts_pin = BOARD_PIN_UNDEF, .rts_pin = BOARD_PIN_UNDEF}, \
     }
 
 #endif // _BOARD_H_
