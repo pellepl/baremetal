@@ -83,8 +83,9 @@ tick_t tick_timer_get_alarm(tick_timer_t *tim);
 /**
  * This is called when an alarm triggers. Override at pleasure.
  * Original implementation does nothing.
+ * Only the default definition is weak, so application overrides remain strong.
  * @param tim the tick timer struct
  */
-__attribute__(( weak )) void tick_timer_on_alarm(tick_timer_t *tim);
+void tick_timer_on_alarm(tick_timer_t *tim);
 
 #endif

@@ -20,33 +20,45 @@ static volatile uint16_t __tick_timer_period;
 void tick_timer_hal_init(tick_timer_t *tim) {
     __tick_timer = tim;
     tim->hal_max_ticks = 0xffff;
+    NVIC_DisableIRQ(CAT(TIM, CAT(CONFIG_TICK_TIMER_STM32_HW_TIM, _IRQn)));
     LL_APB1_GRP1_EnableClock(CAT(LL_APB1_GRP1_PERIPH_TIM, CONFIG_TICK_TIMER_STM32_HW_TIM));
+    LL_APB1_GRP1_ForceReset(CAT(LL_APB1_GRP1_PERIPH_TIM, CONFIG_TICK_TIMER_STM32_HW_TIM));
+    LL_APB1_GRP1_ReleaseReset(CAT(LL_APB1_GRP1_PERIPH_TIM, CONFIG_TICK_TIMER_STM32_HW_TIM));
 
     LL_TIM_SetClockDivision(TIMx, LL_TIM_CLOCKDIVISION_DIV1);
     LL_TIM_SetCounterMode(TIMx, LL_TIM_COUNTERMODE_DOWN);
     LL_TIM_SetPrescaler(TIMx, CONFIG_TICK_TIMER_STM32_PRESCALER);
     LL_TIM_SetClockSource(TIMx, LL_TIM_CLOCKSOURCE_INTERNAL);
-    LL_TIM_EnableIT_UPDATE(TIMx);
+    LL_TIM_DisableARRPreload(TIMx);
+    LL_TIM_SetAutoReload(TIMx, 0xffff);
     LL_TIM_EnableUpdateEvent(TIMx);
     LL_TIM_SetUpdateSource(TIMx, LL_TIM_UPDATESOURCE_COUNTER);
     LL_TIM_SetOnePulseMode(TIMx, LL_TIM_ONEPULSEMODE_REPETITIVE);
 
-    NVIC_EnableIRQ(CAT(TIM, CAT(CONFIG_TICK_TIMER_STM32_HW_TIM, _IRQn)));
-    LL_TIM_SetCounter(TIMx, 0xffff);
+    // Load PSC before counting; otherwise the first period uses the reset divider.
+    LL_TIM_GenerateEvent_UPDATE(TIMx);
+    LL_TIM_ClearFlag_UPDATE(TIMx);
+    LL_TIM_SetCounter(TIMx, 0xfffe);
     __tick_timer_period = 0xffff;
+    NVIC_ClearPendingIRQ(CAT(TIM, CAT(CONFIG_TICK_TIMER_STM32_HW_TIM, _IRQn)));
+    LL_TIM_EnableIT_UPDATE(TIMx);
+    NVIC_EnableIRQ(CAT(TIM, CAT(CONFIG_TICK_TIMER_STM32_HW_TIM, _IRQn)));
     LL_TIM_EnableCounter(TIMx);
 }
 
 void tick_timer_hal_deinit(tick_timer_t *tim) {
     (void)tim;
+    LL_TIM_DisableIT_UPDATE(TIMx);
     LL_TIM_DisableCounter(TIMx);
     NVIC_DisableIRQ(CAT(TIM, CAT(CONFIG_TICK_TIMER_STM32_HW_TIM, _IRQn)));
+    LL_TIM_ClearFlag_UPDATE(TIMx);
+    NVIC_ClearPendingIRQ(CAT(TIM, CAT(CONFIG_TICK_TIMER_STM32_HW_TIM, _IRQn)));
     LL_APB1_GRP1_DisableClock(CAT(LL_APB1_GRP1_PERIPH_TIM, CONFIG_TICK_TIMER_STM32_HW_TIM));
 }
 
 uint32_t tick_timer_hal_get_current(tick_timer_t *tim) {
     (void)tim;
-    return (uint32_t)((__tick_timer_period - LL_TIM_GetCounter(TIMx)) & 0xffff);
+    return (uint32_t)((__tick_timer_period - 1U - LL_TIM_GetCounter(TIMx)) & 0xffff);
 }
 
 uint32_t tick_timer_hal_get_frequency(tick_timer_t *tim) {
@@ -64,12 +76,14 @@ uint32_t tick_timer_hal_get_frequency(tick_timer_t *tim) {
 
 void tick_timer_hal_set_period(tick_timer_t *tim, uint32_t ticks) {
     (void)tim;
-    LL_TIM_SetCounter(TIMx, ticks);
+    if (ticks == 0) ticks = 1;
     __tick_timer_period = ticks;
+    LL_TIM_SetCounter(TIMx, ticks - 1U);
 }
 
 void CAT(TIM, CAT(CONFIG_TICK_TIMER_STM32_HW_TIM, _IRQHandler))(void);
 void CAT(TIM, CAT(CONFIG_TICK_TIMER_STM32_HW_TIM, _IRQHandler))(void) {
+    if (!LL_TIM_IsActiveFlag_UPDATE(TIMx) || !LL_TIM_IsEnabledIT_UPDATE(TIMx)) return;
     LL_TIM_ClearFlag_UPDATE(TIMx);
     tick_timer_hal_cb_overflow(__tick_timer);
 }
