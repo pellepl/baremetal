@@ -299,6 +299,7 @@ int minio_vn_printf(unsigned int hdl, const char *format, unsigned int count, va
             case 'c': hdl = minio_putchar(hdl, (char)va_arg(arg_p, int)); break;
             case 's': hdl = print_string(hdl, va_arg(arg_p, char *), count); break;
 
+            case 'l': break;
             case 'd':
             case 'i': {
                 int v = va_arg(arg_p, int);
@@ -323,6 +324,15 @@ int minio_vn_printf(unsigned int hdl, const char *format, unsigned int count, va
             case 'x': {
                 uint32_t v = va_arg(arg_p, uint32_t);
                 u_itoan(v, &buf[0], 16, flen, flags);
+                hdl = print_string(hdl, buf, count);
+                break;
+            }
+            case 'B':
+                // fall through
+                //no break
+            case 'b': {
+                uint32_t v = va_arg(arg_p, uint32_t);
+                u_itoan(v, &buf[0], 2, flen, flags);
                 hdl = print_string(hdl, buf, count);
                 break;
             }
