@@ -2,7 +2,7 @@
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-_estack = ORIGIN(RAM) + LENGTH(RAM)-1;
+_estack = ORIGIN(RAM) + LENGTH(RAM);
 
 /* Program Headers: define explicit permissions */
 PHDRS
