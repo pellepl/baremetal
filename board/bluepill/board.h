@@ -10,6 +10,11 @@
 
 #define BOARD_PIN_MAX                   (16*3)
 
+#define PORTA(x) (0 + (x))
+#define PORTB(x) (16 + (x))
+#define PORTC(x) (32 + (x))
+
+
 #define BOARD_BUTTON_COUNT              (0)
 #define BOARD_BUTTON_GPIO_PIN           ((const uint16_t[BOARD_BUTTON_COUNT]){})
 #define BOARD_BUTTON_GPIO_ACTIVE        ((const uint8_t[BOARD_BUTTON_COUNT]){})
