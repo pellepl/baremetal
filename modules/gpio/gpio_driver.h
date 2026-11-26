@@ -13,6 +13,7 @@ typedef enum {
     GPIO_DIRECTION_ANALOG,
     GPIO_DIRECTION_FUNCTION_IN,
     GPIO_DIRECTION_FUNCTION_OUT,
+    GPIO_DIRECTION_OUTPUT_OPENDRAIN,
 } gpio_direction_t;
 
 typedef enum {
@@ -27,11 +28,11 @@ typedef void (*gpio_irq_cb_t)(uint16_t pin, uint8_t state);
 
 /** Initializes gpio block */
 int gpio_init(void);
-/** Configures given pin */
+/** Configures given pin. Returns -1 for unsupported directions (e.g. open-drain on MSP430). */
 int gpio_config(uint16_t pin, gpio_direction_t dir, gpio_pull_t pull);
 /** Disconnect pin */
 int gpio_disconnect(uint16_t pin, gpio_pull_t pull);
-/** Sets given pin high or low */
+/** Sets given pin high or low. Open-drain outputs drive low on 0 and release on 1. */
 int gpio_set(uint16_t pin, uint8_t state);
 /** Returns state of given pin as high or low */
 int gpio_read(uint16_t pin);

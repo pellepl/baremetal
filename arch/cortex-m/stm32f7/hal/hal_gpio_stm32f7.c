@@ -62,12 +62,13 @@ static GPIO_TypeDef *port_for_pin(uint16_t pin) {
 int gpio_hal_config(uint16_t pin, gpio_direction_t dir, gpio_pull_t pull) {
     GPIO_TypeDef *port = port_for_pin(pin);
     uint32_t hw_pin = pins[pin&0xf];
-    uint32_t mode = (uint32_t[5]){
+    uint32_t mode = (uint32_t[]){
         LL_GPIO_MODE_INPUT,
         LL_GPIO_MODE_OUTPUT,
         LL_GPIO_MODE_ANALOG,
         LL_GPIO_MODE_ALTERNATE,             // func in
-        LL_GPIO_MODE_ALTERNATE              // func out
+        LL_GPIO_MODE_ALTERNATE,             // func out
+        LL_GPIO_MODE_OUTPUT                // open-drain
     }[dir];
     uint32_t output =
         (dir == GPIO_DIRECTION_OUTPUT || dir == GPIO_DIRECTION_FUNCTION_OUT) ?
@@ -78,7 +79,8 @@ int gpio_hal_config(uint16_t pin, gpio_direction_t dir, gpio_pull_t pull) {
         .Mode = mode,
         .Speed = mode == LL_GPIO_MODE_ALTERNATE ? LL_GPIO_SPEED_FREQ_HIGH : LL_GPIO_SPEED_FREQ_MEDIUM,
         .OutputType = output,
-        .Pull = pull == GPIO_PULL_DOWN ? LL_GPIO_PULL_DOWN : LL_GPIO_PULL_UP
+        .Pull = (dir == GPIO_DIRECTION_OUTPUT_OPENDRAIN && pull == GPIO_PULL_NONE) ? LL_GPIO_PULL_NO :
+            (pull == GPIO_PULL_DOWN ? LL_GPIO_PULL_DOWN : LL_GPIO_PULL_UP)
     };
     (void)LL_GPIO_Init(port, &cfg);
     return 0;

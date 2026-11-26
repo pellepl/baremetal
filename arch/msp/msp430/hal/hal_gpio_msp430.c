@@ -16,6 +16,7 @@ volatile uint8_t *pxsel[]  = {&P1SEL, &P2SEL, &P3SEL};
 volatile uint8_t *pxsel2[] = {&P1SEL2,&P3SEL2,&P3SEL2};
 
 int gpio_hal_config(uint16_t pin, gpio_direction_t dir, gpio_pull_t pull) {
+    if (dir == GPIO_DIRECTION_OUTPUT_OPENDRAIN) return -1;
     uint8_t port = pin>>3;
     uint8_t pinmask = (1<<(pin&7));
     if (dir == GPIO_DIRECTION_FUNCTION_IN || dir == GPIO_DIRECTION_FUNCTION_OUT) {

@@ -45,12 +45,13 @@ static GPIO_TypeDef *port_for_pin(uint16_t pin) {
 int gpio_hal_config(uint16_t pin, gpio_direction_t dir, gpio_pull_t pull) {
     GPIO_TypeDef *port = port_for_pin(pin);
     uint32_t ll_pin = pins[pin & 0xf];
-    uint32_t ll_mode = (uint32_t[5]){
+    uint32_t ll_mode = (uint32_t[]){
         LL_GPIO_MODE_INPUT,
         LL_GPIO_MODE_OUTPUT,
         LL_GPIO_MODE_ANALOG,
         LL_GPIO_MODE_ALTERNATE,
         LL_GPIO_MODE_ALTERNATE,
+        LL_GPIO_MODE_OUTPUT,
     }[dir];
     uint32_t ll_output =
         (dir == GPIO_DIRECTION_OUTPUT || dir == GPIO_DIRECTION_FUNCTION_OUT) ?

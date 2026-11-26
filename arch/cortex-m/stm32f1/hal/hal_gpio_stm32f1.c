@@ -63,7 +63,7 @@ static GPIO_TypeDef *port_for_pin(uint16_t pin) {
 int gpio_hal_config(uint16_t pin, gpio_direction_t dir, gpio_pull_t pull) {
     GPIO_TypeDef *port = port_for_pin(pin);
     uint32_t hw_pin = pins[pin&0xf];
-    uint32_t mode = (uint32_t[5]){LL_GPIO_MODE_INPUT, LL_GPIO_MODE_OUTPUT, LL_GPIO_MODE_ANALOG, LL_GPIO_MODE_INPUT, LL_GPIO_MODE_ALTERNATE}[dir];
+    uint32_t mode = (uint32_t[]){LL_GPIO_MODE_INPUT, LL_GPIO_MODE_OUTPUT, LL_GPIO_MODE_ANALOG, LL_GPIO_MODE_INPUT, LL_GPIO_MODE_ALTERNATE, LL_GPIO_MODE_OUTPUT}[dir];
     uint32_t output = 
         (dir == GPIO_DIRECTION_OUTPUT || dir == GPIO_DIRECTION_FUNCTION_OUT) ?
           (pull == GPIO_PULL_DOWN ? LL_GPIO_OUTPUT_OPENDRAIN : LL_GPIO_OUTPUT_PUSHPULL) :
