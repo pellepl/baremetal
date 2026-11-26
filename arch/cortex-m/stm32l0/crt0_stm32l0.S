@@ -150,14 +150,30 @@ g_pfnVectors:
   .word     DMA1_Channel4_5_6_7_IRQHandler    /* DMA1 Channel 4, Channel 5, Channel 6 and Channel 7*/
   .word     ADC1_COMP_IRQHandler              /* ADC1, COMP1 and COMP2        */
   .word     LPTIM1_IRQHandler                 /* LPTIM1                       */
+#if defined(STM32L073xx)
+  .word     USART4_5_IRQHandler
+#else
   .word     0                                 /* Reserved                     */
+#endif
   .word     TIM2_IRQHandler                   /* TIM2                         */
+#if defined(STM32L073xx)
+  .word     TIM3_IRQHandler
+#else
   .word     0                                 /* Reserved                     */
+#endif
   .word     TIM6_DAC_IRQHandler               /* TIM6 and DAC                 */
+#if defined(STM32L073xx)
+  .word     TIM7_IRQHandler
+#else
   .word     0               				          /* Reserved                     */
+#endif
   .word     0              					          /* Reserved                     */
   .word     TIM21_IRQHandler                  /* TIM21                        */
+#if defined(STM32L073xx)
+  .word     I2C3_IRQHandler
+#else
   .word     0                                 /* Reserved                     */
+#endif
   .word     TIM22_IRQHandler                  /* TIM22                        */
   .word     I2C1_IRQHandler                   /* I2C1                         */
   .word     I2C2_IRQHandler                   /* I2C2                         */
@@ -239,6 +255,21 @@ g_pfnVectors:
 
    .weak      TIM6_DAC_IRQHandler
    .thumb_set TIM6_DAC_IRQHandler,Default_Handler
+
+#if defined(STM32L073xx)
+   .weak      USART4_5_IRQHandler
+   .thumb_set USART4_5_IRQHandler,Default_Handler
+
+   .weak      TIM3_IRQHandler
+   .thumb_set TIM3_IRQHandler,Default_Handler
+
+   .weak      TIM7_IRQHandler
+   .thumb_set TIM7_IRQHandler,Default_Handler
+
+   .weak      I2C3_IRQHandler
+   .thumb_set I2C3_IRQHandler,Default_Handler
+
+#endif
 
    .weak      TIM21_IRQHandler
    .thumb_set TIM21_IRQHandler,Default_Handler
